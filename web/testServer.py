@@ -31,10 +31,16 @@ def setJSONHeader():
     cherrypy.response.headers['Content-Type'] = 'application/json'
 
 # Pack content object into communications wrapper API format and return it as an object
-def pack(content, op):
-    return {'OP': op, 'SYNC': "placeholder", 'IP': SERVER_SOCKET_HOST, 'CONTENT': content}    
+def pack(statusCode, content = {}):
+    return {
+        API_CONSTANTS['STATUS_CODE']: statusCode,
+        API_CONSTANTS['CONTENT']: content
+    }    
 
-
+def invalidRequest():
+    cherrypy.response.status = 404
+    return simplejson.dumps(pack('404', 'invalid request'))
+    
 
 # Pages --------------------------------------------------------------
 
@@ -43,7 +49,8 @@ class URL_Index:
 
     @cherrypy.expose
     def index(self):
-        return open('html/home.html')
+        return invalidRequest()
+        # return open('html/home.html')
 
 # Login page
 class URL_Login(object):
@@ -173,6 +180,10 @@ index.config.update({
         'tools.staticdir.dir' : 'fonts'
     }
 })
+
+#Login page
+loginConfig = {'/': {'request.dispatch': cherrypy.dispatch.MethodDispatcher() } }
+cherrypy.tree.mount(URL_Login(), '/login', loginConfig)
 
 # API pages
 apiConfig = {'/': {'request.dispatch': cherrypy.dispatch.MethodDispatcher() } }
