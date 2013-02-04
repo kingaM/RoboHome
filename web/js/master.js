@@ -179,13 +179,19 @@ APP.EntityTreeMap.prototype.getDescendantPanelId       = function(id) { return t
  ****************************************************************************************************************
  */
 
+// API property definitions
+APP.API_CONSTANTS = {
+    STATUS_CODE: 'statusCode',
+    CONTENT: 'content'
+}
+
 APP.ID = {
     // primary menu buttons
     button_home:        '#button-home',
     button_test:        '#button-test',
     button_areas:       '#button-areas',
     button_monitor:     '#button-monitor',
-    button_security:    '#button-security',
+    button_rules:       '#button-rules',
     button_config:      '#button-config',
     button_quit:        '#button-quit',
     
@@ -193,7 +199,7 @@ APP.ID = {
     menu_test:      '#menu-test',
     menu_areas:     '#menu-areas',
     menu_monitor:   '#menu-monitor',
-    menu_security:  '#menu-security',
+    menu_rules:     '#menu-rules',
     menu_config:    '#menu-config',
     menu_quit:      '#menu-quit',
     
@@ -206,10 +212,7 @@ APP.ID = {
     button_monitor_temperature:  '#monitor-temperature',
     button_monitor_cameras:      '#monitor-cameras',
     
-    button_security_state:              '#security-state',
-    button_security_events:             '#security-events',
-    button_security_triggers:           '#security-triggers',
-    button_security_emergencyservices:  '#security-emergency-services',
+    button_rules_eca:            '#rules-eca',
     
     // stages
     stage_monitor_cameras:      '#stage-monitor-cameras',
@@ -220,44 +223,22 @@ APP.ID = {
     stage_monitor_temperature:  '#stage-monitor-temperature',
     stage_monitor_cameras:      '#stage-monitor-cameras',
     
-    stage_security_state:               '#stage-security-state',
-    stage_security_events:              '#stage-security-events',
-    stage_security_triggers:            '#stage-security-triggers',
-    stage_security_emergencyservices:   '#stage-security-emergency-services'
+    stage_rules_eca:            '#stage-rules-eca'
 }
 
 APP.Data = {
-    // static properties
-    specialStates: {
-        undefined: 'undefined',
-        null: 'null',
-        partial: -1,
-    },
-    types: {
-        self: 'self',
-        area: 'area',
-        door: 'door',
-        lock: 'lock',
-        window: 'window',
-        curtain: 'curtain',
-        light: 'light'
-    },
-    normalStates: {
-        area: undefined,
-        door: 2,
-        lock: 2,
-        window: 2,
-        curtain: 2,
-        light: 2
-    },
-    // dynamic properties
-    activeStageId: undefined,           // current stage shown by UI. UI updating should only update its children DOM elements for performance reasons
+
+    // current stage shown by UI. UI updating should only update its children DOM elements for performance reasons
+    activeStageId: undefined,
+    
+    // menu maps
     primaryMenuMap: new APP.Map(),
     secondaryMenuMap: new APP.Map(),
-    areaMenuBindings: undefined,        // binds area id code to name e.g. "area1" to "living room"
-    clientIP: "unidentified",
-    initData: undefined,                // this should be refactored out at some point. It's here for debugging purposes
-    EntityMap: new APP.EntityTreeMap()
+    
+    // cached server data
+    cache: {
+        methodList: new APP.Map()
+    }
 }
 
 /**
@@ -284,11 +265,11 @@ APP.Listen = {
             mapping;
             
         map = APP.Data.primaryMenuMap;
-        //map.put(APP.Button.home,    '');
+        // map.put(APP.Button.home,    '');
         map.put(APP.ID.button_test,     APP.ID.menu_test);
         map.put(APP.ID.button_areas,    APP.ID.menu_areas);
         map.put(APP.ID.button_monitor,  APP.ID.menu_monitor);
-        map.put(APP.ID.button_security, APP.ID.menu_security);
+        map.put(APP.ID.button_rules,    APP.ID.menu_rules);
         map.put(APP.ID.button_config,   APP.ID.menu_config);
         map.put(APP.ID.button_quit,     APP.ID.menu_quit);
         
@@ -329,10 +310,7 @@ APP.Listen = {
         map.put(APP.ID.button_monitor_temperature, APP.ID.stage_monitor_temperature);
         map.put(APP.ID.button_monitor_cameras,     APP.ID.stage_monitor_cameras);
         
-        map.put(APP.ID.button_security_state,             APP.ID.stage_security_state);
-        map.put(APP.ID.button_security_events,            APP.ID.stage_security_events);
-        map.put(APP.ID.button_security_triggers,          APP.ID.stage_security_triggers);
-        map.put(APP.ID.button_security_emergencyservices, APP.ID.stage_security_emergencyservices);
+        map.put(APP.ID.button_rules_eca,           APP.ID.stage_rules_eca);
         
         menuItems = $('.menu.secondary').children().children();
         stages = $('.stage');
@@ -349,7 +327,7 @@ APP.Listen = {
                 mapping = map.get('#' + $(this).attr('id'));
                 $(mapping).toggleClass('active');
                 stages.not(mapping).removeClass('active');
-                APP.UIConstructor.updateUIValues(APP.Data.EntityMap);
+                // APP.UIConstructor.updateUIValues(APP.Data.EntityMap);
             });
         });
     }
@@ -366,7 +344,9 @@ APP.Poller = {
         APP.Poller.__frequency = frequency;
     },
     startPolling: function() {
-        APP.Poller.__intervalId = window.setInterval(APP.Poller.poll, APP.Poller.__frequency);
+        if(APP.Poller.__frequency !== undefined) {
+            APP.Poller.__intervalId = window.setInterval(APP.Poller.poll, APP.Poller.__frequency);
+        }
     },
     stopPolling: function() {
         window.clearInterval(APP.Poller.__intervalId);
@@ -482,52 +462,73 @@ APP.Resizer = {
     }
 }
 
-/**
- *  Message packing and unpacking methods
- */
-APP.pack = function(op, sync, payload) {
-    return {
-        OP: op,
-        SYNC_CODE: sync,
-        IP: APP.Data.clientIP,
-        CONTENT: payload
-    };
-}
-APP.unpackToObject = function(payload) { return JSON.parse(payload); }
-APP.unpackToContent = function(payload) { return JSON.parse(payload).CONTENT; }
-APP.unpackToString = function(payload) { return JSON.stringify(JSON.parse(payload).CONTENT); }
 
-/**
- * Call by:
-    APP.ajaxPost(payload, function(json) {
-        var obj = JSON.parse(json);
-        // do stuff with obj
-    });
+
+/****************************************************************************************************************
+ *  Messaging and AJAX
+ ****************************************************************************************************************
  */
-APP.ajaxPost = function(op, payload, url, logClasses, callback) {
+
+/* pack payload into JS object in API message format */
+APP.pack = function(payload) {
+    var obj = {};
+    obj[APP.API_CONSTANTS['CONTENT']] = payload;
+    return obj;
+}
+
+/* pack payload into JSON string in API message format */
+APP.packToJSON = function(payload) { return JSON.stringify(APP.pack(payload)) }
+
+/* unpack message JSON to complete object */
+APP.unpack = function(payload) { return JSON.parse(payload); }
+
+/* unpack message JSON to just the payload object */
+APP.unpackToPayload = function(payload) { return JSON.parse(payload)[APP.API_CONSTANTS['CONTENT']]; }
+
+APP.ajaxPost = function(payload, url, callback) {
     var messageObj,
         internalCallback;
-    messageObj = APP.pack(op, "", payload);
+    message = APP.packToJSON(payload);
     internalCallback = function(args) {
-        APP.Console.log(JSON.parse(args), 'incoming');
+        // log into console
         callback(args);
     };
     $.ajax({
         type: "POST",
         url: url,
-        data: JSON.stringify(messageObj),
+        data: message,
         processData: false,
-        cache:  false,
+        cache: false,
         contentType: "application/json",
         dataType: "text",
         success: internalCallback
     });
-    APP.Console.log(messageObj, 'outgoing ' + logClasses, url);
+    // log into console
+}
+
+APP.ajaxGet = function(payload, url, callback) {
+    var messageObj,
+        internalCallback;
+    message = APP.packToJSON(payload);
+    internalCallback = function(args) {
+        // log into console
+        callback(args);
+    };
+    $.ajax({
+        type: "GET",
+        url: url,
+        data: message,
+        processData: false,
+        cache: false,
+        contentType: "application/json",
+        dataType: "text",
+        success: internalCallback
+    });
+    // log into console
 }
 
 $(document).ready(function() {
     
-    // perform static tasks
     // set up clock and resize UI
     APP.Clock.startClock();
     APP.Resizer.resizeAll();

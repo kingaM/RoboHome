@@ -16,8 +16,6 @@ API_CONSTANTS = {
     'CONTENT': "content"
 }
 
-
-
 # Common methods -----------------------------------------------------
 
 # Get JSON string from request body
@@ -31,26 +29,77 @@ def setJSONHeader():
     cherrypy.response.headers['Content-Type'] = 'application/json'
 
 # Pack content object into communications wrapper API format and return it as an object
-def pack(statusCode, content = {}):
+def pack(content = {}, statusCode = cherrypy.response.status):
     return {
         API_CONSTANTS['STATUS_CODE']: statusCode,
         API_CONSTANTS['CONTENT']: content
     }    
 
+# Invalid request HTTP response configuration
 def invalidRequest():
     cherrypy.response.status = 404
-    return simplejson.dumps(pack('404', 'invalid request'))
+    return simplejson.dumps(pack('invalid request'))
     
+
+
+# Mock objects
+MOCK_OBJECTS = {
+    'GET_HOUSE_STRUCTURE': pack(content = {
+        'rooms': [
+            {
+                'id': 1,
+                'name': 'mock-room-1',
+                'items': [
+                    {
+                        'id': 1,
+                        'name': 'mock-item-name-1',
+                        'type': 'mock-item-type-1',
+                        'brand': 'mock-item-brand-1',
+                        'ip': 'mock-item-ip-1'
+                    },
+                    {
+                        'id': 2,
+                        'name': 'mock-item-name-2',
+                        'type': 'mock-item-type-2',
+                        'brand': 'mock-item-brand-2',
+                        'ip': 'mock-item-ip-2'
+                    }
+                ]
+            },
+            {
+                'id': 2,
+                'name': 'mock-room-2',
+                'items': [
+                    {
+                        'id': 3,
+                        'name': 'mock-item-name-3',
+                        'type': 'mock-item-type-3',
+                        'brand': 'mock-item-brand-3',
+                        'ip': 'mock-item-ip-3'
+                    },
+                    {
+                        'id': 4,
+                        'name': 'mock-item-name-4',
+                        'type': 'mock-item-type-4',
+                        'brand': 'mock-item-brand-4',
+                        'ip': 'mock-item-ip-4'
+                    }
+                ]
+            }
+        ]
+    })
+}
+    
+
 
 # Pages --------------------------------------------------------------
 
 # Home page
-class URL_Index:
+class URL_Index(object):
 
     @cherrypy.expose
     def index(self):
-        return invalidRequest()
-        # return open('html/home.html')
+        return open('html/home.html')
 
 # Login page
 class URL_Login(object):
@@ -76,11 +125,12 @@ class URL_HouseStructure(object):
     
     #
     def GET(self):
-        pass
+        return MOCK_OBJECTS['GET_HOUSE_STRUCTURE']
     
     #
     def PUT(self):
-        pass
+        json = getJSON()
+        print(json)
         
     def POST(self):
         return invalidRequest()
