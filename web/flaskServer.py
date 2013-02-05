@@ -28,10 +28,6 @@ SETTINGS = {
 }
 
 # Common methods ----------------------------------------------------------
-
-# Convenience method for constructing the RESTful API URLs
-def apiURL(str):
-    return '/version/' + SETTINGS['VERSION_NUMBER'] + str
     
 # Get JSON string from request body
 def getJSON():
@@ -109,8 +105,8 @@ def home():
         return render_template('html/home.html')
 
 
-@app.route(apiURL('/houseStructure/'), methods = ['GET', 'POST'])
-def houseStructure():
+@app.route('/version/<string:version>/houseStructure/', methods = ['GET', 'POST'])
+def houseStructure(version):
     if request.method == 'GET':
         # Return most recent data about the house's hierarchial structure
         return jsonify(MOCK_OBJECTS['GET_HOUSE_STRUCTURE'])
@@ -120,15 +116,15 @@ def houseStructure():
         pass
 
 
-@app.route(apiURL('/houseState/'), methods = ['GET'])
-def houseState():
+@app.route('/version/<string:version>/houseState/', methods = ['GET'])
+def houseState(version):
     if request.method == 'GET':
         #
         pass
 
 
-@app.route(apiURL('/rules/'), methods = ['GET', 'POST'])
-def rules():
+@app.route('/version/<string:version>/rules/', methods = ['GET', 'POST'])
+def rules(version):
     if request.method == 'GET':
         #
         pass
@@ -138,15 +134,15 @@ def rules():
         pass
 
 
-@app.route(apiURL('/allMethods/'), methods = ['GET'])
-def allMethods():
+@app.route('/version/<string:version>/allMethods/', methods = ['GET'])
+def allMethods(version):
     if request.method == 'GET':
         #
         pass
 
 
-@app.route(apiURL('/rooms/<int:roomId>/<string:itemType>/<int:itemId>/<string:action>/'), methods = ['GET', 'POST'])
-def command(roomId, itemType, itemId, action):
+@app.route('/version/<string:version>/rooms/<int:roomId>/<string:itemType>/<int:itemId>/<string:action>/', methods = ['GET', 'POST'])
+def command(version, roomId, itemType, itemId, action):
     if request.method == 'POST':
         #
         pass
@@ -154,6 +150,7 @@ def command(roomId, itemType, itemId, action):
     elif request.method == 'GET':
         # Test method. To be removed along with method in @app.route
         strBuffer = str(roomId) + ' ' + itemType + ' ' + str(itemId) + ' ' + action + ' ' + str(request.args.to_dict())
+        print strBuffer
         return strBuffer
         
 # Run ---------------------------------------------------------------------
