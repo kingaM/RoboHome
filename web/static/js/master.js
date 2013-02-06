@@ -7,7 +7,7 @@ var APP = APP || {};
 "use strict";
 
 /****************************************************************************************************************
- *  data structures
+ *  Data structures
  ****************************************************************************************************************
  */
 
@@ -89,9 +89,39 @@ APP.Map.prototype.getKeys = function() {
     return itemList;
 }
 
+/**
+ *  Object responsible for running a stage in the UI
+ *  Define __construct and __update to govern construction and updating behavior respectively,
+ *    but call via construct() and update()
+ */
+APP.Stage = function(buttonId, stageId) {
+    
+    this.buttonId = buttonId;
+    this.stageId = stageId;
+    this.data = {};
+    this.__construct = function() {};
+    this.__update = function() {};
+}
+APP.Stage.prototype.construct = function() {
+    if(document.getElementById(stageId) === null) {
+        var stage = $('<div></div>').attr({id: stageId, class: 'stage'});
+        stage.append($('<div></div>').class('stage-content'));
+        $('#stages > li').append(stage);
+    }
+    this.__construct();
+}
+APP.Stage.prototype.update = function() {
+    this.__update();
+}
+APP.Stage.prototype.show = function() {
+    $(this.stageId).addClass('active');
+}
+APP.Stage.prototype.hide = function() {
+    $(this.stageId).removeClass('active');
+}
 
 /****************************************************************************************************************
- *  data
+ *  Data
  ****************************************************************************************************************
  */
 
@@ -101,59 +131,103 @@ APP.API_CONSTANTS = {
     CONTENT: 'content'
 }
 
-APP.ID = {
-    // primary menu buttons
-    button_home:        '#button-home',
-    button_test:        '#button-test',
-    button_areas:       '#button-areas',
-    button_monitor:     '#button-monitor',
-    button_rules:       '#button-rules',
-    button_config:      '#button-config',
-    button_quit:        '#button-quit',
-    
-    // secondary menus
-    menu_test:      '#menu-test',
-    menu_areas:     '#menu-areas',
-    menu_monitor:   '#menu-monitor',
-    menu_rules:     '#menu-rules',
-    menu_config:    '#menu-config',
-    menu_quit:      '#menu-quit',
-    
-    // secondary menu buttons
-    button_monitor_cameras:      '#monitor-cameras',
-    button_monitor_movement:     '#monitor-movement',
-    button_monitor_doors:        '#monitor-doors',
-    button_monitor_windows:      '#monitor-windows',
-    button_monitor_lighting:     '#monitor-lighting',
-    button_monitor_temperature:  '#monitor-temperature',
-    button_monitor_cameras:      '#monitor-cameras',
-    
-    button_rules_eca:            '#rules-eca',
-    
-    // stages
-    stage_monitor_cameras:      '#stage-monitor-cameras',
-    stage_monitor_movement:     '#stage-monitor-movement',
-    stage_monitor_doors:        '#stage-monitor-doors',
-    stage_monitor_windows:      '#stage-monitor-windows',
-    stage_monitor_lighting:     '#stage-monitor-lighting',
-    stage_monitor_temperature:  '#stage-monitor-temperature',
-    stage_monitor_cameras:      '#stage-monitor-cameras',
-    
-    stage_rules_eca:            '#stage-rules-eca'
+APP.Data = {    
+    cache: { // cached server data
+        methodList: new APP.Map()
+    }
 }
 
-APP.Data = {
+/**
+ *  This object links the top two menus together, where relevant
+ */
+APP.MenuManager = function() {
+    var initialized = false,
+        map = {
+            'button-home'   :  null,
+            'button-areas'  : 'menu-areas',
+            'button-monitor': 'menu-monitor',
+            'button-rules'  : 'menu-rules',
+            'button-config' : 'menu-config',
+            'button-quit'   : 'menu-quit'
+        },        
+        primaryButtons = $('#menu-primary').children().children(),
+        menus = $('#wrapper-secondary').children(),        
+        initialize = function(stageManager) {
+            var target,
+                mapping;
+            
+            if(!initialized) {
+                initialized = true;
+                primaryButtons.each(function() {
+                    $(this).click(function() {
+                        target = $(this);
+                        if(map[$(this).attr('id')] !== null) {
+                            target.toggleClass('selected');
+                        }
+                        primaryButtons.not(target).each(function() {
+                            $(this).removeClass('selected');
+                        });
+                        mapping = map[$(this).attr('id')];
+                        $('#' + mapping).toggleClass('active');
+                        menus.not('#' + mapping).removeClass('active');
+                        menus.children().removeClass('selected');
+                        stageManager.hideAllStages();
+                        APP.resizer.resizeStageWrapper();
+                    });
+                });
+            }
+        }
+    
+    this.initialize = initialize;
+}
 
-    // current stage shown by UI. UI updating should only update its children DOM elements for performance reasons
-    activeStageId: undefined,
+/**
+ *  This object handles Stage objects
+ */
+APP.StageManager = function() {
+    var activeStageId = undefined,
+        stages = {},
+        setActiveStage = function(id) {
+            activeStageId = id;
+        },
+        register = function(stage) {
+            var stageId = stage.stageId
+            stages.stageId = stage;
+        },
+        remove = function(stageId) {
+            stages.stageId.delete();
+        },
+        construct = function(stageId) {
+            stages.stageId.construct();
+        },
+        update = function() {
+            stages.activeStageId.update();
+        },
+        hideAllStages = function() {
+            $('.stage').removeClass('active');
+        }
     
-    // menu maps
-    PrimaryMenuMap: new APP.Map(),
-    SecondaryMenuMap: new APP.Map(),
+    // sets a stage as the active stage. The active stage is the only stage that is updated
+    this.setActiveStage = setActiveStage;
     
-    // cached server data
-    Cache: {
-        methodList: new APP.Map()
+    // registers a new stage so it is managed by this object
+    this.register = register;
+    
+    // remove a stage from the list of managed stages
+    this.remove = remove;
+    
+    // constructs the specified stage
+    this.construct = construct;
+    
+    // updates the active stage
+    this.update = update;
+    
+    // hide all stages
+    this.hideAllStages = hideAllStages;
+    
+    // definition of stages
+    this.initialize = function() {
+        
     }
 }
 
@@ -162,52 +236,10 @@ APP.Data = {
  *    which do not involve the server.
  *  Events triggering POST or GET requests should be scripted under APP.SubmissionHandler
  */
+/*
 APP.Listen = {
     all: function() {
-        APP.Listen.windowResize();
-        APP.Listen.primaryMenu();
         APP.Listen.stage();
-    },
-    windowResize: function() {
-        $(window).resize(function() {
-            APP.Resizer.resizeAll();
-        });
-    },
-    primaryMenu: function() {
-        var map,
-            menuItems,
-            secondaryMenus,
-            target,
-            mapping;
-            
-        map = APP.Data.PrimaryMenuMap;
-        // map.put(APP.Button.home,    '');
-        map.put(APP.ID.button_test,     APP.ID.menu_test);
-        map.put(APP.ID.button_areas,    APP.ID.menu_areas);
-        map.put(APP.ID.button_monitor,  APP.ID.menu_monitor);
-        map.put(APP.ID.button_rules,    APP.ID.menu_rules);
-        map.put(APP.ID.button_config,   APP.ID.menu_config);
-        map.put(APP.ID.button_quit,     APP.ID.menu_quit);
-        
-        menuItems = $('#menu-primary').children().children();
-        secondaryMenus = $('#wrapper-secondary').children();
-        menuItems.each(function() {
-            $(this).click(function() {
-                target = $(this);
-                if(! target.hasClass('no-menu')) {
-                    target.toggleClass('selected');
-                }
-                menuItems.not(target).each(function() {
-                    $(this).removeClass('selected');
-                });
-                mapping = map.get('#' + $(this).attr('id'));
-                $(mapping).toggleClass('active');
-                secondaryMenus.not(mapping).removeClass('active');
-                $('.menu.secondary').children().children().removeClass('selected');
-                $('.stage').removeClass('active');
-                APP.Resizer.resizeStageWrapper();
-            });
-        });
     },
     stage: function() {
         var map,
@@ -217,14 +249,6 @@ APP.Listen = {
             mapping;
         
         map = APP.Data.SecondaryMenuMap;
-        
-        map.put(APP.ID.button_monitor_cameras,     APP.ID.stage_monitor_cameras);
-        map.put(APP.ID.button_monitor_movement,    APP.ID.stage_monitor_movement);
-        map.put(APP.ID.button_monitor_doors,       APP.ID.stage_monitor_doors);
-        map.put(APP.ID.button_monitor_windows,     APP.ID.stage_monitor_windows);
-        map.put(APP.ID.button_monitor_lighting,    APP.ID.stage_monitor_lighting);
-        map.put(APP.ID.button_monitor_temperature, APP.ID.stage_monitor_temperature);
-        map.put(APP.ID.button_monitor_cameras,     APP.ID.stage_monitor_cameras);
         
         map.put(APP.ID.button_rules_eca,           APP.ID.stage_rules_eca);
         
@@ -248,24 +272,25 @@ APP.Listen = {
         });
     }
 }
+*/
 
 /**
  *  Polls sensors at a specified frequency
  */
-APP.Poller = {
+APP.poller = {
     __intervalId: undefined,
     __frequency: undefined,
     /* Frequency in milliseconds */
     setFrequency: function(frequency) {
-        APP.Poller.__frequency = frequency;
+        APP.poller.__frequency = frequency;
     },
     startPolling: function() {
-        if(APP.Poller.__frequency !== undefined) {
-            APP.Poller.__intervalId = window.setInterval(APP.Poller.poll, APP.Poller.__frequency);
+        if(APP.poller.__frequency !== undefined) {
+            APP.poller.__intervalId = window.setInterval(APP.poller.poll, APP.poller.__frequency);
         }
     },
     stopPolling: function() {
-        window.clearInterval(APP.Poller.__intervalId);
+        window.clearInterval(APP.poller.__intervalId);
     },
     poll: function() {
         APP.ajaxPost('ENTITY_UPDATE', '', '/updateinfo', 'normal', function(json) {
@@ -279,7 +304,7 @@ APP.Poller = {
 /**
  *  This object handles time and the clock
  */
-APP.Clock = {
+APP.clock = {
     getTimestamp: function() {
         var date = new Date();
         function pad(num) {
@@ -346,19 +371,30 @@ APP.Clock = {
          
     },
     startClock: function() {
-        APP.Clock.getCurrentTime();
-        setInterval(APP.Clock.getCurrentTime, 1000);
+        APP.clock.getCurrentTime();
+        setInterval(APP.clock.getCurrentTime, 1000);
     }
 }
 
 /**
- *  This object handles dynamic resizing of elements and font size based on window size
+ *  This object handles window resizing
  */
-APP.Resizer = {
+APP.windowResizeListener = {
+    listen: function() {
+        $(window).resize(function() {
+            APP.resizer.resizeAll();
+        });
+    }
+}
+
+/**
+ *  This object handles dynamic resizing of elements and font size
+ */
+APP.resizer = {
     resizeAll: function() {
-        for(var method in APP.Resizer) {
+        for(var method in APP.resizer) {
             if(method === 'resizeAll') { continue; }
-            APP.Resizer[method]();
+            APP.resizer[method]();
         }
     },
     resizeText: function() {
@@ -445,11 +481,14 @@ APP.ajaxGet = function(payload, url, callback) {
 
 $(document).ready(function() {
     
-    // set up clock and resize UI
-    APP.Clock.startClock();
-    APP.Resizer.resizeAll();
+    var menuManager = new APP.MenuManager(),
+        stageManager = new APP.StageManager();
     
-    APP.Listen.all();
+    menuManager.initialize(stageManager);
+    
+    APP.clock.startClock();
+    APP.windowResizeListener.listen();
+    APP.resizer.resizeAll();
     
     /*
     // get client IP
@@ -474,8 +513,8 @@ $(document).ready(function() {
             
             // remove UI mask
             // start polling
-            APP.Poller.setFrequency(1000);
-            APP.Poller.startPolling();
+            APP.poller.setFrequency(1000);
+            APP.poller.startPolling();
         });
     });
     */
