@@ -12,7 +12,7 @@ var APP = APP || {};
  */
 
 /**
- *  Standard classical inheritance function
+ *  Standard inheritance function
  *  The child inherits members of the parent's prototype only.
  */
 APP.inherit = function(C, P) {
@@ -95,7 +95,6 @@ APP.Map.prototype.getKeys = function() {
  *    but call via construct() and update()
  */
 APP.Stage = function(buttonId, stageId) {
-    
     this.buttonId = buttonId;
     this.stageId = stageId;
     this.data = {};
@@ -131,43 +130,111 @@ APP.API_CONSTANTS = {
     CONTENT: 'content'
 }
 
-APP.Data = {    
-    cache: { // cached server data
+APP.data = {    
+    cache: {
         methodList: new APP.Map()
     }
 }
 
 /**
- *  This object links the top two menus together, where relevant
+ *  This object handles the top menus. Linking of buttons in the secondary menu
+ *  and the stages are configured under APP.StageManager instead.
  */
 APP.MenuManager = function() {
-    var initialized = false,
+    var linked = false,
         map = {
-            'button-home'   :  null,
-            'button-areas'  : 'menu-areas',
-            'button-monitor': 'menu-monitor',
-            'button-rules'  : 'menu-rules',
-            'button-config' : 'menu-config',
-            'button-quit'   : 'menu-quit'
-        },        
-        primaryButtons = $('#menu-primary').children().children(),
-        menus = $('#wrapper-secondary').children(),        
-        initialize = function(stageManager) {
+            'button-home' :  {
+                menuId: null,
+                buttonText: 'Home',
+                class: 'blue',
+                buttons: []
+            },
+            'button-areas' : {
+                menuId: 'menu-areas',
+                buttonText: 'Areas',
+                class: 'blue',
+                buttons: [
+                    { id: 'areas-all', text: 'All' }
+                ]
+            },
+            'button-monitor': {
+                menuId: 'menu-monitor',
+                buttonText: 'Monitor',
+                class: 'green',
+                buttons: [
+                    { id: 'monitor-placeholder', text: 'Placeholder' }
+                ]
+            },
+            'button-rules' : {
+                menuId: 'menu-rules',
+                buttonText: 'Rules',
+                class: 'yellow',
+                buttons: [
+                    { id: 'rules-eca', text: 'ECA' }
+                ]
+            },
+            'button-config' : {
+                menuId: 'menu-config',
+                buttonText: 'Config',
+                class: 'yellow',
+                buttons: [
+                    { id: 'config-placeholder', text: 'Placeholder' }
+                ]
+            }
+        },
+        primaryMenu = $('#menu-primary');
+        secondaryMenuWrapper = $('#wrapper-secondary');     
+        update = function(stageManager) {
             var target,
                 mapping;
             
-            if(!initialized) {
-                initialized = true;
+            function constructButton(buttonId, buttonText, cls, menuId) {
+                var button;
+                if (document.getElementById(buttonId) === null) { 
+                    button = $('<a>' + buttonText + '</a>').attr({id: buttonId, class: cls, href: '#'});
+                    if(menuId === null) { button.addClass('no-menu'); }
+                    button = $('<li></li>').append(button);
+                    $('#menu-primary').append(button);
+                }
+            }
+            
+            function constructSecondaryMenu(menuId, buttons, cls) {
+                // construct menu
+                var menu;
+                if(menuId !== null) {
+                    if(document.getElementById(menuId) === null) {
+                        menu = $('<ul></ul>').attr({id: menuId, class: 'menu horizontal secondary ' + cls});
+                        secondaryMenuWrapper.append(menu);
+                    } else {
+                        menu = $('#' + menuId);
+                    }
+                    // construct menu buttons
+                    for(var i = 0; i < buttons.length; i++) {
+                        console.log(JSON.stringify(buttons));
+                        var button;
+                        if(document.getElementById(buttons[i].id) === null) {
+                            console.log('foo');
+                            button = $('<li></li>').append($('<a>' + buttons[i].text + '</a>').attr({id: buttons[i].id, href: '#'}));
+                            menu.append(button);
+                        }
+                    }
+                }
+            }
+            
+            // This links the buttons with the menus
+            function link() {
+                var primaryButtons = primaryMenu.children().children(),
+                    menus = secondaryMenuWrapper.children();
                 primaryButtons.each(function() {
                     $(this).click(function() {
                         target = $(this);
-                        if(map[$(this).attr('id')] !== null) {
+                        if(map[$(this).attr('id')].menuId !== null) {
                             target.toggleClass('selected');
                         }
                         primaryButtons.not(target).each(function() {
                             $(this).removeClass('selected');
                         });
-                        mapping = map[$(this).attr('id')];
+                        mapping = map[$(this).attr('id')].menuId;
                         $('#' + mapping).toggleClass('active');
                         menus.not('#' + mapping).removeClass('active');
                         menus.children().removeClass('selected');
@@ -176,9 +243,20 @@ APP.MenuManager = function() {
                     });
                 });
             }
+            
+            for(buttonId in map) {
+                var obj = map[buttonId];
+                constructButton(buttonId, obj.buttonText, obj.class, obj.menuId);
+                constructSecondaryMenu(obj.menuId, obj.buttons, obj.class);
+            }
+            if(!linked) {
+                linked = true;
+                link();
+            }
         }
     
-    this.initialize = initialize;
+    // Construct updated menu. Elements already constructed are unchanged
+    this.update = update;
 }
 
 /**
@@ -227,31 +305,7 @@ APP.StageManager = function() {
     
     // definition of stages
     this.initialize = function() {
-        
-    }
-}
-
-/**
- *  Container object for methods initializing listeners handling menus and functionality
- *    which do not involve the server.
- *  Events triggering POST or GET requests should be scripted under APP.SubmissionHandler
- */
-/*
-APP.Listen = {
-    all: function() {
-        APP.Listen.stage();
-    },
-    stage: function() {
-        var map,
-            menuItems,
-            stages,
-            target,
-            mapping;
-        
-        map = APP.Data.SecondaryMenuMap;
-        
-        map.put(APP.ID.button_rules_eca,           APP.ID.stage_rules_eca);
-        
+        /*
         menuItems = $('.menu.secondary').children().children();
         stages = $('.stage');
         menuItems.each(function() {
@@ -270,17 +324,18 @@ APP.Listen = {
                 // APP.UIConstructor.updateUIValues(APP.Data.EntityMap);
             });
         });
+        */
     }
 }
-*/
 
 /**
  *  Polls sensors at a specified frequency
  */
+/*
 APP.poller = {
     __intervalId: undefined,
     __frequency: undefined,
-    /* Frequency in milliseconds */
+    // frequency in ms
     setFrequency: function(frequency) {
         APP.poller.__frequency = frequency;
     },
@@ -300,6 +355,7 @@ APP.poller = {
         });
     }
 }
+*/
 
 /**
  *  This object handles time and the clock
@@ -481,10 +537,12 @@ APP.ajaxGet = function(payload, url, callback) {
 
 $(document).ready(function() {
     
+    // Instantiate manager objects
     var menuManager = new APP.MenuManager(),
         stageManager = new APP.StageManager();
     
-    menuManager.initialize(stageManager);
+    // Construct menus
+    menuManager.update(stageManager);
     
     APP.clock.startClock();
     APP.windowResizeListener.listen();
