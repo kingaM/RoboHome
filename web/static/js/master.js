@@ -71,7 +71,7 @@ APP.Map.prototype.get = function(key) {
     if (item === undefined) { return undefined; } 
     return item.value;
 }
-/* Return a list of all hashed values */
+/** Return a list of all hashed values */
 APP.Map.prototype.getAll = function() {
     var valueList = [];
     for (var item in this.__items) {
@@ -79,7 +79,7 @@ APP.Map.prototype.getAll = function() {
     }
     return valueList;
 }
-/* This returns a list of keys that the values in the map are hashed with */
+/** This returns a list of keys that the values in the map are hashed with */
 APP.Map.prototype.getKeys = function() {
     var hash,
         itemList = [];
@@ -91,26 +91,16 @@ APP.Map.prototype.getKeys = function() {
 
 /**
  *  Object responsible for running a stage in the UI
- *  Define __construct and __update to govern construction and updating behavior respectively,
- *    but call via construct() and update()
+ *  Construction and updating behavior are configured via modifying construct() and update()
  */
-APP.Stage = function(buttonId, stageId) {
+APP.Stage = function(menuId, buttonId, buttonText, stageId) {
+    this.menuId = menuId;
     this.buttonId = buttonId;
+    this.buttonText = buttonText;
     this.stageId = stageId;
     this.data = {};
-    this.__construct = function() {};
-    this.__update = function() {};
-}
-APP.Stage.prototype.construct = function() {
-    if(document.getElementById(stageId) === null) {
-        var stage = $('<div></div>').attr({id: stageId, class: 'stage'});
-        stage.append($('<div></div>').class('stage-content'));
-        $('#stages > li').append(stage);
-    }
-    this.__construct();
-}
-APP.Stage.prototype.update = function() {
-    this.__update();
+    this.construct = function() {};
+    this.update = function() {};
 }
 APP.Stage.prototype.show = function() {
     $(this.stageId).addClass('active');
@@ -130,7 +120,7 @@ APP.API_CONSTANTS = {
     CONTENT: 'content'
 }
 
-APP.data = {    
+APP.data = {
     cache: {
         methodList: new APP.Map()
     }
@@ -182,8 +172,12 @@ APP.MenuManager = function() {
                 ]
             }
         },
-        primaryMenu = $('#menu-primary');
-        secondaryMenuWrapper = $('#wrapper-secondary');     
+        primaryMenu = $('#menu-primary'),
+        secondaryMenuWrapper = $('#wrapper-secondary'),
+        
+        /**
+         *  @param stageManager : APP.StageManager - stageManager object responsible for hiding the stages
+         */
         update = function(stageManager) {
             var target,
                 mapping;
@@ -207,16 +201,6 @@ APP.MenuManager = function() {
                         secondaryMenuWrapper.append(menu);
                     } else {
                         menu = $('#' + menuId);
-                    }
-                    // construct menu buttons
-                    for(var i = 0; i < buttons.length; i++) {
-                        console.log(JSON.stringify(buttons));
-                        var button;
-                        if(document.getElementById(buttons[i].id) === null) {
-                            console.log('foo');
-                            button = $('<li></li>').append($('<a>' + buttons[i].text + '</a>').attr({id: buttons[i].id, href: '#'}));
-                            menu.append(button);
-                        }
                     }
                 }
             }
@@ -244,7 +228,7 @@ APP.MenuManager = function() {
                 });
             }
             
-            for(buttonId in map) {
+            for(var buttonId in map) {
                 var obj = map[buttonId];
                 constructButton(buttonId, obj.buttonText, obj.class, obj.menuId);
                 constructSecondaryMenu(obj.menuId, obj.buttons, obj.class);
@@ -255,7 +239,6 @@ APP.MenuManager = function() {
             }
         }
     
-    // Construct updated menu. Elements already constructed are unchanged
     this.update = update;
 }
 
@@ -263,68 +246,103 @@ APP.MenuManager = function() {
  *  This object handles Stage objects
  */
 APP.StageManager = function() {
-    var activeStageId = undefined,
-        stages = {},
-        setActiveStage = function(id) {
-            activeStageId = id;
+    var buttonSelector = '#wrapper-secondary > ul > li > a',
+        stageSelector = '#stages > .stage',
+        stageContainerSelector = '#stages',
+        
+        activeStageId = undefined,
+        stages = new APP.Map(),
+        
+        /**
+         *  @param stageId : string - id of stage to be set as active
+         *  The active stage is the only one that's updated when update() is called
+         */
+        setActiveStage = function(stageId) {
+            activeStageId = stageId;
         },
-        register = function(stage) {
-            var stageId = stage.stageId
-            stages.stageId = stage;
+        
+        /**
+         *  @param stage : APP.Stage - Stage object to be managed by this manager
+         *  If the new stage shares an existing stageId, it will replace the old stage
+         */
+        addStage = function(stage) {
+            // construct menu buttons
+            if(document.getElementById(stage.buttonId) === null) {
+                button = $('<li></li>').append($('<a>' + stage.buttonText + '</a>').attr({id: stage.buttonId, href: '#'}));
+                $('#' + stage.menuId).append(button);
+            }
+            
+            // construct stage template
+            if(document.getElementById(stage.stageId) === null) {
+                var stageElement = $('<div></div>').attr({id: stage.stageId, class: 'stage'});
+                stageElement.append($('<div>' + 'test' + '</div>').addClass('stage-content'));
+                $(stageContainerSelector).append(stageElement);
+            }
+            
+            // link
+            $('#' + stage.buttonId).click(function() {
+                var targetButton,
+                    targetStage;
+                targetButton = $(this);
+                targetButton.toggleClass('selected');
+                $(buttonSelector).not(targetButton).removeClass('selected');
+                
+                targetStage = $('#' + stage.stageId);
+                targetStage.toggleClass('active');
+                $(stageSelector).not(targetStage).removeClass('active');
+            });
+            
+            // register stage
+            stages.put(stage.stageId, stage);
         },
-        remove = function(stageId) {
-            stages.stageId.delete();
+        
+        /**
+         *  @param stage : string id of Stage object to be removed
+         */
+        removeStage = function(stageId) {
+            // delete button
+            $('#' + stages.get(stageId).buttonId).parent().remove();
+            // delete stage
+            $('#' + stageId).remove();
+            // unregister stage
+            stages.remove(stageId);
         },
+        
+        /**
+         *  @param stageId : string - id of Stage object to construct
+         *  Calls the construct() method of the specified Stage object
+         */
         construct = function(stageId) {
-            stages.stageId.construct();
+            stages.get(stageId).construct();
         },
+        
+        /**
+         *  Calls the update() method of the active Stage object
+         */
         update = function() {
-            stages.activeStageId.update();
+            if(activeStageId !== undefined) {
+                stages.get(activeStageId).update();
+            }
         },
+        
+        /**
+         *  Hides all stages
+         */
         hideAllStages = function() {
-            $('.stage').removeClass('active');
+            $(buttonSelector).removeClass('selected');
+            $(stageSelector).removeClass('active');
         }
     
-    // sets a stage as the active stage. The active stage is the only stage that is updated
     this.setActiveStage = setActiveStage;
-    
-    // registers a new stage so it is managed by this object
-    this.register = register;
-    
-    // remove a stage from the list of managed stages
-    this.remove = remove;
-    
-    // constructs the specified stage
+    this.addStage = addStage;
+    this.removeStage = removeStage;
     this.construct = construct;
-    
-    // updates the active stage
     this.update = update;
-    
-    // hide all stages
     this.hideAllStages = hideAllStages;
     
-    // definition of stages
     this.initialize = function() {
-        /*
-        menuItems = $('.menu.secondary').children().children();
-        stages = $('.stage');
-        menuItems.each(function() {
-            $(this).click(function() {
-                target = $(this);
-                if(! target.hasClass('no-menu')) {
-                    APP.Data.activeStageId = 'stage-' + target.attr('id');
-                    target.toggleClass('selected');
-                }
-                menuItems.not(target).each(function() {
-                    $(this).removeClass('selected');
-                });
-                mapping = map.get('#' + $(this).attr('id'));
-                $(mapping).toggleClass('active');
-                stages.not(mapping).removeClass('active');
-                // APP.UIConstructor.updateUIValues(APP.Data.EntityMap);
-            });
-        });
-        */
+        addStage(new APP.Stage('menu-areas', 'button-areas-all', 'All', 'stage-areas-all'));
+        addStage(new APP.Stage('menu-rules', 'button-rules-eca', 'ECA', 'stage-rules-eca'));
     }
 }
 
@@ -543,6 +561,7 @@ $(document).ready(function() {
     
     // Construct menus
     menuManager.update(stageManager);
+    stageManager.initialize();
     
     APP.clock.startClock();
     APP.windowResizeListener.listen();

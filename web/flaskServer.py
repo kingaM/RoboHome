@@ -1,7 +1,7 @@
 # ----------------------------------------------------------------------
 # Flask framework for home automation
 # 
-#               : Flask         http://flask.pocoo.org/docs/
+# Requires      : Flask         http://flask.pocoo.org/docs/
 #                               http://pypi.python.org/pypi/Flask
 # 
 # Dependencies  : Jinja2        http://jinja.pocoo.org/docs/
