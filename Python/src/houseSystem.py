@@ -21,7 +21,7 @@ class House:
             if len(items) > 0:
                 for item in items:
                     type = self.database.types.getNameForId(item[5])
-                    self.rooms[room[0]].items[item[0]]=(types[type](item[0], item[1], item[2], item[3], type))
+                    self.rooms[room[0]].items[item[0]]=(types[type](item[0], item[1], item[2],  type, item[3]))
 
     def addRoom(self, name):
         """
@@ -33,6 +33,8 @@ class House:
 
         id = self.database.room.addEntry(name)
         self.rooms[id] = Room(id, name)
+
+        return id
 
     def addItem(self, roomId, name, brand, type, ip):
         """
@@ -48,8 +50,33 @@ class House:
 
         typeId = self.database.types.getIdForName(type)
         itemId = self.database.items.addEntry(name, brand, ip, roomId, typeId)
-        item = types[type](itemId, name, brand, ip, type)
+        item = types[type](itemId, name, brand, type, ip)
         self.rooms[roomId].addItem(itemId, item)
+
+        return itemId
+
+    def getItemById(self, itemId):
+        """
+        Returns the item with the specified id
+        
+        Arguments:
+        itemId -- the id of the item
+        """
+        for room in self.rooms:
+            if itemId in self.rooms[room].items:
+                return self.rooms[room].items[itemId]
+
+    def getRoomByItemId(self, itemId):
+        """
+        Returns the room which has the item with the specified id
+
+        Arguments:
+        itemId -- the id of the item
+        """
+        for room in self.rooms:
+            if itemId in self.rooms[room].items:
+                return self.rooms[room]
+
 
 class Room:
     """

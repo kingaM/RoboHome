@@ -1,5 +1,5 @@
 import unittest
-from houseSystem_new import Room, House
+from houseSystem import Room, House
 
 class MockItem:
 
@@ -17,8 +17,6 @@ class MockRoom:
 
 class MockRoomTable:
 
-    i = -1
-
     def __init__(self):
         self.entries = []
         self.i = -1
@@ -30,8 +28,7 @@ class MockRoomTable:
         return self.i
 
     def retrieveAllData(self):
-        return ((1, "lounge"), )
-
+        return ((1, "lounge"),)
 
 class MockTypesTable:
 
@@ -61,15 +58,12 @@ class MockItemsTable:
     def retrieveForRoomId(self, id):
         return ((1, "sensor", "rf", "0.0.0.0", id, 1),)
 
-
 class MockDatabase:
 
     def __init__(self):
         self.room = MockRoomTable()
         self.types = MockTypesTable()
         self.items = MockItemsTable()
-
-
 
 class TestHouse(unittest.TestCase):
 
@@ -101,9 +95,31 @@ class TestHouse(unittest.TestCase):
         db = MockDatabase()
         h = House(db)
         h.initFromDatabase()
-        print "ROOM", h.rooms
         self.assertEqual(h.rooms[1].name, "lounge")
         self.assertEqual(h.rooms[1].id, 1)
+
+    def test_getRoomByItemId(self):
+        db = MockDatabase()
+        h = House(db)
+        roomId = h.addRoom("lounge")
+        id = 0
+        itemId = h.addItem(id, "sensor", "rf", "motionSensor", "0.0.0.0")
+        room = h.getRoomByItemId(itemId)
+        self.assertEqual(room.name, "lounge")
+        self.assertEqual(room.id, roomId)
+
+    def test_getItemById(self):
+        db = MockDatabase()
+        h = House(db)
+        h.addRoom("lounge")
+        id = 0
+        itemId = h.addItem(id, "sensor", "rf", "motionSensor", "0.0.0.0")
+        item = h.getItemById(itemId)
+        self.assertEqual(item.name, "sensor")
+        self.assertEqual(item._type, "motionSensor")
+        self.assertEqual(item._id, itemId)
+        self.assertEqual(item.ip, "0.0.0.0")
+        self.assertEqual(item.brand, "rf")
 
 class TestRoom(unittest.TestCase):
 
