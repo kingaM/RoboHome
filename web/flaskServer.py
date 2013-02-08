@@ -97,7 +97,6 @@ app.debug = True
 # Routing ------------------------------------------------------------------
 # Remember to set paths with the trailing slash
 
-
 @app.route('/', methods = ['GET'])
 def home():
     if request.method == 'GET':
@@ -105,43 +104,110 @@ def home():
         return render_template('html/home.html')
 
 
-@app.route('/version/<string:version>/houseStructure/', methods = ['GET', 'POST'])
-def houseStructure(version):
+
+@app.route('/version/<string:version>/structure/', methods = ['GET'])
+def structure(version):
     if request.method == 'GET':
-        # Return most recent data about the house's hierarchial structure
-        return jsonify(MOCK_OBJECTS['GET_HOUSE_STRUCTURE'])
+        # Return structure of house. This is used for passing hierarchial info
+        pass
+    
+
+
+@app.route('/version/<string:version>/state/', methods = ['GET'])
+def structure(version):
+    if request.method == 'GET':
+        # Return flat list of each component's id and its associated state
+        pass
+
+
+
+@app.route('/version/<string:version>/rooms/', methods = ['POST'])
+def rooms(version):
+    if request.method == 'POST':
+        # Create new room
+        pass
+
+
+
+@app.route('/version/<string:version>/rooms/<int:roomId>/', methods = ['GET', 'PUT', 'DELETE'])
+def rooms_roomId(version, roomId):
+    if request.method == 'GET':
+        # Return state of room
+        pass
+    
+    if request.method == 'PUT':
+        # Update room
+        pass
+    
+    if request.method == 'DELETE':
+        # Delete room
+        pass
+
+
+
+@app.route('/version/<string:version>/rooms/<int:roomId>/items/', methods = ['POST'])
+def rooms_roomId_items(version, roomId):
+    if request.method == 'POST':
+        # Create new item for specified room
+        pass
+
+
+
+@app.route('/version/<string:version>/rooms/<int:roomId>/items/<int:itemId>/', methods = ['GET', 'PUT', 'DELETE'])
+def rooms_roomId_items_itemId(version, roomId, itemId):
+    if request.method == 'GET':
+        # Return state of item
+        pass
+    
+    if request.method == 'PUT':
+        # Request update of state of item
+        pass
+    
+    if request.method == 'DELETE':
+        # Remove specified item
+        pass
+
+
+
+@app.route('/version/<string:version>/events/', methods = ['GET', 'POST'])
+def events(version):
+    if request.method == 'GET':
+        # Return a list of all events
+        pass
         
-    elif request.method == 'POST':
-        # Update the house's hierarchial structure
+    if request.method == 'POST':
+        # Create a new event
         pass
 
 
-@app.route('/version/<string:version>/houseState/', methods = ['GET'])
-def houseState(version):
+@app.route('/version/<string:version>/events/<int:eventId>/', methods = ['GET', 'PUT', 'DELETE'])
+def events_eventId(version, eventId):
     if request.method == 'GET':
-        #
+        # Return event
+        pass
+    
+    if request.method == 'PUT':
+        # Update event
+        pass
+    
+    if request.method == 'DELETE':
+        # Remove event
         pass
 
 
-@app.route('/version/<string:version>/rules/', methods = ['GET', 'POST'])
-def rules(version):
+
+@app.route('/version/<string:version>/methods/', methods = ['GET'])
+def rooms_roomId_items(version):
     if request.method == 'GET':
-        #
-        pass
-        
-    elif request.method == 'POST':
-        #
+        # Return list of methods for all item types
         pass
 
 
-@app.route('/version/<string:version>/allMethods/', methods = ['GET'])
-def allMethods(version):
-    if request.method == 'GET':
-        #
-        pass
 
-
-@app.route('/version/<string:version>/rooms/<int:roomId>/<string:itemType>/<int:itemId>/<string:action>/', methods = ['GET', 'POST'])
+##################################
+# For illustration purposes only #
+##################################
+@app.route('/test/version/<string:version>/rooms/<int:roomId>/<string:itemType>/<int:itemId>/<string:action>/', methods = ['GET', 'POST'])
 def command(version, roomId, itemType, itemId, action):
     if request.method == 'POST':
         #

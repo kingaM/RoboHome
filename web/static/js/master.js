@@ -292,7 +292,7 @@ APP.StageManager = function() {
                 } else if(targetButton.parent().parent().id === secondaryMenuId) {
                     $(secondaryButtonSelector).not(targetButton).removeClass('selected');
                 }
-
+                
                 targetStage = $('#' + stage.stageId);
                 targetStage.toggleClass('active');
                 $(stageSelector).not(targetStage).removeClass('active');
