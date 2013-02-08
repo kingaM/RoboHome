@@ -15,6 +15,21 @@ class MockRoom:
         self.id = id
         self.name = name
 
+class MockEvent:
+    def __init__(self, id, item, type, trigger):
+        self.id = id
+        self.item = item
+        self.type = type
+        self.trigger = trigger
+
+class MockCondition:
+    def __init__(self, id):
+        self.id = id
+
+class MockAction:
+    def __init__(self, id):
+        self.id = id
+
 class MockRoomTable:
 
     def __init__(self):
@@ -58,12 +73,20 @@ class MockItemsTable:
     def retrieveForRoomId(self, id):
         return ((1, "sensor", "rf", "0.0.0.0", id, 1),)
 
+class MockEventsTable:
+    def __init__(self):
+        self.events = [MockEvent(1), MockEvent(2), MockEvent(3)]
+
+    def getEvents():
+        return self.events
+
 class MockDatabase:
 
     def __init__(self):
         self.room = MockRoomTable()
         self.types = MockTypesTable()
         self.items = MockItemsTable()
+        self.events = MockEventsTable()
 
 class TestHouse(unittest.TestCase):
 
@@ -120,6 +143,28 @@ class TestHouse(unittest.TestCase):
         self.assertEqual(item._id, itemId)
         self.assertEqual(item.ip, "0.0.0.0")
         self.assertEqual(item.brand, "rf")
+
+    def test_getItemByIP(self):
+        db = MockDatabase()
+        h = House(db)
+        h.addRoom("mockRoom")
+        item = h.addItem(1, "mockName", "mockBrand", "mockType", "192.168.0.100")
+        self.assertEqual(h.getItemByIP("192.168.0.100"), item)
+
+    def test_getEventsForTrigger(self):
+        db = MockDatabase()
+        h = House(db)
+        item1 = MockItem(1, "mockName", "mockBrand", "mockType", "mockIP")
+        item2 = MockItem(2, "mockName", "mockBrand", "mockType", "mockIP2")
+
+        event1 = MockEvent(1, item1, "mockTrigger")
+        event2 = MockEvent(2, item2, "mockTrigger")
+        event3 = MockEvent(3, item2, "mockTrigger2")
+
+        h.events = [event1, event2, event3]
+
+        self.assertEqual(h.getEventsForTrigger(item2, "mockTrigger"), [event2])
+
 
 class TestRoom(unittest.TestCase):
 
