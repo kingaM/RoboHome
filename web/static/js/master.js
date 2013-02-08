@@ -102,11 +102,19 @@ APP.Stage = function(menuId, buttonId, buttonText, stageId) {
     this.construct = function() {};
     this.update = function() {};
 }
-APP.Stage.prototype.show = function() {
-    $(this.stageId).addClass('active');
+/**
+ *  @param func - function to be passed in
+ *  Give function to execute when construct() is called
+ */
+APP.Stage.prototype.setConstruct = function(func) {
+    this.construct = func;
 }
-APP.Stage.prototype.hide = function() {
-    $(this.stageId).removeClass('active');
+/**
+ *  @param func - function to be passed in
+ *  Give function to execute when update() is called
+ */
+APP.Stage.prototype.setUpdate = function(func) {
+    this.update = func;
 }
 
 /****************************************************************************************************************
@@ -136,40 +144,27 @@ APP.MenuManager = function() {
             'button-home' :  {
                 menuId: null,
                 buttonText: 'Home',
-                class: 'blue',
-                buttons: []
+                class: 'blue'
             },
             'button-areas' : {
                 menuId: 'menu-areas',
                 buttonText: 'Areas',
-                class: 'blue',
-                buttons: [
-                    { id: 'areas-all', text: 'All' }
-                ]
+                class: 'blue'
             },
             'button-monitor': {
                 menuId: 'menu-monitor',
                 buttonText: 'Monitor',
-                class: 'green',
-                buttons: [
-                    { id: 'monitor-placeholder', text: 'Placeholder' }
-                ]
+                class: 'green'
             },
             'button-rules' : {
                 menuId: 'menu-rules',
                 buttonText: 'Rules',
-                class: 'yellow',
-                buttons: [
-                    { id: 'rules-eca', text: 'ECA' }
-                ]
+                class: 'yellow'
             },
             'button-config' : {
                 menuId: 'menu-config',
                 buttonText: 'Config',
-                class: 'yellow',
-                buttons: [
-                    { id: 'config-placeholder', text: 'Placeholder' }
-                ]
+                class: 'yellow'
             }
         },
         primaryMenu = $('#menu-primary'),
@@ -222,7 +217,10 @@ APP.MenuManager = function() {
                         $('#' + mapping).toggleClass('active');
                         menus.not('#' + mapping).removeClass('active');
                         menus.children().removeClass('selected');
-                        stageManager.hideAllStages();
+                        // If this button has an associated menu --> not being used as Stage button
+                        if(mapping !== null) {
+                            stageManager.hideAllStages();
+                        }
                         APP.resizer.resizeStageWrapper();
                     });
                 });
@@ -246,7 +244,10 @@ APP.MenuManager = function() {
  *  This object handles Stage objects
  */
 APP.StageManager = function() {
-    var buttonSelector = '#wrapper-secondary > ul > li > a',
+    var primaryMenuId = 'menu-primary',
+        primaryButtonSelector = '#menu-prmary > li > a',
+        secondaryMenuId = 'wrapper-secondary',
+        secondaryButtonSelector = '#wrapper-secondary > ul > li > a',
         stageSelector = '#stages > .stage',
         stageContainerSelector = '#stages',
         
@@ -263,6 +264,7 @@ APP.StageManager = function() {
         
         /**
          *  @param stage : APP.Stage - Stage object to be managed by this manager
+         *  @return APP.Stage - the input Stage object, for convenience
          *  If the new stage shares an existing stageId, it will replace the old stage
          */
         addStage = function(stage) {
@@ -285,8 +287,12 @@ APP.StageManager = function() {
                     targetStage;
                 targetButton = $(this);
                 targetButton.toggleClass('selected');
-                $(buttonSelector).not(targetButton).removeClass('selected');
-                
+                if(targetButton.parent().parent().parent().id === primaryMenuId) {
+                    $(primaryButtonSelector).not(targetButton).removeClass('selected');
+                } else if(targetButton.parent().parent().id === secondaryMenuId) {
+                    $(secondaryButtonSelector).not(targetButton).removeClass('selected');
+                }
+
                 targetStage = $('#' + stage.stageId);
                 targetStage.toggleClass('active');
                 $(stageSelector).not(targetStage).removeClass('active');
@@ -294,6 +300,7 @@ APP.StageManager = function() {
             
             // register stage
             stages.put(stage.stageId, stage);
+            return stage;
         },
         
         /**
@@ -317,6 +324,16 @@ APP.StageManager = function() {
         },
         
         /**
+         *  Constructs all stages registered with this StageManager
+         */
+        constructAll = function() {
+            var ls = stages.getAll();
+            for(var i = 0; i < ls.length; i++) {
+                ls[i].construct();
+            }
+        },
+        
+        /**
          *  Calls the update() method of the active Stage object
          */
         update = function() {
@@ -329,7 +346,7 @@ APP.StageManager = function() {
          *  Hides all stages
          */
         hideAllStages = function() {
-            $(buttonSelector).removeClass('selected');
+            $(secondaryButtonSelector).removeClass('selected');
             $(stageSelector).removeClass('active');
         }
     
@@ -341,8 +358,37 @@ APP.StageManager = function() {
     this.hideAllStages = hideAllStages;
     
     this.initialize = function() {
-        addStage(new APP.Stage('menu-areas', 'button-areas-all', 'All', 'stage-areas-all'));
-        addStage(new APP.Stage('menu-rules', 'button-rules-eca', 'ECA', 'stage-rules-eca'));
+        var stage;
+        
+        // home stage
+        stage = addStage(new APP.Stage('menu-home', 'button-home', '', 'stage-home'));
+        stage.setConstruct(function() {
+            
+        });
+        stage.setUpdate(function() {
+            
+        });
+        
+        // areas stage
+        stage = addStage(new APP.Stage('menu-areas', 'button-areas-all', 'All', 'stage-areas-all'));
+        stage.setConstruct(function() {
+            
+        });
+        stage.setUpdate(function() {
+            
+        });
+        
+        // eca stage
+        stage = addStage(new APP.Stage('menu-rules', 'button-rules-eca', 'ECA', 'stage-rules-eca'));
+        stage.setConstruct(function() {
+            
+        });
+        stage.setUpdate(function() {
+            
+        });
+        
+        constructAll();
+        
     }
 }
 

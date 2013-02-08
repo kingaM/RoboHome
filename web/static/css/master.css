@@ -285,6 +285,7 @@ div.stage {
     padding: 1em;
 }
 
+/*
 .stage-content .entity-display {
             padding: 1em;
             margin: 0.5em 0;
@@ -294,18 +295,6 @@ div.stage {
         -ms-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
          -o-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
             box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
-            /*
-            transition-timing-function: ease-out;
-    -webkit-transition-property: background-color;
-       -moz-transition-property: background-color;
-        -ms-transition-property: background-color;
-         -o-transition-property: background-color;
-            transition-property: background-color;
-    -webkit-transition-duration: 0.15s;
-       -moz-transition-duration: 0.15s;
-        -ms-transition-duration: 0.15s;
-         -o-transition-duration: 0.15s;
-            */
             background-color: transparent;
 }
 
@@ -612,7 +601,6 @@ div.stage {
     content: 'LIGHTS\A ON';
 }
 
-/* partial states */
 .stage-content .entity-display[data-state-self="-1"] > .attachments.command > .attachment > div.command.self,
 .stage-content .entity-display[data-state-door="-1"] > .attachments.command > .attachment > div.command.door,
 .stage-content .entity-display[data-state-window="-1"] > .attachments.command > .attachment > div.command.window,
@@ -643,7 +631,6 @@ div.stage {
     content: 'AREAS\A PARTIAL';
 }
 
-/* undefined states */
 .stage-content .entity-display[data-state-self="undefined"] > .attachments.self > .attachment,
 .stage-content .entity-display[data-state-door="undefined"] > .attachments.collapse > .attachment.door,
 .stage-content .entity-display[data-state-window="undefined"] > .attachments.collapse > .attachment.window,
@@ -659,6 +646,8 @@ div.stage {
 .stage-content .entity-display[data-state-area="undefined"] > .attachments.command > .attachment.area {
     display: none;
 }
+*/
+
 
 /* ----- pretty borders -----
  * 
