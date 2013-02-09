@@ -28,7 +28,11 @@ class House:
         events = self.database.events.getEvents()
 
         for e in events:
-            self.events.append(eca.Event(e[0], e[1], self.getItemById(e[2]), self.rooms[e[3]], e[4], e[5]))
+            if e[3] is not None:
+                tempRoom = self.rooms[e[3]]
+            else:
+                tempRoom = None
+            self.events.append(eca.Event(e[0], e[1], self.getItemById(e[2]), tempRoom, e[4], e[5]))
 
         for e in self.events:
             conditions = self.database.conditions.getConditionsForEvent(e)
@@ -37,7 +41,11 @@ class House:
 
             actions = self.database.actions.getActionsForEvent(e)
             for a in actions:
-                e.actions.append(eca.Action(a[0], self.getItemById(a[1]), self.rooms[a[2]], a[3], a[4]))
+                if a[2] is not None:
+                    tempRoom = self.rooms[a[2]]
+                else:
+                    tempRoom = None
+                e.actions.append(eca.Action(a[0], self.getItemById(a[1]), tempRoom, a[3], a[4]))
 
     def addRoom(self, name):
         """
@@ -117,7 +125,7 @@ class House:
         possibleEvents = []
 
         for event in self.events:
-            if event.enabled and (item == event.item or (self.getRoomByItemId(item._id) == event.room and item._type == event.type)):
+            if event.enabled and event.trigger == trigger and (item == event.item or (self.getRoomByItemId(item._id) == event.room and item._type == event.type)):
                 possibleEvents.append(event)
 
         return possibleEvents

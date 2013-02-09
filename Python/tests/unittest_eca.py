@@ -35,10 +35,11 @@ class TestECA(unittest.TestCase):
         condition = eca.Condition(1, MockItem(1), "getState", "test", 1)
         self.assertRaises(Exception, condition.check)
 
-        #mockItem = MockItem(1)
-        #mockItem.getState = MethCallLogger(mockItem.getState)
-        #condition = eca.Condition(1, mockItem, "getState", "=", 1)
-        #self.assertTrue(mockItem.getState.was_called)
+        mockItem = MockItem(1)
+        mockItem.getState = MethCallLogger(mockItem.getState)
+        condition = eca.Condition(1, mockItem, "getState", "=", 1)
+        condition.check()
+        self.assertTrue(mockItem.getState.was_called)
 
         condition = eca.Condition(1, MockItem(1), "badMethod", "=", 1)
         self.assertRaises(Exception, condition.check)
@@ -47,10 +48,11 @@ class TestECA(unittest.TestCase):
         action = eca.Action(1, MockItem(1), MockRoom(), "mockMethod", "mockType")
         self.assertRaises(Exception, action.doAction)
 
-        #mockItem = MockItem(1)
-        #mockItem.mockMethod = MethCallLogger(mockItem.mockMethod)
-        #action = eca.Action(1, mockItem, None, "mockMethod", "mockType")
-        #self.assertTrue(mockItem.mockMethod.was_called)
+        mockItem = MockItem(1)
+        mockItem.mockMethod = MethCallLogger(mockItem.mockMethod)
+        action = eca.Action(1, mockItem, None, "mockMethod", "mockType")
+        action.doAction()
+        self.assertTrue(mockItem.mockMethod.was_called)
 
 
 class MockItem():

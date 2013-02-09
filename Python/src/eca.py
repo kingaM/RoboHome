@@ -1,4 +1,7 @@
 class Event():
+    """
+    Represents an event that can br triggered by items in the house
+    """
     def __init__(self, id, type, item, room, trigger, enabled):
         self.id = id
         self.type = type
@@ -11,6 +14,9 @@ class Event():
 
 
 class Condition():
+    """
+    Represents a condition that is checked upon an event being triggered
+    """
     def __init__(self, id, item, method, equivalence, value):
         self.id = id
         self.item = item
@@ -37,6 +43,9 @@ class Condition():
 
 
 class Action():
+    """
+    Represents an action that is performed as a result of an event's conditions being satisfied
+    """
     def __init__(self, id, item, room, method, type):
         self.id = id
         self.item = item
