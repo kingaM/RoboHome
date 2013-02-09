@@ -175,10 +175,17 @@ APP.Stage = function(menuId, buttonId, buttonText, stageId) {
     
     /**
      * @for APP.Stage
-     * @method onClick
-     * Execute function given to setOnClick()
+     * @method onShow
+     * Execute function given to setOnShow()
      */
-    this.onClick = function() {};
+    this.onShow = function() {};
+    
+    /**
+     * @for APP.Stage
+     * @method onShow
+     * Execute function given to setOnHide()
+     */
+     this.onHide = function() {};
     
     /**
      * @for APP.Stage
@@ -197,12 +204,30 @@ APP.Stage = function(menuId, buttonId, buttonText, stageId) {
 
 /**
  * @for APP.Stage
- * @method setOnClick
+ * @method setOnShow
  * @param {Function} func Function to be passed in
- * Give function to execute when button corresponding to stage is selected by mouse click
+ * Give function to execute when stage is shown
  */
-APP.Stage.prototype.setOnClick = function(func) {
-    this.onClick = func;
+APP.Stage.prototype.setOnShow = function(func) {
+    var self = this;
+    this.onShow = function() {
+        console.log(self.stageId + ' onShow() called');
+        func();
+    }
+}
+
+/**
+ * @for APP.Stage
+ * @method setOnHide
+ * @param {Function} func Function to be passed in
+ * Give function to execute when stage is hidden
+ */
+APP.Stage.prototype.setOnHide = function(func) {
+    var self = this;
+    this.onHide = function() {
+        console.log(self.stageId + ' onHide() called');
+        func();
+    }
 }
 
 /**
@@ -212,7 +237,11 @@ APP.Stage.prototype.setOnClick = function(func) {
  * Give function to execute when construct() is called
  */
 APP.Stage.prototype.setConstruct = function(func) {
-    this.construct = func;
+    var self = this;
+    this.construct = function() {
+        console.log(self.stageId + ' construct() called');
+        func();
+    }
 }
 
 /**
@@ -222,7 +251,11 @@ APP.Stage.prototype.setConstruct = function(func) {
  * Give function to execute when update() is called
  */
 APP.Stage.prototype.setUpdate = function(func) {
-    this.update = func;
+    var self = this;
+    this.update = function() {
+        console.log(self.stageId + ' update() called');
+        func();
+    }
 }
 
 // ---------------------------------------------------------------------
@@ -230,17 +263,140 @@ APP.Stage.prototype.setUpdate = function(func) {
 // ---------------------------------------------------------------------
 
 // API property definitions
-APP.API_CONSTANTS = {
+APP.CONSTANTS = {
+    VERSION: '0.1',
     STATUS_CODE: 'statusCode',
     CONTENT: 'content'
 }
 
-APP.data = {
+// RESTful API URL specification
+APP.URL = {
+    STRUCTURE: function() {
+        return '/version/' + APP.CONSTANTS.VERSION + '/structure';
+    },
+    STATE: function() {
+        return '/version/' + APP.CONSTANTS.VERSION + '/state';
+    },
+    ROOMS: function() {
+        return '/version/' + APP.CONSTANTS.VERSION + '/rooms';
+    },
+    ROOMS_ROOMID: function(roomId) {
+        return '/version/' + APP.CONSTANTS.VERSION + '/rooms/' + roomId;
+    },
+    ROOMS_ROOMID_ITEMS: function(roomId) {
+        return '/version/' + APP.CONSTANTS.VERSION + '/rooms/' + roomId + '/items';
+    },
+    ROOMS_ROOMID_ITEMS_ITEMID: function(roomId, itemId) {
+        return '/version/' + APP.CONSTANTS.VERSION + '/rooms/' + roomId + '/items/' + itemId;
+    },
+    EVENTS: function() {
+        return '/version/' + APP.CONSTANTS.VERSION + '/events';
+    },
+    EVENTS_EVENTID: function(eventId) {
+        return '/version/' + APP.CONSTANTS.VERSION + '/events/' + eventId;
+    },
+    METHODS: function() {
+        return '/version/' + APP.CONSTANTS.VERSION + '/methods';
+    }
+}
+
+// Active shared or cached data
+APP.data = {    
     houseStructure: undefined,
     cache: {
         methodList: new APP.Map()
     }
 }
+
+// ---------------------------------------------------------------------
+// Messaging and AJAX
+// ---------------------------------------------------------------------
+
+/**
+ * @method APP.pack
+ * @param {Object} payload  Object to pack
+ * @return {Object}         Object in API message format
+ * Packs given object into API message format
+ */
+APP.pack = function(payload) {
+    var obj = {};
+    obj[APP.CONSTANTS['CONTENT']] = payload;
+    return obj;
+}
+
+/**
+ * @method APP.packToJSON
+ * @param {Object} payload  Object to pack
+ * @return {String}         JSON string in API message format
+ * Packs given object into JSON string in API message format
+ */
+APP.packToJSON = function(payload) { return JSON.stringify(APP.pack(payload)) }
+
+/**
+ * @method APP.unpack
+ * @param {String} json JSON string
+ * @return {Object}     Object
+ * Currently equivalent of JSON.parse(obj)
+ */
+APP.unpack = function(json) { return JSON.parse(json); }
+
+/**
+ * @method APP.unpackToPayload
+ * @param {String} json JSON string in API message format
+ * @return {Object}     Payload object
+ * Unpacks API JSON string and returns the payload object
+ */
+APP.unpackToPayload = function(json) { return JSON.parse(json)[APP.CONSTANTS['CONTENT']]; }
+
+/**
+ * @method APP.ajax
+ * @param {String} requestType  HTTP request type e.g. 'GET', 'POST', etc.
+ * @param {String} url          URL string to send request to
+ * @param {Object} payload      Object to pack
+ * @param {Function} callback   Callback function
+ */
+APP.ajax = function(requestType, url, payload, callback) {
+    var messageObj,
+        internalCallback;
+    
+    message = APP.packToJSON(payload);
+    
+    /* this is so that side effects such as logging
+     * can be specified here
+     */
+    internalCallback = function(args) {
+        // side effects go here
+        console.log('AJAX callback called ' + url);
+        // --
+        callback(args);
+    };
+    $.ajax({
+        type: requestType,
+        url: url,
+        data: message,
+        processData: false,
+        cache: false,
+        contentType: 'application/json',
+        dataType: 'text',
+        success: internalCallback
+    });
+}
+
+/**
+ * @method APP.ajax_get_structure
+ * Retrieves the latest house structure from the server
+ */
+APP.ajax_get_structure = function() {
+    APP.ajax('GET', APP.URL.STRUCTURE(), '',
+        function(json) {
+            var obj = APP.unpackToPayload(json);
+            APP.data.houseStructure = obj;
+        });
+}
+
+// ---------------------------------------------------------------------
+// Core
+// ---------------------------------------------------------------------
 
 /**
  * @class APP.MenuManager
@@ -327,7 +483,7 @@ APP.MenuManager = function() {
                         menus.children().removeClass('selected');
                         // If this button has an associated menu --> not being used as Stage button
                         if(mapping !== null) {
-                            stageManager.hideAllStages();
+                            stageManager.toggleStage(null);
                         }
                         APP.resizer.resizeStageWrapper();
                     });
@@ -365,15 +521,18 @@ APP.StageManager = function() {
         secondaryMenuId = 'wrapper-secondary',
         secondaryButtonSelector = '#wrapper-secondary > ul > li > a',
         stageSelector = '#stages > .stage',
+        activeStageSelector = '#stages > .stage.active',
         stageContainerSelector = '#stages',
         
-        activeStageId = undefined,
+        activeStageId = null,
         stages = new APP.Map(),
         
+        // private methods
         setActiveStage = function(stageId) {
             activeStageId = stageId;
         },
         
+        // public methods
         addStage = function(stage) {
             // construct menu buttons
             if(document.getElementById(stage.buttonId) === null) {
@@ -390,34 +549,59 @@ APP.StageManager = function() {
             
             // link
             $('#' + stage.buttonId).click(function() {
-                var targetButton,
-                    targetStage;
-                targetButton = $(this);
-                
+                var targetButton = $(this);
                 // toggle clicked button
                 targetButton.toggleClass('selected');
+                // toggle sibling buttons
+                $(primaryButtonSelector).not(targetButton).removeClass('selected');
+                $(secondaryButtonSelector).not(targetButton).removeClass('selected');
                 
-                // toggle sibling buttons 
-                if(targetButton.parent().parent().parent().id === primaryMenuId) {
-                    $(primaryButtonSelector).not(targetButton).removeClass('selected');
-                } else if(targetButton.parent().parent().id === secondaryMenuId) {
-                    $(secondaryButtonSelector).not(targetButton).removeClass('selected');
-                }
+                // toggle stages
+                toggleStage(stage.stageId);
                 
-                // call onClick of target stage
-                if (targetButton.hasClass('selected')) {
-                    stages.get(stage.stageId).onClick();
-                }
-                
-                // toggle target stage visibility
-                targetStage = $('#' + stage.stageId);
-                targetStage.toggleClass('active');
-                $(stageSelector).not(targetStage).removeClass('active');
             });
             
             // register stage
             stages.put(stage.stageId, stage);
-            return stage;
+            return stage.stageId;
+        },
+        
+        toggleStage = function(stageId) {
+            
+            var targetStage,
+                activeStage;
+            
+            function hideActiveStage() {
+                var activeStage = stages.get(activeStageId);
+                activeStageId = null;
+                $('#' + activeStage.stageId).removeClass('active');
+                activeStage.onHide();
+            }
+            
+            function showNewStage(stageId) {
+                var newStage = stages.get(stageId);
+                activeStageId = newStage.stageId;
+                $('#' + newStage.stageId).addClass('active');
+                newStage.onShow();
+            }
+            
+            if(stageId === null) {
+                if(activeStageId !== null) {
+                    hideActiveStage();
+                }
+            } else {
+                if(activeStageId === null) { // no active stage
+                    showNewStage(stageId);
+                } else { // has active stage
+                    if(activeStageId === stageId) {
+                        hideActiveStage();
+                    } else {
+                        hideActiveStage();
+                        showNewStage(stageId);
+                    }
+                }
+            }
+            
         },
         
         removeStage = function(stageId) {
@@ -433,40 +617,28 @@ APP.StageManager = function() {
             stages.get(stageId).construct();
         },
         
-        constructAll = function() {
-            var ls = stages.getAll();
-            for(var i = 0; i < ls.length; i++) {
-                ls[i].construct();
-            }
-        },
-        
         update = function() {
             if(activeStageId !== undefined) {
                 stages.get(activeStageId).update();
             }
-        },
-        
-        hideAllStages = function() {
-            $(secondaryButtonSelector).removeClass('selected');
-            $(stageSelector).removeClass('active');
-        }
-    
-    /**
-     * @for APP.StageManager
-     * @method setActiveStage
-     * @param {String} stageId Id of stage to be set as active
-     * The active stage is the only one that's updated when update() is called
-     */
-    this.setActiveStage = setActiveStage;
+        };
     
     /**
      * @for APP.StageManager
      * @method addStage
      * @param {APP.Stage} stage Stage object to be managed by this manager
-     * @return {APP.Stage}      The input Stage object, for convenience
+     * @return {String}         Input stage element id, for convenience
      * If the new stage shares an existing stageId, it will replace the old stage
      */
     this.addStage = addStage;
+    
+    /**
+     * @for APP.StageManager
+     * @method toggleStage
+     * @param {String | null} stageId Element id of stage to toggle on/off, or null
+     *                                to toggle off regardless of current active stage
+     */
+    this.toggleStage = toggleStage;
     
     /**
      * @for APP.StageManager
@@ -485,13 +657,6 @@ APP.StageManager = function() {
     
     /**
      * @for APP.StageManager
-     * @method constructAll
-     *  Constructs all stages registered with this StageManager
-     */
-    this.constructAll = constructAll;
-    
-    /**
-     * @for APP.StageManager
      * @method update
      * Calls the update() method of the specified stage
      */
@@ -499,47 +664,61 @@ APP.StageManager = function() {
     
     /**
      * @for APP.StageManager
-     * @method hideAllStages
-     * Hides all stages
+     * @method init
      */
-    this.hideAllStages = hideAllStages;
-    
     this.init = function() {
-        var stage;
+        var stageId,
+            stage_home,
+            stage_areas,
+            stage_eca;
         
         // home stage
-        stage = addStage(new APP.Stage('menu-home', 'button-home', '', 'stage-home'));
-        stage.setOnClick(function() {
-            $('#console').append('<p>home onClick()</p>');
-        });
-        stage.setConstruct(function() {
+        stageId = addStage(new APP.Stage('menu-home', 'button-home', '', 'stage-home'));
+        stage_home = stages.get(stageId);
+        stage_home.setOnShow(function() {
             
         });
-        stage.setUpdate(function() {
+        stage_home.setOnHide(function() {
+            
+        });
+        stage_home.setConstruct(function() {
+            
+        });
+        stage_home.setUpdate(function() {
             
         });
         
         // areas stage
-        stage = addStage(new APP.Stage('menu-areas', 'button-areas-all', 'All', 'stage-areas-all'));
-        stage.setOnClick(function() {
-            $('#console').append('<p>areas onClick()</p>');
+        stageId = addStage(new APP.Stage('menu-areas', 'button-areas-all', 'All', 'stage-areas-all'));
+        stage_areas = stages.get(stageId);
+        stage_areas.setOnShow(function() {
+            APP.ajax_get_structure();
+            stage_areas.construct();
         });
-        stage.setConstruct(function() {
+        stage_areas.setOnHide(function() {
             
         });
-        stage.setUpdate(function() {
+        stage_areas.setConstruct(function() {
+            
+            stage_areas.update();
+        });
+        stage_areas.setUpdate(function() {
             
         });
         
         // eca stage
-        stage = addStage(new APP.Stage('menu-rules', 'button-rules-eca', 'ECA', 'stage-rules-eca'));
-        stage.setOnClick(function() {
-            $('#console').append('<p>eca onClick()</p>');
-        });
-        stage.setConstruct(function() {
+        stageId = addStage(new APP.Stage('menu-rules', 'button-rules-eca', 'ECA', 'stage-rules-eca'));
+        stage_eca = stages.get(stageId);
+        stage_eca.setOnShow(function() {
             
         });
-        stage.setUpdate(function() {
+        stage_eca.setOnHide(function() {
+            
+        });
+        stage_eca.setConstruct(function() {
+            
+        });
+        stage_eca.setUpdate(function() {
             
         });
         
@@ -727,81 +906,6 @@ APP.resizer = {
         panelHeight = (window.innerHeight - $('#chronograph').height()) + 'px';
         $('#left-panel').css('height', panelHeight);
     }
-}
-
-// ---------------------------------------------------------------------
-// Messaging and AJAX
-// ---------------------------------------------------------------------
-
-/**
- * @method APP.pack
- * @param {Object} payload  Object to pack
- * @return {Object}         Object in API message format
- * Packs given object into API message format
- */
-APP.pack = function(payload) {
-    var obj = {};
-    obj[APP.API_CONSTANTS['CONTENT']] = payload;
-    return obj;
-}
-
-/**
- * @method APP.packToJSON
- * @param {Object} payload  Object to pack
- * @return {String}         JSON string in API message format
- * Packs given object into JSON string in API message format
- */
-APP.packToJSON = function(payload) { return JSON.stringify(APP.pack(payload)) }
-
-/**
- * @method APP.unpack
- * @param {String} json JSON string
- * @return {Object}     Object
- * Currently equivalent of JSON.parse(obj)
- */
-APP.unpack = function(json) { return JSON.parse(json); }
-
-/**
- * @method APP.unpackToPayload
- * @param {String} json JSON string in API message format
- * @return {Object}     Payload object
- * Unpacks API JSON string and returns the payload object
- */
-APP.unpackToPayload = function(json) { return JSON.parse(payload)[APP.API_CONSTANTS['CONTENT']]; }
-
-/**
- * @method APP.ajax
- * @param {String} requestType  HTTP request type e.g. 'GET', 'POST', etc.
- * @param {String} url          URL string to send request to
- * @param {Object} payload      Object to pack
- * @param {Function} callback   Callback function
- */
-APP.ajax = function(requestType, url, payload, callback) {
-    var messageObj,
-        internalCallback;
-        
-    message = APP.packToJSON(payload);
-    
-    /* this is so that side effects such as logging
-     * can be specified here
-     */
-    internalCallback = function(args) {
-        // side effects go here
-        // --
-        callback(args);
-    };
-    $.ajax({
-        type: requestType,
-        url: url,
-        data: message,
-        processData: false,
-        cache: false,
-        contentType: 'application/json',
-        dataType: 'text',
-        success: internalCallback
-    });
-    // side effects go here
-    // --
 }
 
 $(document).ready(function() {

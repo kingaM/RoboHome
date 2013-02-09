@@ -109,12 +109,12 @@ def home():
 def structure(version):
     if request.method == 'GET':
         # Return structure of house. This is used for passing hierarchial info
-        pass
+        return jsonify(MOCK_OBJECTS['GET_HOUSE_STRUCTURE'])
     
 
 
 @app.route('/version/<string:version>/state/', methods = ['GET'])
-def structure(version):
+def state(version):
     if request.method == 'GET':
         # Return flat list of each component's id and its associated state
         pass
