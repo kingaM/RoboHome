@@ -1,5 +1,5 @@
 import unittest
-import eca
+import robohome.eca as eca
 
 
 class TestECA(unittest.TestCase):

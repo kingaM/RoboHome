@@ -1,4 +1,5 @@
 from item import *
+import eca
 
 types = {'motionSensor' : Item , 'lightSensor' : Item, 'temperatureSensor' : Item , 'energyMonitor' : Item , 'button' : Item , 'door' : Openable, 'window' : Openable, 'curtain' : Openable, 'plug' : OnOff, 'light' : Lights, 'radiator' : RadiatorValve}
 
@@ -10,6 +11,7 @@ class House:
     def __init__(self, database):
         self.database = database
         self.rooms = {}
+        self.events = []
 
     def initFromDatabase(self):
         """Initialises the house from the database"""
@@ -21,7 +23,29 @@ class House:
             if len(items) > 0:
                 for item in items:
                     type = self.database.types.getNameForId(item[5])
-                    self.rooms[room[0]].items[item[0]]=(types[type](item[0], item[1], item[2],  type, item[3]))
+                    self.rooms[room[0]].items[item[0]] = (types[type](item[0], item[1], item[2],  type, item[3]))
+
+        events = self.database.events.getEvents()
+
+        for e in events:
+            if e[3] is not None:
+                tempRoom = self.rooms[e[3]]
+            else:
+                tempRoom = None
+            self.events.append(eca.Event(e[0], e[1], self.getItemById(e[2]), tempRoom, e[4], e[5]))
+
+        for e in self.events:
+            conditions = self.database.conditions.getConditionsForEvent(e)
+            for c in conditions:
+                e.conditions.append(eca.Condition(c[0], self.getItemById(c[1]), c[2], c[3], c[4]))
+
+            actions = self.database.actions.getActionsForEvent(e)
+            for a in actions:
+                if a[2] is not None:
+                    tempRoom = self.rooms[a[2]]
+                else:
+                    tempRoom = None
+                e.actions.append(eca.Action(a[0], self.getItemById(a[1]), tempRoom, a[3], a[4]))
 
     def addRoom(self, name):
         """
@@ -58,13 +82,26 @@ class House:
     def getItemById(self, itemId):
         """
         Returns the item with the specified id
-        
+
         Arguments:
         itemId -- the id of the item
         """
         for room in self.rooms:
             if itemId in self.rooms[room].items:
                 return self.rooms[room].items[itemId]
+
+    def getItemByIP(self, ip):
+        """
+        Returns the item with the specified IP address
+
+        Arguments:
+        ip -- the IP address of the item
+        """
+        for room in self.rooms:
+            for item in self.rooms[room].items:
+                if self.rooms[room].items[item].ip == ip:
+                    return self.rooms[room].items[item]
+        raise Exception("No sensor found for IP: " + ip)
 
     def getRoomByItemId(self, itemId):
         """
@@ -76,6 +113,47 @@ class House:
         for room in self.rooms:
             if itemId in self.rooms[room].items:
                 return self.rooms[room]
+
+    def getEventsForTrigger(self, item, trigger):
+        """
+        Returns the possible events relating to an item trigger
+
+        Arguments:
+        item -- the item that triggered the event
+        trigger -- the name of the trigger
+        """
+        possibleEvents = []
+
+        for event in self.events:
+            if event.enabled and event.trigger == trigger and (item == event.item or (self.getRoomByItemId(item._id) == event.room and item._type == event.type)):
+                possibleEvents.append(event)
+
+        return possibleEvents
+
+    def reactToEvent(self, ip, trigger):
+        """Process a trigger event from a particular IP
+
+        Arguments:
+        ip -- the IP address of the item that sent the trigger
+        trigger -- the name of the trigger
+
+        """
+        item = self.getItemByIP(ip)
+
+        possibleEvents = self.getEventsForTrigger(item, trigger)
+
+        if len(possibleEvents) < 1:
+            return
+
+        # Until further development just use the first matching event
+        event = possibleEvents[0]
+
+        for condition in event.conditions:
+            if not condition.check():
+                return
+
+        for action in event.actions:
+            action.doAction()
 
 
 class Room:
