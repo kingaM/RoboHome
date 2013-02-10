@@ -7,13 +7,14 @@ class TestECA(unittest.TestCase):
     def setUp(self):
         pass
 
-    def test_check(self):
+    def test_check_equals(self):
         condition = eca.Condition(1, MockItem(1), "getState", "=", 1)
         self.assertTrue(condition.check())
 
         condition = eca.Condition(1, MockItem(0), "getState", "=", 1)
         self.assertFalse(condition.check())
 
+    def test_check_inequality(self):
         condition = eca.Condition(1, MockItem(100), "getState", ">", 1)
         self.assertTrue(condition.check())
 
@@ -26,28 +27,33 @@ class TestECA(unittest.TestCase):
         condition = eca.Condition(1, MockItem(1), "getState", "<", 100)
         self.assertTrue(condition.check())
 
+    def test_check_nulls(self):
         condition = eca.Condition(None, MockItem(1), "getState", ">", 1)
         self.assertFalse(condition.check())
 
         condition = eca.Condition(1, MockItem(1), "getState", ">", None)
         self.assertFalse(condition.check())
 
+    def test_check_invalidEquivalence(self):
         condition = eca.Condition(1, MockItem(1), "getState", "test", 1)
         self.assertRaises(Exception, condition.check)
 
+    def test_check_methodCalled(self):
         mockItem = MockItem(1)
         mockItem.getState = MethCallLogger(mockItem.getState)
         condition = eca.Condition(1, mockItem, "getState", "=", 1)
         condition.check()
         self.assertTrue(mockItem.getState.was_called)
 
+    def test_check_invalidMethod(self):
         condition = eca.Condition(1, MockItem(1), "badMethod", "=", 1)
         self.assertRaises(Exception, condition.check)
 
-    def test_doAction(self):
+    def test_doAction_invalidRoomItemCombo(self):
         action = eca.Action(1, MockItem(1), MockRoom(), "mockMethod", "mockType")
         self.assertRaises(Exception, action.doAction)
 
+    def test_doAction_methodCalled(self):
         mockItem = MockItem(1)
         mockItem.mockMethod = MethCallLogger(mockItem.mockMethod)
         action = eca.Action(1, mockItem, None, "mockMethod", "mockType")
