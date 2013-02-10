@@ -11,10 +11,14 @@ class MockItem:
         self.ip = ip
 
 class MockRoom:
+
     def __init__(self, id, name):
         self.id = id
         self.name = name
         self.items = {}
+
+    def getStructure(self):
+        return {'id' : self.id, 'name' : self.name, 'items': [ ]}
 
 class MockEvent:
     def __init__(self, id, type, item, room, trigger, enabled):
@@ -179,6 +183,18 @@ class TestHouse(unittest.TestCase):
 
         self.assertEqual(h.getEventsForTrigger(item2, "mockTrigger"), [event2])
 
+    def test_getHouseStructure(self):
+        db = MockDatabase()
+        h = House(db)
+        room = MockRoom(1, "lounge")
+        h.rooms = {1 : room}
+        self.assertEqual(h.getStructure(), {'rooms': [{'id' : 1, 'name' : "lounge", 'items': [ ]}]})
+
+    def test_getHouseStructure_emptylist(self):
+        db = MockDatabase()
+        h = House(db)
+        h.rooms = {}
+        self.assertEqual(h.getStructure(), {'rooms': []})
 
 class TestRoom(unittest.TestCase):
 

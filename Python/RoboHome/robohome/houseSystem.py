@@ -114,6 +114,10 @@ class House:
             if itemId in self.rooms[room].items:
                 return self.rooms[room]
 
+    def getStructure(self):
+        """Returns the overall structure of the house"""
+        return {'rooms' : [self.rooms[r].getStructure() for r in self.rooms]}
+
     def getEventsForTrigger(self, item, trigger):
         """
         Returns the possible events relating to an item trigger
@@ -131,7 +135,8 @@ class House:
         return possibleEvents
 
     def reactToEvent(self, ip, trigger):
-        """Process a trigger event from a particular IP
+        """
+        Process a trigger event from a particular IP
 
         Arguments:
         ip -- the IP address of the item that sent the trigger
@@ -154,6 +159,8 @@ class House:
 
         for action in event.actions:
             action.doAction()
+
+
 
 
 class Room:
