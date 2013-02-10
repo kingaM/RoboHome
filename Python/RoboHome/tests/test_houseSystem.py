@@ -1,8 +1,18 @@
 import unittest
 from robohome.houseSystem import Room, House
 
-class MockItem:
 
+class MethCallLogger(object):
+    def __init__(self, meth):
+        self.meth = meth
+        self.was_called = False
+
+    def __call__(self, code=None):
+        self.meth()
+        self.was_called = True
+
+
+class MockItem:
     def __init__(self, _id, name, brand, _type, ip):
         self._id = _id
         self.name = name
@@ -10,15 +20,16 @@ class MockItem:
         self._type = _type
         self.ip = ip
 
-class MockRoom:
 
+class MockRoom:
     def __init__(self, id, name):
         self.id = id
         self.name = name
         self.items = {}
 
     def getStructure(self):
-        return {'id' : self.id, 'name' : self.name, 'items': [ ]}
+        return {'id': self.id, 'name': self.name, 'items': []}
+
 
 class MockEvent:
     def __init__(self, id, type, item, room, trigger, enabled):
@@ -31,6 +42,20 @@ class MockEvent:
         self.conditions = []
         self.actions = []
 
+
+class MockCondition:
+    def __init__(self, result):
+        self.result = result
+
+    def check(self):
+        return self.result
+
+
+class MockAction:
+    def doAction(self):
+        pass
+
+
 class MockRoomTable:
 
     def __init__(self):
@@ -39,12 +64,13 @@ class MockRoomTable:
         pass
 
     def addEntry(self, name):
-        self.i +=1
+        self.i += 1
         self.entries.append(MockRoom(self.i, name))
         return self.i
 
     def retrieveAllData(self):
         return ((1, "lounge"),)
+
 
 class MockTypesTable:
 
@@ -58,33 +84,38 @@ class MockTypesTable:
     def getNameForId(self, id):
         return "motionSensor"
 
+
 class MockItemsTable:
 
     i = -1
 
     def __init__(self):
         self.entries = []
-        pass  
+        pass
 
     def addEntry(self, name, brand, ip, roomId, typeId):
-        MockItemsTable.i +=1
+        MockItemsTable.i += 1
         self.entries.append(MockItem(MockItemsTable.i, name, brand, typeId, ip))
         return MockItemsTable.i
 
     def retrieveForRoomId(self, id):
         return ((1, "sensor", "rf", "0.0.0.0", id, 1),)
 
+
 class MockEventsTable:
     def getEvents(self):
         return ((1, "mockType", 1, 1, "mockTrigger", 1),)
+
 
 class MockConditionsTable:
     def getConditionsForEvent(self, event):
         return ((1, 1, "mockSignature", "=", 1),)
 
+
 class MockActionsTable:
     def getActionsForEvent(self, event):
         return ((1, 1, None, "mockSignature", "mockType"),)
+
 
 class MockDatabase:
 
@@ -95,6 +126,7 @@ class MockDatabase:
         self.events = MockEventsTable()
         self.conditions = MockConditionsTable()
         self.actions = MockActionsTable()
+
 
 class TestHouse(unittest.TestCase):
 
@@ -187,14 +219,53 @@ class TestHouse(unittest.TestCase):
         db = MockDatabase()
         h = House(db)
         room = MockRoom(1, "lounge")
-        h.rooms = {1 : room}
-        self.assertEqual(h.getStructure(), {'rooms': [{'id' : 1, 'name' : "lounge", 'items': [ ]}]})
+        h.rooms = {1: room}
+        self.assertEqual(h.getStructure(), {'rooms': [{'id': 1, 'name': "lounge", 'items': []}]})
 
     def test_getHouseStructure_emptylist(self):
         db = MockDatabase()
         h = House(db)
         h.rooms = {}
         self.assertEqual(h.getStructure(), {'rooms': []})
+
+    def test_reactToEvent_singleEvent(self):
+        db = MockDatabase()
+        h = House(db)
+        item1 = MockItem(1, "mockName", "mockBrand", "mockType", "mockIP")
+        room = MockRoom(1, "lounge")
+        room.items = {1: item1}
+        event1 = MockEvent(1, "mockType", item1, None, "mockTrigger", 1)
+        event1.conditions = [MockCondition(True)]
+        action = MockAction()
+        action.doAction = MethCallLogger(action.doAction)
+        event1.actions = [action]
+
+        h.events = [event1]
+        h.rooms = {1: room}
+
+        h.reactToEvent("mockIP", "mockTrigger")
+
+        self.assertTrue(action.doAction.was_called)
+
+    def test_reactToEvent_conditionNotMet(self):
+        db = MockDatabase()
+        h = House(db)
+        item1 = MockItem(1, "mockName", "mockBrand", "mockType", "mockIP")
+        room = MockRoom(1, "lounge")
+        room.items = {1: item1}
+        event1 = MockEvent(1, "mockType", item1, None, "mockTrigger", 1)
+        event1.conditions = [MockCondition(True), MockCondition(False)]
+        action = MockAction()
+        action.doAction = MethCallLogger(action.doAction)
+        event1.actions = [action]
+
+        h.events = [event1]
+        h.rooms = {1: room}
+
+        h.reactToEvent("mockIP", "mockTrigger")
+
+        self.assertFalse(action.doAction.was_called)
+
 
 class TestRoom(unittest.TestCase):
 
@@ -221,13 +292,14 @@ class TestRoom(unittest.TestCase):
         name = "test"
         r = Room(_id, name)
         r.addItem(1, item)
-        self.assertEqual(r.getStructure(), {'id' : 1, 'name' : "test", 'items': [{'id' : 1, 'name' : 'a', 'type' : 'a', 'brand' : 'a', 'ip' : '1'}]}) 
+        self.assertEqual(r.getStructure(
+        ), {'id': 1, 'name': "test", 'items': [{'id': 1, 'name': 'a', 'type': 'a', 'brand': 'a', 'ip': '1'}]})
 
     def test_getStrucutre_noItems(self):
         _id = 1
         name = "test"
         r = Room(_id, name)
-        self.assertEqual(r.getStructure(), {'id' : 1, 'name' : "test", 'items': []}) 
+        self.assertEqual(r.getStructure(), {'id': 1, 'name': "test", 'items': []})
 
 if __name__ == '__main__':
     unittest.main()
