@@ -117,6 +117,8 @@ body {
 #left-panel {
     overflow-y: auto;
 }
+
+/*
 #console {
     font-size: 0.9em;
     background-image: url('../img/grid.png');
@@ -126,10 +128,10 @@ body {
     padding: 0.5em;
 }
 #console > div:nth-child(2n+1) {
-    /* background-color: rgba(200,200,255,0.2); */
+    
 }
 #console > div:nth-child(2n+1) {
-    /*background-color: rgba(255,255,255,0.5);*/
+    
 }
 #console > div > div {
     border-style: solid;
@@ -176,6 +178,7 @@ body {
 #console div.console-body {
     background-color: rgba(0,200,200,0.1);
 }
+*/
 
 #time, #day, #date, #time, #am-pm, #day, #date {
     font-family: 'serene';
@@ -285,7 +288,6 @@ div.stage {
     padding: 1em;
 }
 
-/*
 .stage-content .entity-display {
             padding: 1em;
             margin: 0.5em 0;
@@ -298,15 +300,12 @@ div.stage {
             background-color: transparent;
 }
 
-.stage-content .attachments.panel > .attachment:empty {
-}
-
 .stage-content .entity-display:hover {
     background-color: rgba(255,255,255,0.1);
 }
 
-.stage-content > .entity-display.area {
-    width: 45%;
+.stage-content > .entity-display.room {
+    width: 45.5%;
     float: left;
     margin: 0 0.5em 0.5em 0.5em;
     background-color: rgba(0,200,200,0.1);
@@ -322,8 +321,12 @@ div.stage {
          -o-transition-duration: 0.5s;
 }
 
+.stage-content > .entity-display.room:hover {
+    background-color: rgba(0,200,200,0.2);
+}
+
 @media only screen and (max-width: 1200px) {
-    .stage-content > .entity-display.area {
+    .stage-content > .entity-display.room {
         width: 92%;
         font-size: 200%;
     }
@@ -339,31 +342,27 @@ div.stage {
 .stage-content .entity-display.curtain { border-left: 0.15em solid rgba(93,33,182,1); }
 .stage-content .entity-display.light { border-left: 0.15em solid rgba(255,233,21,1); }
 
-.stage-content .entity-display .bar {
-    display: inline-block;
+.stage-content .entity-display .info-bar {
     width: auto;
     margin: 0;
     margin-bottom: 0.3em;
     vertical-align: top;
 }
 
-.stage-content .entity-display h1,
-.stage-content .control-button {
-    display: inline-block;
-}
-
 .stage-content .entity-display h1 {
+    display: inline-block;
     font-size: 1em;
     margin: 0;
 }
 
-.stage-content .entity-display h2 {
-    font-size: 0.5em;
+.stage-content .entity-display span {
+    font-size: 0.7em;
     margin: 0 0.5em;
     color: #AAAAAA;
     display: block;
 }
 
+/*
 .stage-content .attachments.command,
 .stage-content .attachments.collapse {
     display: block;

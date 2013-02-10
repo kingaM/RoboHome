@@ -9,6 +9,83 @@ var APP = APP || {};
 "use strict";
 
 // ---------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------
+
+/* Declarations are structured this way for easy text-replace in case of API changes
+ * It can be restructured at some point from e.g.:
+    APP.CONSTANTS = {};
+    APP.CONSTANTS.VERSION = '0.1';
+ * to
+    APP.CONSTANTS = {
+        VERSION: '0.1'
+    };
+ */
+
+// Application constants
+APP.CONSTANTS = {};
+APP.CONSTANTS.VERSION = '0.1';
+
+// DOM classes and ids
+APP.DOM_HOOK = {};
+APP.DOM_HOOK.STAGE_CONTENT = 'stage-content';
+APP.DOM_HOOK.ENTITY = {};
+APP.DOM_HOOK.ENTITY.ROOM = 'room';
+APP.DOM_HOOK.ENTITY.ITEM = 'item';
+APP.DOM_HOOK.ENTITY.DOOR = 'door';
+APP.DOM_HOOK.ENTITY.LIGHT = 'light';
+APP.DOM_HOOK.ENTITY.WINDOW = 'window';
+
+// These are property name bindings as specified by the API
+APP.API = {};
+APP.API.WRAPPER = {};
+APP.API.WRAPPER.STATUS_CODE = 'statusCode';
+APP.API.WRAPPER.CONTENT = 'content';
+APP.API.STRUCT = {};
+APP.API.STRUCT.ROOMS = 'rooms';
+APP.API.STRUCT.ROOM = {};
+APP.API.STRUCT.ROOM.ID = 'id';
+APP.API.STRUCT.ROOM.NAME = 'name';
+APP.API.STRUCT.ROOM.ITEMS = 'items';
+APP.API.STRUCT.ROOM.ITEM = {};
+APP.API.STRUCT.ROOM.ITEM.ID = 'id';
+APP.API.STRUCT.ROOM.ITEM.BRAND = 'brand';
+APP.API.STRUCT.ROOM.ITEM.IP = 'ip';
+APP.API.STRUCT.ROOM.ITEM.NAME = 'name';
+APP.API.STRUCT.ROOM.ITEM.TYPE = 'type';
+
+// RESTful API URL specification
+// Remember to specify the trailing slash so Flask does not have to redirect
+APP.URL = {};
+APP.URL.STRUCTURE = function() {
+    return '/version/' + APP.CONSTANTS.VERSION + '/structure/';
+};
+APP.URL.STATE = function() {
+    return '/version/' + APP.CONSTANTS.VERSION + '/state/';
+};
+APP.URL.ROOMS = function() {
+    return '/version/' + APP.CONSTANTS.VERSION + '/rooms/';
+};
+APP.URL.ROOMS_ROOMID = function(roomId) {
+    return '/version/' + APP.CONSTANTS.VERSION + '/rooms/' + roomId + '/';
+};
+APP.URL.ROOMS_ROOMID_ITEMS = function(roomId) {
+    return '/version/' + APP.CONSTANTS.VERSION + '/rooms/' + roomId + '/items/';
+};
+APP.URL.ROOMS_ROOMID_ITEMS_ITEMID = function(roomId, itemId) {
+    return '/version/' + APP.CONSTANTS.VERSION + '/rooms/' + roomId + '/items/' + itemId + '/';
+};
+APP.URL.EVENTS = function() {
+    return '/version/' + APP.CONSTANTS.VERSION + '/events/';
+};
+APP.URL.EVENTS_EVENTID = function(eventId) {
+    return '/version/' + APP.CONSTANTS.VERSION + '/events/' + eventId + '/';
+};
+APP.URL.METHODS = function() {
+    return '/version/' + APP.CONSTANTS.VERSION + '/methods/';
+};
+
+// ---------------------------------------------------------------------
 // Data structures
 // ---------------------------------------------------------------------
 
@@ -182,7 +259,7 @@ APP.Stage = function(menuId, buttonId, buttonText, stageId) {
     
     /**
      * @for APP.Stage
-     * @method onShow
+     * @method onHide
      * Execute function given to setOnHide()
      */
      this.onHide = function() {};
@@ -200,6 +277,15 @@ APP.Stage = function(menuId, buttonId, buttonText, stageId) {
      * Execute function given to setUpdate()
      */
     this.update = function() {};
+}
+
+/**
+ * @for APP.Stage
+ * @method getContentArea
+ * Gets the content area of the stage
+ */
+APP.Stage.prototype.getContentArea = function() {
+    return $('#' + this.stageId + ' > .' + APP.DOM_HOOK.STAGE_CONTENT);
 }
 
 /**
@@ -234,7 +320,8 @@ APP.Stage.prototype.setOnHide = function(func) {
  * @for APP.Stage
  * @method setConstruct
  * @param {Function} func Function to be passed in
- * Give function to execute when construct() is called
+ * Give function to execute when construct() is called. 
+ * construct() should only need to construct the DOM structure for update() to run on
  */
 APP.Stage.prototype.setConstruct = function(func) {
     var self = this;
@@ -248,7 +335,8 @@ APP.Stage.prototype.setConstruct = function(func) {
  * @for APP.Stage
  * @method setUpdate
  * @param {Function} func Function to be passed in
- * Give function to execute when update() is called
+ * Give function to execute when update() is called.
+ * update() should be the function that's repeatedly called to update existing elements inserted by construct()
  */
 APP.Stage.prototype.setUpdate = function(func) {
     var self = this;
@@ -258,58 +346,94 @@ APP.Stage.prototype.setUpdate = function(func) {
     }
 }
 
-// ---------------------------------------------------------------------
-// Data
-// ---------------------------------------------------------------------
-
-// API property definitions
-APP.CONSTANTS = {
-    VERSION: '0.1',
-    STATUS_CODE: 'statusCode',
-    CONTENT: 'content'
+/**
+ * @class APP.RoomDisplay
+ * @constructor
+ * @param {Stage} stage Stage object hosting this RoomDisplay
+ * @param {Object} roomData Object with room data specified according to API
+ */
+APP.RoomDisplay = function(stage, roomData) {
+    this.stage = stage;
+    this.room = roomData;
+    this.items = this.room.items;
 }
 
-// RESTful API URL specification
-APP.URL = {
-    STRUCTURE: function() {
-        return '/version/' + APP.CONSTANTS.VERSION + '/structure';
-    },
-    STATE: function() {
-        return '/version/' + APP.CONSTANTS.VERSION + '/state';
-    },
-    ROOMS: function() {
-        return '/version/' + APP.CONSTANTS.VERSION + '/rooms';
-    },
-    ROOMS_ROOMID: function(roomId) {
-        return '/version/' + APP.CONSTANTS.VERSION + '/rooms/' + roomId;
-    },
-    ROOMS_ROOMID_ITEMS: function(roomId) {
-        return '/version/' + APP.CONSTANTS.VERSION + '/rooms/' + roomId + '/items';
-    },
-    ROOMS_ROOMID_ITEMS_ITEMID: function(roomId, itemId) {
-        return '/version/' + APP.CONSTANTS.VERSION + '/rooms/' + roomId + '/items/' + itemId;
-    },
-    EVENTS: function() {
-        return '/version/' + APP.CONSTANTS.VERSION + '/events';
-    },
-    EVENTS_EVENTID: function(eventId) {
-        return '/version/' + APP.CONSTANTS.VERSION + '/events/' + eventId;
-    },
-    METHODS: function() {
-        return '/version/' + APP.CONSTANTS.VERSION + '/methods';
+/**
+ * @for APP.RoomDisplay
+ * @method construct
+ * Constructs the representation of this object on the stage
+ */
+APP.RoomDisplay.prototype.construct = function() {
+    
+    function constructItemPanels(items) {
+        var itemPanel,
+            infoBar,
+            itemPanels = [];
+        
+        for(var i = 0; i < items.length; i++) {
+            itemPanel = $('<div></div>').attr({
+                class: 'entity-display ' + APP.DOM_HOOK.ENTITY.ITEM,
+                'data-id': items[i][APP.API.STRUCT.ROOM.ITEM.ID],
+                'data-ip': items[i][APP.API.STRUCT.ROOM.ITEM.IP],
+                'data-name': items[i][APP.API.STRUCT.ROOM.ITEM.NAME],
+                'data-brand': items[i][APP.API.STRUCT.ROOM.ITEM.BRAND],
+                'data-type': items[i][APP.API.STRUCT.ROOM.ITEM.TYPE]
+            });
+            
+            infoBar = $('<div></div>').addClass('info-bar');
+            infoBar.append($('<h1>' + items[i][APP.API.STRUCT.ROOM.ITEM.NAME] + '</h1>'));
+            infoBar.append($('<span>' + items[i][APP.API.STRUCT.ROOM.ITEM.IP] + '</span>'));
+            itemPanel.append(infoBar);
+            
+            itemPanels.push(itemPanel);
+        }
+        return itemPanels;
     }
+    
+    var roomPanel,
+        infoBar,
+        itemPanels;
+        
+    itemPanels = constructItemPanels(this.items);
+    roomPanel = $('<div></div').attr({
+        class: 'entity-display ' + APP.DOM_HOOK.ENTITY.ROOM,
+        'data-id': this.room[APP.API.STRUCT.ROOM.ID],
+        'data-name': this.room[APP.API.STRUCT.ROOM.NAME]
+    });
+    
+    infoBar = $('<div></div>').addClass('info-bar');
+    infoBar.append($('<h1>' + this.room[APP.API.STRUCT.ROOM.NAME] + '</h1>'));
+    roomPanel.append(infoBar);
+    
+    for(var j = 0; j < itemPanels.length; j++) {
+        roomPanel.append(itemPanels[j]);
+    }
+    
+    this.stage.getContentArea().append(roomPanel);
 }
 
-// Active shared or cached data
-APP.data = {    
+/**
+ * @for APP.RoomDisplay
+ * @method update
+ * Updates an existing representation of this object on the stage
+ */
+APP.RoomDisplay.prototype.update = function() {
+    //TODO
+}
+
+// ---------------------------------------------------------------------
+// Active data
+// ---------------------------------------------------------------------
+
+APP.data = {
     houseStructure: undefined,
     cache: {
         methodList: new APP.Map()
     }
-}
+};
 
 // ---------------------------------------------------------------------
-// Messaging and AJAX
+// Message packing / unpacking
 // ---------------------------------------------------------------------
 
 /**
@@ -320,9 +444,9 @@ APP.data = {
  */
 APP.pack = function(payload) {
     var obj = {};
-    obj[APP.CONSTANTS['CONTENT']] = payload;
+    obj[APP.API.WRAPPER.CONTENT] = payload;
     return obj;
-}
+};
 
 /**
  * @method APP.packToJSON
@@ -330,7 +454,9 @@ APP.pack = function(payload) {
  * @return {String}         JSON string in API message format
  * Packs given object into JSON string in API message format
  */
-APP.packToJSON = function(payload) { return JSON.stringify(APP.pack(payload)) }
+APP.packToJSON = function(payload) {
+    return JSON.stringify(APP.pack(payload))
+};
 
 /**
  * @method APP.unpack
@@ -338,7 +464,9 @@ APP.packToJSON = function(payload) { return JSON.stringify(APP.pack(payload)) }
  * @return {Object}     Object
  * Currently equivalent of JSON.parse(obj)
  */
-APP.unpack = function(json) { return JSON.parse(json); }
+APP.unpack = function(json) {
+    return JSON.parse(json);
+};
 
 /**
  * @method APP.unpackToPayload
@@ -346,7 +474,13 @@ APP.unpack = function(json) { return JSON.parse(json); }
  * @return {Object}     Payload object
  * Unpacks API JSON string and returns the payload object
  */
-APP.unpackToPayload = function(json) { return JSON.parse(json)[APP.CONSTANTS['CONTENT']]; }
+APP.unpackToPayload = function(json) {
+    return JSON.parse(json)[APP.API.WRAPPER.CONTENT];
+};
+
+// ---------------------------------------------------------------------
+// AJAX calls
+// ---------------------------------------------------------------------
 
 /**
  * @method APP.ajax
@@ -380,19 +514,21 @@ APP.ajax = function(requestType, url, payload, callback) {
         dataType: 'text',
         success: internalCallback
     });
-}
+};
 
 /**
  * @method APP.ajax_get_structure
+ * @param {Function} callback Callback function to execute after data is set up
  * Retrieves the latest house structure from the server
  */
-APP.ajax_get_structure = function() {
+APP.ajax_get_structure = function(callback) {
     APP.ajax('GET', APP.URL.STRUCTURE(), '',
         function(json) {
             var obj = APP.unpackToPayload(json);
             APP.data.houseStructure = obj;
+            callback();
         });
-}
+};
 
 // ---------------------------------------------------------------------
 // Core
@@ -401,11 +537,13 @@ APP.ajax_get_structure = function() {
 /**
  * @class APP.MenuManager
  * @constructor
+ * @param {APP.StageManager} stageManager StageManager object responsible for hiding the stages
  * This class handles the top menus. Linking of buttons in the secondary menu
  *   and the stages are configured under APP.StageManager instead.
  */
-APP.MenuManager = function() {
+APP.MenuManager = function(stageManager) {
     var linked = false,
+        stageManager
         // map specifying the menus to generate at the start
         map = {
             'button-home' :  {
@@ -413,14 +551,14 @@ APP.MenuManager = function() {
                 buttonText: 'Home',
                 class: 'blue'
             },
-            'button-areas' : {
-                menuId: 'menu-areas',
-                buttonText: 'Areas',
+            'button-control' : {
+                menuId: 'menu-control',
+                buttonText: 'Control',
                 class: 'blue'
             },
-            'button-monitor': {
-                menuId: 'menu-monitor',
-                buttonText: 'Monitor',
+            'button-construct': {
+                menuId: 'menu-construct',
+                buttonText: 'Construct',
                 class: 'green'
             },
             'button-rules' : {
@@ -437,7 +575,7 @@ APP.MenuManager = function() {
         primaryMenu = $('#menu-primary'),
         secondaryMenuWrapper = $('#wrapper-secondary'),
         
-        init = function(stageManager) {
+        init = function() {
             var target,
                 mapping;
             
@@ -483,6 +621,10 @@ APP.MenuManager = function() {
                         menus.children().removeClass('selected');
                         // If this button has an associated menu --> not being used as Stage button
                         if(mapping !== null) {
+                            var primaryButtonSelector = '#menu-prmary > li > a',
+                                secondaryButtonSelector = '#wrapper-secondary > ul > li > a';
+                            $(primaryButtonSelector).not(target).removeClass('selected');
+                            $(secondaryButtonSelector).not(target).removeClass('selected');
                             stageManager.toggleStage(null);
                         }
                         APP.resizer.resizeStageWrapper();
@@ -504,11 +646,10 @@ APP.MenuManager = function() {
     /**
      * @for APP.MenuManager
      * @method init
-     * @param {APP.StageManager} stageManager StageManager object responsible for hiding the stages
      * This constructs the top menus according to what's specified in this class.
      */
     this.init = init;
-}
+};
 
 /**
  * @class APP.StageManager
@@ -555,10 +696,8 @@ APP.StageManager = function() {
                 // toggle sibling buttons
                 $(primaryButtonSelector).not(targetButton).removeClass('selected');
                 $(secondaryButtonSelector).not(targetButton).removeClass('selected');
-                
                 // toggle stages
                 toggleStage(stage.stageId);
-                
             });
             
             // register stage
@@ -604,15 +743,6 @@ APP.StageManager = function() {
             
         },
         
-        removeStage = function(stageId) {
-            // delete button
-            $('#' + stages.get(stageId).buttonId).parent().remove();
-            // delete stage
-            $('#' + stageId).remove();
-            // unregister stage
-            stages.remove(stageId);
-        },
-        
         construct = function(stageId) {
             stages.get(stageId).construct();
         },
@@ -621,7 +751,82 @@ APP.StageManager = function() {
             if(activeStageId !== undefined) {
                 stages.get(activeStageId).update();
             }
-        };
+        },
+        
+        init = function() {
+        
+        // home stage
+        (function() {
+            var stageId = addStage(new APP.Stage('menu-home', 'button-home', '', 'stage-home')),
+                stage = stages.get(stageId),
+                stageContent = stage.getContentArea();
+            
+            stage.setOnShow(function() {
+                
+            });
+            stage.setOnHide(function() {
+                
+            });
+            stage.setConstruct(function() {
+                
+            });
+            stage.setUpdate(function() {
+                
+            });
+        })();
+
+        // areas stage
+        (function() {
+            var stageId = addStage(new APP.Stage('menu-control', 'button-control-all', 'All', 'stage-control-all')),
+                stage = stages.get(stageId),
+                stageData = stage.data,
+                stageContent = stage.getContentArea();
+            
+            stage.setOnShow(function() {
+                stage.construct();
+            });
+            stage.setOnHide(function() {
+                
+            });
+            stage.setConstruct(function() {
+                stageContent.html('');
+                APP.ajax_get_structure(function() {
+                    var rooms = APP.data.houseStructure[APP.API.STRUCT.ROOMS];
+                    stageData.roomDisplays = [];
+                    for(var i = 0; i < rooms.length; i++) {
+                        stageData.roomDisplays.push(new APP.RoomDisplay(stage, rooms[i]));
+                        stageData.roomDisplays[i].construct();
+                    }
+                });
+                stage.update();
+            });
+            stage.setUpdate(function() {
+                
+            });
+            
+        })();
+        
+        // eca stage
+        (function() {
+            var stageId = addStage(new APP.Stage('menu-rules', 'button-rules-eca', 'ECA', 'stage-rules-eca')),
+                stage = stages.get(stageId),
+                stageContent = stage.getContentArea();
+            
+            stage.setOnShow(function() {
+                
+            });
+            stage.setOnHide(function() {
+                
+            });
+            stage.setConstruct(function() {
+                
+            });
+            stage.setUpdate(function() {
+                
+            });
+        })();
+        
+    };
     
     /**
      * @for APP.StageManager
@@ -635,17 +840,9 @@ APP.StageManager = function() {
     /**
      * @for APP.StageManager
      * @method toggleStage
-     * @param {String | null} stageId Element id of stage to toggle on/off, or null
-     *                                to toggle off regardless of current active stage
+     * @param {String | null} stageId Element id of stage to toggle on/off, or null to toggle off regardless of current active stage
      */
     this.toggleStage = toggleStage;
-    
-    /**
-     * @for APP.StageManager
-     * @method removeStage
-     * @param {String} stageId String id of Stage object to be removed
-     */
-    this.removeStage = removeStage;
     
     /**
      * @for APP.StageManager
@@ -666,64 +863,8 @@ APP.StageManager = function() {
      * @for APP.StageManager
      * @method init
      */
-    this.init = function() {
-        var stageId,
-            stage_home,
-            stage_areas,
-            stage_eca;
-        
-        // home stage
-        stageId = addStage(new APP.Stage('menu-home', 'button-home', '', 'stage-home'));
-        stage_home = stages.get(stageId);
-        stage_home.setOnShow(function() {
-            
-        });
-        stage_home.setOnHide(function() {
-            
-        });
-        stage_home.setConstruct(function() {
-            
-        });
-        stage_home.setUpdate(function() {
-            
-        });
-        
-        // areas stage
-        stageId = addStage(new APP.Stage('menu-areas', 'button-areas-all', 'All', 'stage-areas-all'));
-        stage_areas = stages.get(stageId);
-        stage_areas.setOnShow(function() {
-            APP.ajax_get_structure();
-            stage_areas.construct();
-        });
-        stage_areas.setOnHide(function() {
-            
-        });
-        stage_areas.setConstruct(function() {
-            
-            stage_areas.update();
-        });
-        stage_areas.setUpdate(function() {
-            
-        });
-        
-        // eca stage
-        stageId = addStage(new APP.Stage('menu-rules', 'button-rules-eca', 'ECA', 'stage-rules-eca'));
-        stage_eca = stages.get(stageId);
-        stage_eca.setOnShow(function() {
-            
-        });
-        stage_eca.setOnHide(function() {
-            
-        });
-        stage_eca.setConstruct(function() {
-            
-        });
-        stage_eca.setUpdate(function() {
-            
-        });
-        
-    }
-}
+    this.init = init;
+};
 
 /**
  *  Polls sensors at a specified frequency
@@ -846,7 +987,7 @@ APP.clock = {
         APP.clock.getCurrentTime();
         setInterval(APP.clock.getCurrentTime, 1000);
     }
-}
+};
 
 /**
  * @static
@@ -862,7 +1003,7 @@ APP.windowResizeListener = {
             APP.resizer.resizeAll();
         });
     }
-}
+};
 
 /**
  * @static
@@ -906,16 +1047,16 @@ APP.resizer = {
         panelHeight = (window.innerHeight - $('#chronograph').height()) + 'px';
         $('#left-panel').css('height', panelHeight);
     }
-}
+};
 
 $(document).ready(function() {
     
     // Instantiate manager objects
-    var menuManager = new APP.MenuManager(),
-        stageManager = new APP.StageManager();
+    var stageManager = new APP.StageManager(),
+        menuManager = new APP.MenuManager(stageManager);
     
     // Construct menus
-    menuManager.init(stageManager);
+    menuManager.init();
     stageManager.init();
     
     // Start clock
