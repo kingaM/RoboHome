@@ -20,6 +20,9 @@ class MockItem:
         self._type = _type
         self.ip = ip
 
+    def getState(self):
+        return 1
+
 
 class MockRoom:
     def __init__(self, id, name):
@@ -266,6 +269,37 @@ class TestHouse(unittest.TestCase):
 
         self.assertFalse(action.doAction.was_called)
 
+    def test_executeMethod(self):
+        db = MockDatabase()
+        h = House(db)
+        item1 = MockItem(1, "mockName", "mockBrand", "motionSensor", "mockIP")
+        room = MockRoom(1, "lounge")
+        room.items = {1: item1}
+        h.rooms = {1: room}
+        self.assertEqual(h.executeMethod(1, 1, "getState"), 1)
+
+    def test_executeMethod_methodDoesNotExist(self):
+        db = MockDatabase()
+        h = House(db)
+        item1 = MockItem(1, "mockName", "mockBrand", "motionSensor", "mockIP")
+        room = MockRoom(1, "lounge")
+        room.items = {1: item1}
+        h.rooms = {1: room}
+        self.assertRaises(AttributeError, h.executeMethod, 1, 1, "open")
+
+    def test_executeMethod_itemDoesNotExist(self):
+        db = MockDatabase()
+        h = House(db)
+        room = MockRoom(1, "lounge")
+        room.items = {}
+        h.rooms = {1: room}
+        self.assertRaises(KeyError, h.executeMethod, 1, 1, "getState")
+
+    def test_executeMethod_roomDoesNotExist(self):
+        db = MockDatabase()
+        h = House(db)
+        h.rooms = {}
+        self.assertRaises(KeyError, h.executeMethod, 1, 1, "getState")
 
 class TestRoom(unittest.TestCase):
 

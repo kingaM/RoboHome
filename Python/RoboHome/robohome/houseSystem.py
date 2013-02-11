@@ -160,7 +160,17 @@ class House:
         for action in event.actions:
             action.doAction()
 
+    def executeMethod(self, roomId, itemId, method, args=[]):
+        """
+        Executes a method on a given item
 
+        Arguments:
+        roomId -- the id of the room the item is in
+        itemId -- the id of the item
+        method -- the method to be called as a string
+        args -- the arguments for the method to be called, empty list by default
+        """
+        return getattr(self.rooms[roomId].items[itemId], method)(*args)
 
 
 class Room:
