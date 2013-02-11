@@ -34,6 +34,30 @@ class MockRoom:
         return {'id': self.id, 'name': self.name, 'items': []}
 
 
+class MockHouse(House):
+    def __init__(self):
+        db = MockDatabase()
+        super(MockHouse, self).__init__(db)
+        self.item1 = MockItem(1, "mockName1", "mockBrand1", "mockType1", "mockIP1")
+        self.item2 = MockItem(2, "mockName2", "mockBrand1", "mockType2", "mockIP2")
+        self.item3 = MockItem(3, "mockName3", "mockBrand2", "mockType1", "mockIP3")
+        self.item4 = MockItem(4, "mockName4", "mockBrand2", "mockType2", "mockIP4")
+
+        self.room1 = MockRoom(1, "room1")
+        self.room2 = MockRoom(2, "room2")
+
+        self.room1.items = {1: self.item1, 2: self.item2}
+        self.room2.items = {3: self.item3, 4: self.item4}
+
+        self.rooms = {1: self.room1, 2: self.room2}
+
+        self.event1 = MockEvent(1, "mockType1", self.item1, None, "mockTrigger", 1)
+        self.event2 = MockEvent(2, "mockType2", self.item2, None, "mockTrigger", 1)
+        self.event3 = MockEvent(3, "mockType2", self.item2, None, "mockTrigger2", 1)
+
+        self.events = [self.event1, self.event2, self.event3]
+
+
 class MockEvent:
     def __init__(self, id, type, item, room, trigger, enabled):
         self.id = id
@@ -55,8 +79,16 @@ class MockCondition:
 
 
 class MockAction:
-    def doAction(self):
-        pass
+    def __init__(self, allItemsInHouse=False, _type=""):
+        self.allItemsInHouse = allItemsInHouse
+        self.itemsForType = []
+        self._type = _type
+
+    def isAllItemsInHouse(self):
+        return self.allItemsInHouse
+
+    def doAction(self, itemsForType=[]):
+        self.itemsForType = itemsForType
 
 
 class MockRoomTable:
@@ -191,35 +223,20 @@ class TestHouse(unittest.TestCase):
         self.assertEqual(item.brand, "rf")
 
     def test_getItemByIP(self):
-        db = MockDatabase()
-        h = House(db)
-        item = MockItem(1, "mockName", "mockBrand", "mockType", "192.168.0.100")
-        room = MockRoom(1, "lounge")
-        room.items = {1: item}
-        h.rooms = {1: room}
-        self.assertEqual(h.getItemByIP("192.168.0.100"), item)
+        h = MockHouse()
+        self.assertEqual(h.getItemByIP("mockIP1"), h.item1)
 
     def test_getItemByIP_error(self):
-        db = MockDatabase()
-        h = House(db)
-        self.assertRaises(Exception, h.getItemByIP, "192.168.0.100")
+        h = MockHouse()
+        self.assertRaises(Exception, h.getItemByIP, "badIP")
+
+    def test_getItemsByType(self):
+        h = MockHouse()
+        self.assertEqual([h.item1, h.item3], h.getItemsByType("mockType1"))
 
     def test_getEventsForTrigger(self):
-        db = MockDatabase()
-        h = House(db)
-        item1 = MockItem(1, "mockName", "mockBrand", "mockType", "mockIP")
-        item2 = MockItem(2, "mockName", "mockBrand", "mockType", "mockIP2")
-        room = MockRoom(1, "lounge")
-        room.items = {1: item1, 2: item2}
-
-        event1 = MockEvent(1, "mockType", item1, None, "mockTrigger", 1)
-        event2 = MockEvent(2, "mockType", item2, None, "mockTrigger", 1)
-        event3 = MockEvent(3, "mockType", item2, None, "mockTrigger2", 1)
-
-        h.events = [event1, event2, event3]
-        h.rooms = {1: room}
-
-        self.assertEqual(h.getEventsForTrigger(item2, "mockTrigger"), [event2])
+        h = MockHouse()
+        self.assertEqual(h.getEventsForTrigger(h.item2, "mockTrigger"), [h.event2])
 
     def test_getHouseStructure(self):
         db = MockDatabase()
@@ -235,42 +252,33 @@ class TestHouse(unittest.TestCase):
         self.assertEqual(h.getStructure(), {'rooms': []})
 
     def test_reactToEvent_singleEvent(self):
-        db = MockDatabase()
-        h = House(db)
-        item1 = MockItem(1, "mockName", "mockBrand", "mockType", "mockIP")
-        room = MockRoom(1, "lounge")
-        room.items = {1: item1}
-        event1 = MockEvent(1, "mockType", item1, None, "mockTrigger", 1)
-        event1.conditions = [MockCondition(True)]
+        h = MockHouse()
+        h.event1.conditions = [MockCondition(True)]
         action = MockAction()
         action.doAction = MethCallLogger(action.doAction)
-        event1.actions = [action]
+        h.event1.actions = [action]
 
-        h.events = [event1]
-        h.rooms = {1: room}
-
-        h.reactToEvent("mockIP", "mockTrigger")
+        h.reactToEvent("mockIP1", "mockTrigger")
 
         self.assertTrue(action.doAction.was_called)
 
     def test_reactToEvent_conditionNotMet(self):
-        db = MockDatabase()
-        h = House(db)
-        item1 = MockItem(1, "mockName", "mockBrand", "mockType", "mockIP")
-        room = MockRoom(1, "lounge")
-        room.items = {1: item1}
-        event1 = MockEvent(1, "mockType", item1, None, "mockTrigger", 1)
-        event1.conditions = [MockCondition(True), MockCondition(False)]
+        h = MockHouse()
+        h.event1.conditions = [MockCondition(True), MockCondition(False)]
         action = MockAction()
         action.doAction = MethCallLogger(action.doAction)
-        event1.actions = [action]
+        h.event1.actions = [action]
 
-        h.events = [event1]
-        h.rooms = {1: room}
-
-        h.reactToEvent("mockIP", "mockTrigger")
+        h.reactToEvent("mockIP1", "mockTrigger")
 
         self.assertFalse(action.doAction.was_called)
+
+    def test_reactToEvent_allInHouse(self):
+        h = MockHouse()
+        action = MockAction(True, "mockType1")
+        h.event1.actions = [action]
+        h.reactToEvent("mockIP1", "mockTrigger")
+        self.assertNotEqual(action.itemsForType, [])
 
     def test_executeMethod(self):
         db = MockDatabase()

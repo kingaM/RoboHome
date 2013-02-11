@@ -2,10 +2,7 @@ import unittest
 import robohome.eca as eca
 
 
-class TestECA(unittest.TestCase):
-
-    def setUp(self):
-        pass
+class TestCondition(unittest.TestCase):
 
     def test_check_equals(self):
         condition = eca.Condition(1, MockItem(1), "getState", "=", 1)
@@ -49,6 +46,19 @@ class TestECA(unittest.TestCase):
         condition = eca.Condition(1, MockItem(1), "badMethod", "=", 1)
         self.assertRaises(Exception, condition.check)
 
+
+class TestAction(unittest.TestCase):
+
+    def test_isAllItemsInHouse(self):
+        action = eca.Action(1, None, None, "mockMethod", "mockType")
+        self.assertTrue(action.isAllItemsInHouse())
+
+        action = eca.Action(1, MockItem(1), None, "mockMethod", "mockType")
+        self.assertFalse(action.isAllItemsInHouse())
+
+        action = eca.Action(1, None, MockRoom(), "mockMethod", "mockType")
+        self.assertFalse(action.isAllItemsInHouse())
+
     def test_doAction_invalidRoomItemCombo(self):
         action = eca.Action(1, MockItem(1), MockRoom(), "mockMethod", "mockType")
         self.assertRaises(Exception, action.doAction)
@@ -59,6 +69,18 @@ class TestECA(unittest.TestCase):
         action = eca.Action(1, mockItem, None, "mockMethod", "mockType")
         action.doAction()
         self.assertTrue(mockItem.mockMethod.was_called)
+
+    def test_doAction_allItemsInHouse(self):
+        mockItem1 = MockItem(1)
+        mockItem1.mockMethod = MethCallLogger(mockItem1.mockMethod)
+        mockItem2 = MockItem(1)
+        mockItem2.mockMethod = MethCallLogger(mockItem2.mockMethod)
+
+        action = eca.Action(1, None, None, "mockMethod", "mockType")
+        action.doAction([mockItem1, mockItem2])
+
+        self.assertTrue(mockItem1.mockMethod.was_called)
+        self.assertTrue(mockItem1.mockMethod.was_called)
 
 
 class MockItem():

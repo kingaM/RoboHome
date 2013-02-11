@@ -3,7 +3,7 @@ import eca
 
 types = {'motionSensor' : Item , 'lightSensor' : Item, 'temperatureSensor' : Item , 'energyMonitor' : Item , 'button' : Item , 'door' : Openable, 'window' : Openable, 'curtain' : Openable, 'plug' : OnOff, 'light' : Lights, 'radiator' : RadiatorValve}
 
-class House:
+class House(object):
     """
     Main class to represent the house
     """
@@ -107,6 +107,20 @@ class House:
                     return self.rooms[room].items[item]
         raise Exception("No sensor found for IP: " + ip)
 
+    def getItemsByType(self, _type):
+        """
+        Returns all items in the house of a particular type
+
+        Arguments:
+        type -- the type of the item
+        """
+        items = []
+        for room in self.rooms:
+            for item in self.rooms[room].items:
+                if self.rooms[room].items[item]._type == _type:
+                    items.append(self.rooms[room].items[item])
+        return items
+
     def getRoomByItemId(self, itemId):
         """
         Returns the room which has the item with the specified id
@@ -145,7 +159,6 @@ class House:
         Arguments:
         ip -- the IP address of the item that sent the trigger
         trigger -- the name of the trigger
-
         """
         item = self.getItemByIP(ip)
 
@@ -162,7 +175,10 @@ class House:
                 return
 
         for action in event.actions:
-            action.doAction()
+            if action.isAllItemsInHouse():
+                action.doAction(self.getItemsByType(action._type))
+            else:
+                action.doAction()
 
     def executeMethod(self, roomId, itemId, method, args=[]):
         """

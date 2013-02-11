@@ -25,7 +25,9 @@ class Condition():
         self.value = value
 
     def check(self):
-
+        """
+        Checks if a condition is true with the current house state
+        """
         switch = {"=": (lambda x, y: x == y), "<": (lambda x, y: x < y), ">": (lambda x, y: x > y)}
 
         try:
@@ -46,14 +48,26 @@ class Action():
     """
     Represents an action that is performed as a result of an event's conditions being satisfied
     """
-    def __init__(self, id, item, room, method, type):
+    def __init__(self, id, item, room, method, _type):
         self.id = id
         self.item = item
         self.room = room
         self.method = method
-        self.type = type
+        self.type = _type
 
-    def doAction(self):
+    def isAllItemsInHouse(self):
+        if self.room == None and self.item == None:
+            return True
+        else:
+            return False
+
+    def doAction(self, itemsForType=[]):
+        """
+        Performs the action on the correct items
+
+        Arguments:
+        itemsForType -- all items in the house of the correct type (needed if there is nether a room or item)
+        """
         if self.item != None and self.room != None:
             raise Exception("Invalid action at Id " + str(self.id))
 
@@ -63,7 +77,9 @@ class Action():
         elif self.room != None:
             items = self.room.items
             for key in items:
-                if items[key]._type is self.type:
+                if items[key]._type is self._type:
                     getattr(items[key], self.method)()
 
-        # Next feature: All of item type in house
+        else:
+            for item in itemsForType:
+                getattr(item, self.method)()
