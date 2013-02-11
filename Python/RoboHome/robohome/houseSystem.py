@@ -1,5 +1,7 @@
 from item import *
 import eca
+from priorityQueue import PriorityQueue
+from threading import Thread
 
 types = {'motionSensor' : Item , 'lightSensor' : Item, 'temperatureSensor' : Item , 'energyMonitor' : Item , 'button' : Item , 'door' : Openable, 'window' : Openable, 'curtain' : Openable, 'plug' : OnOff, 'light' : Lights, 'radiator' : RadiatorValve}
 
@@ -12,6 +14,9 @@ class House(object):
         self.database = database
         self.rooms = {}
         self.events = []
+        self.queue = PriorityQueue()
+        self.methodThread = Thread(name="Method Thread", target=self.executeFromQueue)
+        self.methodThread.start()
 
     def initFromDatabase(self):
         """Initialises the house from the database"""
@@ -61,6 +66,13 @@ class House(object):
         return id
 
     def updateRoom(self, roomId, name):
+        """
+        Updates a specific room
+`
+        Arguments:
+        roomId -- the id of the room
+        name -- new name for the given room
+        """
         self.database.room.updateEntry(roomId, name)
         self.rooms[roomId] = Room(roomId, name)
 
@@ -179,6 +191,25 @@ class House(object):
                 action.doAction(self.getItemsByType(action._type))
             else:
                 action.doAction()
+
+    def executeFromQueue(self):
+        """Executes method from the queue, run in a seperate thread"""
+        while True:
+            if not queue.isEmpty():
+                executeMethod(*queue.get())
+
+
+    def addToQueue(self, roomId, itemId, method, args=[]):
+        """
+        Adds a method to the queue
+
+        Arguments:
+        roomId -- id of the room
+        itemId -- id of the item
+        method -- method to be called
+        args -- arguments od the method, empty list by detault 
+        """
+        self.queue.put(roomId, itemId, method, args)
 
     def executeMethod(self, roomId, itemId, method, args=[]):
         """
