@@ -21,6 +21,9 @@ class RoomsTable(DatabaseHelper):
     def retrieveAllData(self):
         return super(RoomsTable, self).retriveData("SELECT * FROM " + self.tablename)
 
+    def updateEntry(self, id, name):
+        return super(RoomsTable, self).updateEntry(self.tablename, "id = '" + str(id) + "'", "name = '" + name + "'")
+
 class TypesTable(DatabaseHelper):
 
     def __init__(self):

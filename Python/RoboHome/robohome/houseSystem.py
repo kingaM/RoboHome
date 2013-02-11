@@ -60,6 +60,10 @@ class House:
 
         return id
 
+    def updateRoom(self, roomId, name):
+        self.database.room.updateEntry(roomId, name)
+        self.rooms[roomId] = Room(roomId, name)
+
     def addItem(self, roomId, name, brand, type, ip):
         """
         Adds an item to the house system and the database

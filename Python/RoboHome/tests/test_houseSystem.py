@@ -74,6 +74,9 @@ class MockRoomTable:
     def retrieveAllData(self):
         return ((1, "lounge"),)
 
+    def updateEntry(self, id, name):
+        pass
+
 
 class MockTypesTable:
 
@@ -300,6 +303,14 @@ class TestHouse(unittest.TestCase):
         h = House(db)
         h.rooms = {}
         self.assertRaises(KeyError, h.executeMethod, 1, 1, "getState")
+
+    def test_updateRoom(self):
+        db = MockDatabase()
+        h = House(db)
+        room = MockRoom(1, "lounge")
+        h.rooms = {1: room}
+        h.updateRoom(1, "new name")
+        self.assertEqual(h.rooms[1].name, "new name")
 
 class TestRoom(unittest.TestCase):
 
