@@ -3,7 +3,7 @@ import MySQLdb as mdb
 class DatabaseHelper(object):
 
     try:
-        con = mdb.connect('localhost', 'root', 'root', 'robohome')
+        con = mdb.connect('localhost', 'root', '', 'robohome')
     except Exception, e:
         print e.message
 
@@ -56,4 +56,4 @@ class DatabaseHelper(object):
 
 
 if __name__=='__main__':
-    database = DatabaseHelper('localhost', 'root', 'root', 'robohome')
+    database = DatabaseHelper('localhost', 'root', '', 'robohome')
