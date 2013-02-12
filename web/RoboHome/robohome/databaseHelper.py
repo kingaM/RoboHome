@@ -1,13 +1,13 @@
 import MySQLdb as mdb
 
 class DatabaseHelper(object):
-
+    
     try:
-        con = mdb.connect('localhost', 'root', '', 'robohome')
+        con = mdb.connect(host = '127.0.0.1', user = 'root', passwd = '', db = 'robohome')
     except Exception, e:
         print e.message
 
-    def __init__(self, host='localhost', username='root', password='', database='robohome'):
+    def __init__(self, host='127.0.0.1', username='root', password='', database='robohome'):
         self.host = host
         self.username = username
         self.password = password

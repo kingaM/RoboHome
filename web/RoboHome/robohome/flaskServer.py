@@ -31,15 +31,7 @@ SETTINGS = {
 
 # Common methods ----------------------------------------------------------
 
-# Get JSON string from request body
-
-
-def getJSON():
-    pass
-
 # Pack content object into communications wrapper API format and return it as a dictionary
-
-
 def pack(content={}, statusCode=200):
     return {
         SETTINGS['API']['STATUS_CODE']: statusCode,
