@@ -42,7 +42,65 @@ def pack(content = {}, statusCode = 200):
 
 # Mock objects -------------------------------------------------------------
 MOCK_OBJECTS = {
-    'GET_HOUSE_STRUCTURE': pack({
+    'GET_VERSION': pack({
+        'supportedTypes': {
+            'mock-item-type-1': {
+                'supportedBrands': [
+                    'mock-item-brand-1',
+                    'mock-item-brand-2',
+                    'mock-item-brand-3',
+                    'mock-item-brand-4'
+                ],
+                'discrete': {
+                    'methods': ['equals'],
+                    'states': [
+                        { 'state': 0, 'name': 'closed' },
+                        { 'state': 1, 'name': 'open' }
+                    ]
+                }
+            },
+            'mock-item-type-2': {
+                'supportedBrands': [
+                    'mock-item-brand-1',
+                    'mock-item-brand-2'
+                ],
+                'discrete': {
+                    'methods': ['equals'],
+                    'states': [
+                        { 'state': 0, 'name': 'closed' },
+                        { 'state': 1, 'name': 'open' }
+                    ]
+                }
+            },
+            'mock-item-type-3': {
+                'supportedBrands': [
+                    'mock-item-brand-5',
+                    'mock-item-brand-6'
+                ],
+                'discrete': {
+                    'methods': ['equals'],
+                    'states': [
+                        { 'state': 0, 'name': 'off' },
+                        { 'state': 1, 'name': 'on' }
+                    ]
+                }
+            },
+            'mock-item-type-4': {
+                'supportedBrands': [
+                    'mock-item-brand-1',
+                    'mock-item-brand-3'
+                ],
+                'discrete': {
+                    'methods': ['equals'],
+                    'states': [
+                        { 'state': 0, 'name': 'foo' },
+                        { 'state': 1, 'name': 'bar' }
+                    ]
+                }
+            }
+        }
+    }),
+    'GET_STRUCTURE': pack({
         'rooms': [
             {
                 'id': 1,
@@ -51,14 +109,14 @@ MOCK_OBJECTS = {
                     {
                         'id': 1,
                         'name': 'mock-item-name-1',
-                        'type': 'mock-item-type-1',
+                        'itemType': 'mock-item-type-1',
                         'brand': 'mock-item-brand-1',
                         'ip': 'mock-item-ip-1'
                     },
                     {
                         'id': 2,
                         'name': 'mock-item-name-2',
-                        'type': 'mock-item-type-2',
+                        'itemType': 'mock-item-type-2',
                         'brand': 'mock-item-brand-2',
                         'ip': 'mock-item-ip-2'
                     }
@@ -71,22 +129,62 @@ MOCK_OBJECTS = {
                     {
                         'id': 3,
                         'name': 'mock-item-name-3',
-                        'type': 'mock-item-type-3',
+                        'itemType': 'mock-item-type-3',
                         'brand': 'mock-item-brand-3',
                         'ip': 'mock-item-ip-3'
                     },
                     {
                         'id': 4,
                         'name': 'mock-item-name-4',
-                        'type': 'mock-item-type-4',
+                        'itemType': 'mock-item-type-4',
                         'brand': 'mock-item-brand-4',
                         'ip': 'mock-item-ip-4'
+                    }
+                ]
+            },
+            {
+                'id': 3,
+                'name': 'mock-room-3',
+                'items': [
+                    {
+                        'id': 5,
+                        'name': 'mock-item-name-5',
+                        'itemType': 'mock-item-type-5',
+                        'brand': 'mock-item-brand-5',
+                        'ip': 'mock-item-ip-5'
+                    },
+                    {
+                        'id': 6,
+                        'name': 'mock-item-name-6',
+                        'itemType': 'mock-item-type-6',
+                        'brand': 'mock-item-brand-6',
+                        'ip': 'mock-item-ip-6'
+                    }
+                ]
+            },
+            {
+                'id': 4,
+                'name': 'mock-room-4',
+                'items': [
+                    {
+                        'id': 7,
+                        'name': 'mock-item-name-7',
+                        'itemType': 'mock-item-type-7',
+                        'brand': 'mock-item-brand-7',
+                        'ip': 'mock-item-ip-7'
+                    },
+                    {
+                        'id': 8,
+                        'name': 'mock-item-name-8',
+                        'itemType': 'mock-item-type-8',
+                        'brand': 'mock-item-brand-8',
+                        'ip': 'mock-item-ip-8'
                     }
                 ]
             }
         ]
     })
-} 
+}
 
 
 # App config ---------------------------------------------------------------
@@ -105,11 +203,19 @@ def home():
 
 
 
+@app.route('/version/', methods = ['GET'])
+def rooms_version():
+    if request.method == 'GET':
+        # Return initial info when connecting to server for the first time
+        return jsonify(MOCK_OBJECTS['GET_VERSION'])
+
+
+
 @app.route('/version/<string:version>/structure/', methods = ['GET'])
 def structure(version):
     if request.method == 'GET':
         # Return structure of house. This is used for passing hierarchial info
-        return jsonify(MOCK_OBJECTS['GET_HOUSE_STRUCTURE'])
+        return jsonify(MOCK_OBJECTS['GET_STRUCTURE'])
     
 
 
@@ -193,15 +299,6 @@ def events_eventId(version, eventId):
     if request.method == 'DELETE':
         # Remove event
         pass
-
-
-
-@app.route('/version/<string:version>/methods/', methods = ['GET'])
-def rooms_roomId_items(version):
-    if request.method == 'GET':
-        # Return list of methods for all item types
-        pass
-
 
 
 ##################################

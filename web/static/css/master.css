@@ -292,6 +292,7 @@ div.stage {
             padding: 1em;
             margin: 0.5em 0;
             border: 1px solid #666666;
+            overflow: auto;
     -webkit-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
        -moz-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
         -ms-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
@@ -305,7 +306,7 @@ div.stage {
 }
 
 .stage-content > .entity-display.room {
-    width: 45.5%;
+    width: 29%;
     float: left;
     margin: 0 0.5em 0.5em 0.5em;
     background-color: rgba(0,200,200,0.1);
@@ -327,8 +328,15 @@ div.stage {
 
 @media only screen and (max-width: 1200px) {
     .stage-content > .entity-display.room {
-        width: 92%;
+        width: 41.5%;
         font-size: 200%;
+    }
+}
+
+@media only screen and (max-width: 600px) {
+    .stage-content > .entity-display.room {
+        width: 92%;
+        font-size: 300%;
     }
 }
 
@@ -343,10 +351,17 @@ div.stage {
 .stage-content .entity-display.light { border-left: 0.15em solid rgba(255,233,21,1); }
 
 .stage-content .entity-display .info-bar {
-    width: auto;
+    width: 100%;
     margin: 0;
     margin-bottom: 0.3em;
     vertical-align: top;
+    display: block;
+    float: left;
+}
+
+.stage-content .entity-display.item .info-bar {
+    width: auto;
+    display: inline-block;
 }
 
 .stage-content .entity-display h1 {
@@ -355,11 +370,40 @@ div.stage {
     margin: 0;
 }
 
+.stage-content .entity-display.item h1 {
+    font-size: 0.9em;
+}
+
 .stage-content .entity-display span {
     font-size: 0.7em;
     margin: 0 0.5em;
     color: #AAAAAA;
     display: block;
+}
+
+.stage-content .entity-display .attachments.self {
+    display: inline-block;
+    float: right;
+    margin: 0 0.5em;
+    text-align: center;
+}
+
+.stage-content .entity-display .attachments.self > .attachment {
+    background-image:        -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,255,255,0.2)), color-stop(30%,rgba(255,255,255,0)));
+    background-image: -webkit-linear-gradient(top, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
+    background-image:    -moz-linear-gradient(top, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
+    background-image:     -ms-linear-gradient(top, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
+    background-image:      -o-linear-gradient(top, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
+    background-image:   linear-gradient(to bottom, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
+}
+
+.stage-content .entity-display .attachments.self > .attachment:active {
+    background-image:        -webkit-gradient(linear, left bottom, left top, color-stop(0%,rgba(255,255,255,0.2)), color-stop(30%,rgba(255,255,255,0)));
+    background-image: -webkit-linear-gradient(bottom, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
+    background-image:    -moz-linear-gradient(bottom, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
+    background-image:     -ms-linear-gradient(bottom, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
+    background-image:      -o-linear-gradient(bottom, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
+    background-image:         linear-gradient(to top, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
 }
 
 /*
@@ -428,26 +472,6 @@ div.stage {
     width: 23%;
     float: left;
     margin-right: 1em;
-}
-
-.stage-content .entity-display .attachments.self > .attachment,
-.stage-content .entity-display .attachments.command > .attachment > div {
-    background-image:        -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,255,255,0.2)), color-stop(30%,rgba(255,255,255,0)));
-    background-image: -webkit-linear-gradient(top, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
-    background-image:    -moz-linear-gradient(top, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
-    background-image:     -ms-linear-gradient(top, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
-    background-image:      -o-linear-gradient(top, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
-    background-image:   linear-gradient(to bottom, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
-}
-
-.stage-content .entity-display .attachments.self > .attachment:active,
-.stage-content .entity-display .attachments.command > .attachment > div:active {
-    background-image:        -webkit-gradient(linear, left bottom, left top, color-stop(0%,rgba(255,255,255,0.2)), color-stop(30%,rgba(255,255,255,0)));
-    background-image: -webkit-linear-gradient(bottom, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
-    background-image:    -moz-linear-gradient(bottom, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
-    background-image:     -ms-linear-gradient(bottom, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
-    background-image:      -o-linear-gradient(bottom, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
-    background-image:         linear-gradient(to top, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
 }
 
 .stage-content .entity-display .attachments.self {

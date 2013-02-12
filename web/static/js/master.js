@@ -41,6 +41,16 @@ APP.API = {};
 APP.API.WRAPPER = {};
 APP.API.WRAPPER.STATUS_CODE = 'statusCode';
 APP.API.WRAPPER.CONTENT = 'content';
+APP.API.VERSION = {};
+APP.API.VERSION.SUPPORTED_TYPES = 'supportedTypes';
+APP.API.VERSION.SUPPORTED_BRANDS = 'supportedBrands';
+APP.API.VERSION.DISCRETE = 'discrete';
+APP.API.VERSION.CONTINUOUS = 'continuous';
+APP.API.VERSION.METHODS = 'methods';
+APP.API.VERSION.STATES = 'states';
+APP.API.VERSION.STATE = {};
+APP.API.VERSION.STATE.STATE = 'state';
+APP.API.VERSION.STATE.NAME = 'name';
 APP.API.STRUCT = {};
 APP.API.STRUCT.ROOMS = 'rooms';
 APP.API.STRUCT.ROOM = {};
@@ -52,20 +62,15 @@ APP.API.STRUCT.ROOM.ITEM.ID = 'id';
 APP.API.STRUCT.ROOM.ITEM.BRAND = 'brand';
 APP.API.STRUCT.ROOM.ITEM.IP = 'ip';
 APP.API.STRUCT.ROOM.ITEM.NAME = 'name';
-APP.API.STRUCT.ROOM.ITEM.TYPE = 'type';
+APP.API.STRUCT.ROOM.ITEM.ITEM_TYPE = 'itemType';
 
 // RESTful API URL specification
 // Remember to specify the trailing slash so Flask does not have to redirect
 APP.URL = {};
-APP.URL.STRUCTURE = function() {
-    return '/version/' + APP.CONSTANTS.VERSION + '/structure/';
-};
-APP.URL.STATE = function() {
-    return '/version/' + APP.CONSTANTS.VERSION + '/state/';
-};
-APP.URL.ROOMS = function() {
-    return '/version/' + APP.CONSTANTS.VERSION + '/rooms/';
-};
+APP.URL.VERSION = '/version/';
+APP.URL.STRUCTURE = '/version/' + APP.CONSTANTS.VERSION + '/structure/';
+APP.URL.STATE = '/version/' + APP.CONSTANTS.VERSION + '/state/';
+APP.URL.ROOMS = '/version/' + APP.CONSTANTS.VERSION + '/rooms/';
 APP.URL.ROOMS_ROOMID = function(roomId) {
     return '/version/' + APP.CONSTANTS.VERSION + '/rooms/' + roomId + '/';
 };
@@ -75,14 +80,9 @@ APP.URL.ROOMS_ROOMID_ITEMS = function(roomId) {
 APP.URL.ROOMS_ROOMID_ITEMS_ITEMID = function(roomId, itemId) {
     return '/version/' + APP.CONSTANTS.VERSION + '/rooms/' + roomId + '/items/' + itemId + '/';
 };
-APP.URL.EVENTS = function() {
-    return '/version/' + APP.CONSTANTS.VERSION + '/events/';
-};
+APP.URL.EVENTS = '/version/' + APP.CONSTANTS.VERSION + '/events/';
 APP.URL.EVENTS_EVENTID = function(eventId) {
     return '/version/' + APP.CONSTANTS.VERSION + '/events/' + eventId + '/';
-};
-APP.URL.METHODS = function() {
-    return '/version/' + APP.CONSTANTS.VERSION + '/methods/';
 };
 
 // ---------------------------------------------------------------------
@@ -103,7 +103,7 @@ APP.inherit = function(C, P) {
     C.prototype = new F();          // child inherits from new instance of intermediate. Breaks prototype reference to parent
     C.uber = P.prototype;           // set child's superclass as parent's prototype
     C.prototype.constructor = C;    // reset child's constructor pointer
-}
+};
 
 /**
  * @class APP.Map
@@ -113,7 +113,7 @@ APP.inherit = function(C, P) {
 APP.Map = function() {
     this.__items = {};
     this.size = 0;
-}
+};
 
 /**
  * @for APP.Map
@@ -128,7 +128,7 @@ APP.Map.prototype.hash = function(value) {
     return (typeof value) + ' ' + (value instanceof Object ?
         (value.__hash || (value.__hash = ++arguments.callee.current)) :
         value.toString());
-}
+};
 
 /**
  * @for APP.Map
@@ -138,7 +138,7 @@ APP.Map.prototype.hash = function(value) {
 APP.Map.prototype.clear = function() {
     this.__items = {};
     this.size = 0;
-}
+};
 
 /**
  * @for APP.Map
@@ -155,7 +155,7 @@ APP.Map.prototype.put = function(key, value) {
         this.size++;
     }
     else this.__items[hash].value = value;
-}
+};
 
 /**
  * @for APP.Map
@@ -172,7 +172,7 @@ APP.Map.prototype.remove = function(key) {
         this.size--;
         delete this.__items[hash];
     }
-}
+};
 
 /**
  * @for APP.Map
@@ -188,7 +188,7 @@ APP.Map.prototype.get = function(key) {
     item = this.__items[hash];
     if (item === undefined) { return undefined; } 
     return item.value;
-}
+};
 
 /**
  * @for APP.Map
@@ -202,7 +202,7 @@ APP.Map.prototype.getAll = function() {
         valueList.push(this.__items[item].value);
     }
     return valueList;
-}
+};
 
 /**
  * @for APP.Map
@@ -217,209 +217,7 @@ APP.Map.prototype.getKeys = function() {
         itemList.push(item);
     }
     return itemList;
-}
-
-/**
- * @class APP.Stage
- * @constructor
- * @param {String} menuId       Element id of menu containing button
- * @param {String} buttonId     Element id of button
- * @param {String} buttonText   Text of button to show/hide the stage and fire onClick() when stage becomes active
- * @param {String} stageId      Id of DOM element which represents the stage
- * Class responsible for running a stage in the UI.
- * Construction and updating behavior are configured via modifying construct() and update()
- */
-APP.Stage = function(menuId, buttonId, buttonText, stageId) {
-    var __menuId = menuId,
-        __buttonId = buttonId,
-        __buttonText = buttonText,
-        __stageId = stageId;
-    
-    this.data = {};
-    this.menuId = __menuId;
-    this.buttonId = __buttonId;
-    this.buttonText = __buttonText;
-    this.stageId = __stageId;
-    
-    /**
-     * @for APP.Stage
-     * @property data
-     * @type {Object}
-     * @default {}
-     * Data specific to this stage
-     */
-    this.data = {};
-    
-    /**
-     * @for APP.Stage
-     * @method onShow
-     * Execute function given to setOnShow()
-     */
-    this.onShow = function() {};
-    
-    /**
-     * @for APP.Stage
-     * @method onHide
-     * Execute function given to setOnHide()
-     */
-     this.onHide = function() {};
-    
-    /**
-     * @for APP.Stage
-     * @method construct
-     * Execute function given to setConstruct()
-     */
-    this.construct = function() {};
-    
-    /**
-     * @for APP.Stage
-     * @method update
-     * Execute function given to setUpdate()
-     */
-    this.update = function() {};
-}
-
-/**
- * @for APP.Stage
- * @method getContentArea
- * Gets the content area of the stage
- */
-APP.Stage.prototype.getContentArea = function() {
-    return $('#' + this.stageId + ' > .' + APP.DOM_HOOK.STAGE_CONTENT);
-}
-
-/**
- * @for APP.Stage
- * @method setOnShow
- * @param {Function} func Function to be passed in
- * Give function to execute when stage is shown
- */
-APP.Stage.prototype.setOnShow = function(func) {
-    var self = this;
-    this.onShow = function() {
-        console.log(self.stageId + ' onShow() called');
-        func();
-    }
-}
-
-/**
- * @for APP.Stage
- * @method setOnHide
- * @param {Function} func Function to be passed in
- * Give function to execute when stage is hidden
- */
-APP.Stage.prototype.setOnHide = function(func) {
-    var self = this;
-    this.onHide = function() {
-        console.log(self.stageId + ' onHide() called');
-        func();
-    }
-}
-
-/**
- * @for APP.Stage
- * @method setConstruct
- * @param {Function} func Function to be passed in
- * Give function to execute when construct() is called. 
- * construct() should only need to construct the DOM structure for update() to run on
- */
-APP.Stage.prototype.setConstruct = function(func) {
-    var self = this;
-    this.construct = function() {
-        console.log(self.stageId + ' construct() called');
-        func();
-    }
-}
-
-/**
- * @for APP.Stage
- * @method setUpdate
- * @param {Function} func Function to be passed in
- * Give function to execute when update() is called.
- * update() should be the function that's repeatedly called to update existing elements inserted by construct()
- */
-APP.Stage.prototype.setUpdate = function(func) {
-    var self = this;
-    this.update = function() {
-        console.log(self.stageId + ' update() called');
-        func();
-    }
-}
-
-/**
- * @class APP.RoomDisplay
- * @constructor
- * @param {Stage} stage Stage object hosting this RoomDisplay
- * @param {Object} roomData Object with room data specified according to API
- */
-APP.RoomDisplay = function(stage, roomData) {
-    this.stage = stage;
-    this.room = roomData;
-    this.items = this.room.items;
-}
-
-/**
- * @for APP.RoomDisplay
- * @method construct
- * Constructs the representation of this object on the stage
- */
-APP.RoomDisplay.prototype.construct = function() {
-    
-    function constructItemPanels(items) {
-        var itemPanel,
-            infoBar,
-            itemPanels = [];
-        
-        for(var i = 0; i < items.length; i++) {
-            itemPanel = $('<div></div>').attr({
-                class: 'entity-display ' + APP.DOM_HOOK.ENTITY.ITEM,
-                'data-id': items[i][APP.API.STRUCT.ROOM.ITEM.ID],
-                'data-ip': items[i][APP.API.STRUCT.ROOM.ITEM.IP],
-                'data-name': items[i][APP.API.STRUCT.ROOM.ITEM.NAME],
-                'data-brand': items[i][APP.API.STRUCT.ROOM.ITEM.BRAND],
-                'data-type': items[i][APP.API.STRUCT.ROOM.ITEM.TYPE]
-            });
-            
-            infoBar = $('<div></div>').addClass('info-bar');
-            infoBar.append($('<h1>' + items[i][APP.API.STRUCT.ROOM.ITEM.NAME] + '</h1>'));
-            infoBar.append($('<span>' + items[i][APP.API.STRUCT.ROOM.ITEM.IP] + '</span>'));
-            itemPanel.append(infoBar);
-            
-            itemPanels.push(itemPanel);
-        }
-        return itemPanels;
-    }
-    
-    var roomPanel,
-        infoBar,
-        itemPanels;
-        
-    itemPanels = constructItemPanels(this.items);
-    roomPanel = $('<div></div').attr({
-        class: 'entity-display ' + APP.DOM_HOOK.ENTITY.ROOM,
-        'data-id': this.room[APP.API.STRUCT.ROOM.ID],
-        'data-name': this.room[APP.API.STRUCT.ROOM.NAME]
-    });
-    
-    infoBar = $('<div></div>').addClass('info-bar');
-    infoBar.append($('<h1>' + this.room[APP.API.STRUCT.ROOM.NAME] + '</h1>'));
-    roomPanel.append(infoBar);
-    
-    for(var j = 0; j < itemPanels.length; j++) {
-        roomPanel.append(itemPanels[j]);
-    }
-    
-    this.stage.getContentArea().append(roomPanel);
-}
-
-/**
- * @for APP.RoomDisplay
- * @method update
- * Updates an existing representation of this object on the stage
- */
-APP.RoomDisplay.prototype.update = function() {
-    //TODO
-}
+};
 
 // ---------------------------------------------------------------------
 // Active data
@@ -427,9 +225,7 @@ APP.RoomDisplay.prototype.update = function() {
 
 APP.data = {
     houseStructure: undefined,
-    cache: {
-        methodList: new APP.Map()
-    }
+    cache: undefined
 };
 
 // ---------------------------------------------------------------------
@@ -440,6 +236,7 @@ APP.data = {
  * @method APP.pack
  * @param {Object} payload  Object to pack
  * @return {Object}         Object in API message format
+ * @static
  * Packs given object into API message format
  */
 APP.pack = function(payload) {
@@ -452,6 +249,7 @@ APP.pack = function(payload) {
  * @method APP.packToJSON
  * @param {Object} payload  Object to pack
  * @return {String}         JSON string in API message format
+ * @static
  * Packs given object into JSON string in API message format
  */
 APP.packToJSON = function(payload) {
@@ -462,6 +260,7 @@ APP.packToJSON = function(payload) {
  * @method APP.unpack
  * @param {String} json JSON string
  * @return {Object}     Object
+ * @static
  * Currently equivalent of JSON.parse(obj)
  */
 APP.unpack = function(json) {
@@ -472,6 +271,7 @@ APP.unpack = function(json) {
  * @method APP.unpackToPayload
  * @param {String} json JSON string in API message format
  * @return {Object}     Payload object
+ * @static
  * Unpacks API JSON string and returns the payload object
  */
 APP.unpackToPayload = function(json) {
@@ -522,17 +322,311 @@ APP.ajax = function(requestType, url, payload, callback) {
  * Retrieves the latest house structure from the server
  */
 APP.ajax_get_structure = function(callback) {
-    APP.ajax('GET', APP.URL.STRUCTURE(), '',
+    APP.ajax('GET', APP.URL.STRUCTURE, '',
         function(json) {
             var obj = APP.unpackToPayload(json);
             APP.data.houseStructure = obj;
             callback();
-        });
+        }
+    );
 };
+
+APP.ajax_get_version = function(callback) {
+    APP.ajax('GET', APP.URL.VERSION, '',
+        function(json) {
+            var obj = APP.unpackToPayload(json);
+            APP.data.cache = obj;
+            callback();
+        }
+    );
+}
 
 // ---------------------------------------------------------------------
 // Core
 // ---------------------------------------------------------------------
+/**
+ * @class APP.Stage
+ * @constructor
+ * @param {String} menuId       Element id of menu containing button
+ * @param {String} buttonId     Element id of button
+ * @param {String} buttonText   Text of button to show/hide the stage and fire onClick() when stage becomes active
+ * @param {String} stageId      Id of DOM element which represents the stage
+ * Class responsible for running a stage in the UI.
+ * Construction and updating behavior are configured via modifying construct() and update()
+ */
+APP.Stage = function(menuId, buttonId, buttonText, stageId) {
+    var __menuId = menuId,
+        __buttonId = buttonId,
+        __buttonText = buttonText,
+        __stageId = stageId;
+    
+    this.data = {};
+    this.menuId = __menuId;
+    this.buttonId = __buttonId;
+    this.buttonText = __buttonText;
+    this.stageId = __stageId;
+    
+    /**
+     * @for APP.Stage
+     * @property data
+     * @type {Object}
+     * @default {}
+     * Data specific to this stage
+     */
+    this.data = {};
+    
+    /**
+     * @for APP.Stage
+     * @method onShow
+     * @param {Function} func Function to be passed in
+     * This function is executed when the stage is shown
+     * Set this via setOnShow()
+     * onShow() and onHide() are called by APP.MenuManager automatically when buttons are clicked on
+     * Depending on the stage, this might call update() or construct()
+     */
+    this.onShow = function() {};
+    
+    /**
+     * @for APP.Stage
+     * @method onHide
+     * @param {Function} func Function to be passed in
+     * This function is executed when the stage is hidden.
+     * Set this via setOnHide()
+     * onShow() and onHide() are called by APP.MenuManager automatically when buttons are clicked on
+     * Depending on the stage, this might be the place to call tearDown()
+     */
+    this.onHide = function() {};
+    
+    /**
+     * @for APP.Stage
+     * @method construct
+     * @param {Function} func Function to be passed in
+     * This function should specify the behavior for constructing the UI within the stage area.
+     * It should only need to construct the DOM structure for update() to run on. It should call update()
+     *   to update what the UI with the latest data if it needs to do so. You could call tearDown() at the
+     *   beginning to make sure the stage has been cleared for construction.
+     * Set this via setConstruct()
+     */
+    this.construct = function() {};
+    
+    /**
+     * @for APP.Stage
+     * @method tearDown
+     * @param {Function} func Function to be passed in
+     * This function should specify the behavior for deconstructing the UI within the stage area.
+     * This should be the opposite of what construct() does
+     * Set this via setTeardown()
+     */
+    this.tearDown = function() {};
+    
+    /**
+     * @for APP.Stage
+     * @method update
+     * @param {Function} func Function to be passed in
+     * This function should specify the behavior for updating an existing UI within the stage area, without
+     * having to repeatedly construct() and tearDown()
+     * Set this via setUpdate()
+     */
+    this.update = function() {};
+};
+
+/**
+ * @for APP.Stage
+ * @method getContentArea
+ * Gets the content area of the stage
+ */
+APP.Stage.prototype.getContentArea = function() {
+    return $('#' + this.stageId + ' > .' + APP.DOM_HOOK.STAGE_CONTENT);
+};
+
+/**
+ * @for APP.Stage
+ * @method setOnShow
+ * @param {Function} func Function to be passed in
+ * Give function to run when onShow() is called
+ */
+APP.Stage.prototype.setOnShow = function(func) {
+    var self = this;
+    this.onShow = function() {
+        console.log(self.stageId + ' onShow() called');
+        // console.trace(this);
+        func();
+    }
+};
+
+/**
+ * @for APP.Stage
+ * @method setOnHide
+ * @param {Function} func Function to be passed in
+ * Give function to execute when onHide() is called
+ */
+APP.Stage.prototype.setOnHide = function(func) {
+    var self = this;
+    this.onHide = function() {
+        console.log(self.stageId + ' onHide() called');
+        // console.trace(this);
+        func();
+    }
+};
+
+/**
+ * @for APP.Stage
+ * @method setConstruct
+ * @param {Function} func Function to be passed in
+ * Give function to execute when construct() is called.
+ */
+APP.Stage.prototype.setConstruct = function(func) {
+    var self = this;
+    this.construct = function() {
+        console.log(self.stageId + ' construct() called');
+        // console.trace(this);
+        func();
+    }
+};
+
+/**
+ * @for APP.Stage
+ * @method setTearDown
+ * @param {Function} func Function to be passed in
+ * Give function to execute when tearDown() is called. 
+ * tearDown() should be the behavior to clear the stage area of contents
+ */
+APP.Stage.prototype.setTearDown = function(func) {
+    var self = this;
+    this.tearDown = function() {
+        console.log(self.stageId + ' tearDown() called');
+        // console.trace(this);
+        func();
+    }
+};
+
+/**
+ * @for APP.Stage
+ * @method setUpdate
+ * @param {Function} func Function to be passed in
+ * Give function to execute when update() is called.
+ * update() should be the function that's repeatedly called to update the UI constructed by construct()
+ */
+APP.Stage.prototype.setUpdate = function(func) {
+    var self = this;
+    this.update = function() {
+        console.log(self.stageId + ' update() called');
+        // console.trace(this);
+        func();
+    }
+};
+
+/**
+ * @class APP.RoomDisplay
+ * @constructor
+ * @param {Stage} stage Stage object hosting this RoomDisplay
+ * @param {Object} roomData Object with room data specified according to API
+ * This class handles the controlling of all items contained within one room
+ */
+APP.RoomDisplay = function(stage, roomData) {
+    this.stage = stage;
+    this.room = roomData;
+    this.items = this.room.items;
+};
+
+/**
+ * @for APP.RoomDisplay
+ * @method construct
+ * Constructs the representation of this object on the stage
+ */
+APP.RoomDisplay.prototype.construct = function() {
+    
+    function constructItemPanels(items) {
+        var itemPanel,
+            infoBar,
+            attachmentsSelf,
+            itemPanels = [];
+        
+        for(var i = 0; i < items.length; i++) {
+            itemPanel = $('<div></div>').attr({
+                class: 'entity-display ' + APP.DOM_HOOK.ENTITY.ITEM,
+                'data-id': items[i][APP.API.STRUCT.ROOM.ITEM.ID],
+                'data-ip': items[i][APP.API.STRUCT.ROOM.ITEM.IP],
+                'data-name': items[i][APP.API.STRUCT.ROOM.ITEM.NAME],
+                'data-brand': items[i][APP.API.STRUCT.ROOM.ITEM.BRAND],
+                'data-itemtype': items[i][APP.API.STRUCT.ROOM.ITEM.ITEM_TYPE]
+            });
+            
+            infoBar = $('<div></div>').addClass('info-bar');
+            infoBar.append($('<h1>' + items[i][APP.API.STRUCT.ROOM.ITEM.NAME] + '</h1>').addClass('entity-name'));
+            infoBar.append($('<span>' + items[i][APP.API.STRUCT.ROOM.ITEM.IP] + '</span>').addClass('entity-ip'));
+            itemPanel.append(infoBar);
+            
+            attachmentsSelf = $('<div></div>').addClass('attachments self');
+            attachmentsSelf.append($('<div>foo</div>').addClass('attachment'));
+            itemPanel.append(attachmentsSelf);
+            
+            itemPanels.push(itemPanel);
+        }
+        return itemPanels;
+    }
+    
+    var roomPanel,
+        infoBar,
+        itemPanels;
+        
+    itemPanels = constructItemPanels(this.items);
+    roomPanel = $('<div></div').attr({
+        class: 'entity-display ' + APP.DOM_HOOK.ENTITY.ROOM,
+        'data-id': this.room[APP.API.STRUCT.ROOM.ID],
+        'data-name': this.room[APP.API.STRUCT.ROOM.NAME]
+    });
+    
+    infoBar = $('<div></div>').addClass('info-bar');
+    infoBar.append($('<h1>' + this.room[APP.API.STRUCT.ROOM.NAME] + '</h1>').addClass('entity-name'));
+    roomPanel.append(infoBar);
+    
+    for(var j = 0; j < itemPanels.length; j++) {
+        roomPanel.append(itemPanels[j]);
+    }
+    
+    this.stage.getContentArea().append(roomPanel);
+};
+
+/**
+ * @for APP.RoomDisplay
+ * @method update
+ * Updates an existing representation of this object on the stage
+ */
+APP.RoomDisplay.prototype.update = function() {
+    //TODO
+};
+
+/**
+ * @class APP.RoomControl
+ * @contructor
+ * @param {Stage} stage Stage object hosting this RoomControl
+ * @param {Object} roomData Object with room data specified according to API
+ * This class handles the configuration of all items contained within one room, and the room itself
+ */
+APP.RoomControl = function(stage, roomData) {
+    this.stage = stage;
+    this.room = roomData;
+    this.items = this.room.items;
+};
+
+/**
+ * @for APP.RoomControl
+ * @method construct
+ * Constructs the representation of this object on the stage
+ */
+APP.RoomControl.prototype.construct = function() {
+    //TODO
+};
+
+/**
+ * @for APP.RoomControl
+ * @method update
+ * Updates an existing representation of this object on the stage
+ */
+APP.RoomControl.prototype.update = function() {
+    //TODO
+};
 
 /**
  * @class APP.MenuManager
@@ -557,7 +651,7 @@ APP.MenuManager = function(stageManager) {
                 class: 'blue'
             },
             'button-construct': {
-                menuId: 'menu-construct',
+                menuId: null,
                 buttonText: 'Construct',
                 class: 'green'
             },
@@ -757,8 +851,9 @@ APP.StageManager = function() {
         
         // home stage
         (function() {
-            var stageId = addStage(new APP.Stage('menu-home', 'button-home', '', 'stage-home')),
+            var stageId = addStage(new APP.Stage(null, 'button-home', '', 'stage-home')),
                 stage = stages.get(stageId),
+                stageData = stage.data;
                 stageContent = stage.getContentArea();
             
             stage.setOnShow(function() {
@@ -768,14 +863,17 @@ APP.StageManager = function() {
                 
             });
             stage.setConstruct(function() {
-                
+                stage.tearDown('');
+            });
+            stage.setTearDown(function() {
+                stageContent.html('');
             });
             stage.setUpdate(function() {
                 
             });
         })();
 
-        // areas stage
+        // control stage
         (function() {
             var stageId = addStage(new APP.Stage('menu-control', 'button-control-all', 'All', 'stage-control-all')),
                 stage = stages.get(stageId),
@@ -789,7 +887,7 @@ APP.StageManager = function() {
                 
             });
             stage.setConstruct(function() {
-                stageContent.html('');
+                stage.tearDown();
                 APP.ajax_get_structure(function() {
                     var rooms = APP.data.houseStructure[APP.API.STRUCT.ROOMS];
                     stageData.roomDisplays = [];
@@ -800,16 +898,53 @@ APP.StageManager = function() {
                 });
                 stage.update();
             });
+            stage.setTearDown(function() {
+                stageContent.html('');
+            });
             stage.setUpdate(function() {
                 
             });
             
         })();
         
+        // construct stage
+        (function() {
+            var stageId = addStage(new APP.Stage(null, 'button-construct', '', 'stage-construct')),
+                stage = stages.get(stageId),
+                stageData = stage.data;
+                stageContent = stage.getContentArea();
+            
+            stage.setOnShow(function() {
+                stage.construct();
+            });
+            stage.setOnHide(function() {
+                
+            });
+            stage.setConstruct(function() {
+                stage.tearDown();
+                APP.ajax_get_structure(function() {
+                    var rooms = APP.data.houseStructure[APP.API.STRUCT.ROOMS];
+                    stageData.roomControls = [];
+                    for(var i = 0; i < rooms.length; i++) {
+                        stageData.roomControls.push(new APP.RoomControl(stage, rooms[i]));
+                        stageData.roomControls[i].construct();
+                    }
+                });
+                stage.update();
+            });
+            stage.setTearDown(function() {
+                stageContent.html('');
+            });
+            stage.setUpdate(function() {
+                
+            });
+        })();
+        
         // eca stage
         (function() {
             var stageId = addStage(new APP.Stage('menu-rules', 'button-rules-eca', 'ECA', 'stage-rules-eca')),
                 stage = stages.get(stageId),
+                stageData = stage.data;
                 stageContent = stage.getContentArea();
             
             stage.setOnShow(function() {
@@ -819,7 +954,10 @@ APP.StageManager = function() {
                 
             });
             stage.setConstruct(function() {
-                
+                tearDown();
+            });
+            stage.setTearDown(function() {
+                stageContent.html('');
             });
             stage.setUpdate(function() {
                 
@@ -1051,6 +1189,7 @@ APP.resizer = {
 
 $(document).ready(function() {
     
+APP.ajax_get_version(function() {
     // Instantiate manager objects
     var stageManager = new APP.StageManager(),
         menuManager = new APP.MenuManager(stageManager);
@@ -1066,32 +1205,8 @@ $(document).ready(function() {
     APP.windowResizeListener.listen();
     APP.resizer.resizeAll();
     
-    /*
-    // get client IP
-    APP.ajaxPost('GET_IP', '', '/returnclientip', 'normal', function(json) {
-        APP.Data.clientIP = APP.unpackToObject(json).CONTENT;
+    // remove UI mask
+    // start polling    
+});
         
-        // initialize data
-        APP.ajaxPost('ENTITY_CONSTRUCT', '', '/initinfo', 'normal', function(json) {
-            var obj;
-            obj = APP.unpackToObject(json);
-            
-            // set up data
-            APP.Data.areaMenuBindings = obj.CONTENT.bindings;
-            APP.Data.initData = obj.CONTENT.tree;
-            APP.DataHandler.internalize();
-            
-            // set up interactive elements
-            APP.UIConstructor.constructAll(APP.Data.EntityMap);
-            
-            // set listeners - make sure UI construction has finished before initializing these
-            APP.Listen.all();
-            
-            // remove UI mask
-            // start polling
-            APP.poller.setFrequency(1000);
-            APP.poller.startPolling();
-        });
-    });
-    */
 });
