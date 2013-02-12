@@ -1,0 +1,827 @@
+/**
+ *  CSS for home automation system prototype
+ *  Author: Li Quan Khoo
+ */
+@font-face {
+    font-family: 'serene';
+    src: url('master.css');
+    src: url('../fonts/serene.eot');
+    src: url('../fonts/serene.ttf') format('truetype'),
+         url('../fonts/serene.otf') format('opentype'),
+         url('../fonts/serene.woff') format('woff'),
+         url('../fonts/serene.svg') format('svg');
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+}
+
+body {
+    padding: 0;
+    margin: 0;
+    color: #FFFFFF;
+    background-color: #000000;
+    font-size: 62.5%;
+    font-family: sans-serif;
+    overflow: hidden; /* prevent scrollbar bumping the screen when screen height is being reduced */
+}
+
+.float-left { float: left; }
+
+/* ----- main layout ----- */
+.wrapper {
+    padding: 0;
+    margin: 0;
+}
+
+#wrapper-screen {
+    height: 100%;
+    width: 100%;
+}
+
+#wrapper-screen > .pretty-border > .top { height: 10%; }
+#wrapper-screen > .pretty-border > .middle { height: 80%; }
+#wrapper-screen > .pretty-border > .bottom { height: 10%; }
+
+#wrapper-left,
+#wrapper-right {
+    float: left;
+    height: 100%;
+}
+
+#wrapper-left {
+    margin-right: -1px;
+    width: 20%;
+}
+
+#wrapper-right {
+    width: 80%;
+    background-image: url('../img/grid.png');
+}
+
+#wrapper-primary {
+    font-size: 1em;
+    background-color: #000000;
+    background-image:              -webkit-gradient(linear, left top, left bottom, color-stop(0%, rgba(255,255,255,0)), color-stop(50%, rgba(255,255,255,0.12)), color-stop(50%, rgba(255,255,255,0.07)), color-stop(100%, rgba(255,255,255,0)));
+    background-image: -webkit-linear-gradient(top, rgba(255,255,255,0) 0%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.07) 50%, rgba(255,255,255,0) 100%);
+    background-image:    -moz-linear-gradient(top, rgba(255,255,255,0) 0%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.07) 50%, rgba(255,255,255,0) 100%);
+    background-image:     -ms-linear-gradient(top, rgba(255,255,255,0) 0%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.07) 50%, rgba(255,255,255,0) 100%);
+    background-image:      -o-linear-gradient(top, rgba(255,255,255,0) 0%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.07) 50%, rgba(255,255,255,0) 100%);
+    background-image:         linear-gradient(top, rgba(255,255,255,0) 0%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.07) 50%, rgba(255,255,255,0) 100%);
+    background-image:   linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.07) 50%, rgba(255,255,255,0) 100%);
+}
+
+#wrapper-secondary {
+    background-color: #000000;
+    background-image: url('../img/carbon-fiber-uniform.png');
+    font-size: 1em;
+}
+#wrapper-secondary > ul {
+    margin-top: -0.15em;
+    display: none;
+}
+#wrapper-secondary > ul.active { display: block; }
+#wrapper-secondary > .menu > li > a { padding: 0.4em 2em; }
+
+#wrapper-stage {}
+
+#wrapper-stage,
+#stages,
+.stage {
+    width: 100%;
+    height: 100%;
+}
+
+.stage {
+    overflow-y: auto;
+}
+
+/* ----- bar config ----- */
+.bar {
+    height: 100%;
+    width: 100%;
+    color: #FFFFFF;
+}
+
+#bar-left {
+    background: #000000;
+    position: relative;
+    z-index: 2;
+}
+
+#bar-left .pretty-border.horizontal > .left { width: 10%; }
+#bar-left .pretty-border.horizontal > .middle { width: 80%; }
+#bar-left .pretty-border.horizontal > .right { width: 10%; }
+
+#left-panel {
+    overflow-y: auto;
+}
+
+#time, #day, #date, #time, #am-pm, #day, #date {
+    font-family: 'serene';
+}
+
+#time,
+#day,
+#date { text-align: center; }
+#time {
+    font-size: 4.5em;
+}
+
+#am-pm { font-size: 0.6em; }
+#day { font-size: 2.5em; }
+#date { font-size: 2em; margin-bottom: 0.5em; }
+
+/* ----- menu ----- */
+.menu {
+    color: #FFFFFF;
+}
+
+.menu > li {
+    list-style: none;
+}
+
+.menu.horizontal {
+    padding: 0;
+    margin: 0;
+    margin-bottom: 0px;
+    overflow: hidden;
+    font-family: 'serene';
+}
+
+.menu.horizontal li {
+    float: left;
+    margin: 0;
+}
+
+.menu.horizontal > li > a {
+    font-size: 1.15em;
+    cursor: pointer;
+    text-decoration: none;
+    background-color: transparent;
+    font-family: serene;
+    color: #FFFFFF;
+    display: block;
+    padding: 0.5em 2em;
+}
+
+.menu.horizontal > li > a:active {
+    color: #FF0000;
+}
+
+#menu-primary {
+    background-image: url('../img/carbon-fiber-uniform.png');
+    border-bottom: 1px solid rgba(255,255,255,0.25);
+}
+
+.menu.secondary {
+    border-bottom: 1px solid rgba(255,255,255,0.5);
+}
+
+.menu.secondary > li > a {
+    border-width: 1px;
+    border-style: solid;
+    border-color: transparent;
+    font-size: 1.2em;
+}
+
+/* ----- stages ----- */
+.stage {
+            z-index: 1;
+            padding: 1.5em;
+            transition-timing-function: ease-out;
+    -webkit-transition-property: left;
+       -moz-transition-property: left;
+        -ms-transition-property: left;
+         -o-transition-property: left;
+            transition-property: left;
+    -webkit-transition-duration: 0.15s;
+       -moz-transition-duration: 0.15s;
+        -ms-transition-duration: 0.15s;
+         -o-transition-duration: 0.15s;
+}
+
+#stages,
+div.stage {
+    padding: 0;
+    margin: 0;
+}
+
+#stages > div.stage {
+    position: relative;
+    visibility: hidden;
+    height: 0;
+    width: 100%;
+    left: -100%;
+}
+
+#stages > div.stage.active {
+    left: 0;
+    height: 100%;
+    visibility: visible;
+}
+
+.stage-content {
+    padding: 1em;
+}
+
+.stage-content .entity-display {
+            padding: 1em;
+            margin: 0.5em 0;
+            border: 1px solid #666666;
+            overflow: auto;
+    -webkit-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+       -moz-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+        -ms-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+         -o-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+            box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+            background-color: transparent;
+}
+
+.stage-content .entity-display:hover {
+    background-color: rgba(255,255,255,0.1);
+}
+
+.stage-content > .entity-display.room {
+    width: 29%;
+    float: left;
+    margin: 0 0.5em 0.5em 0.5em;
+    background-color: rgba(0,200,200,0.1);
+            transition-timing-function: ease-out;
+    -webkit-transition-property: width;
+       -moz-transition-property: width;
+        -ms-transition-property: width;
+         -o-transition-property: width;
+            transition-property: width;
+    -webkit-transition-duration: 0.5s;
+       -moz-transition-duration: 0.5s;
+        -ms-transition-duration: 0.5;
+         -o-transition-duration: 0.5s;
+}
+
+.stage-content > .entity-display.room:hover {
+    background-color: rgba(0,200,200,0.2);
+}
+
+@media only screen and (max-width: 1200px) {
+    .stage-content > .entity-display.room {
+        width: 41.5%;
+        font-size: 200%;
+    }
+}
+
+@media only screen and (max-width: 600px) {
+    .stage-content > .entity-display.room {
+        width: 92%;
+        font-size: 300%;
+    }
+}
+
+.stage-content .entity-display.area:hover {
+    background-color: rgba(0,255,255,0.12);
+}
+
+.stage-content .entity-display.door { border-left: 0.15em solid rgba(0,134,191,1); }
+.stage-content .entity-display.lock { border-left: 0.15em solid rgba(196,30,30,1); }
+.stage-content .entity-display.window { border-left: 0.15em solid rgba(93,33,182,1); }
+.stage-content .entity-display.curtain { border-left: 0.15em solid rgba(93,33,182,1); }
+.stage-content .entity-display.light { border-left: 0.15em solid rgba(255,233,21,1); }
+
+.stage-content .entity-display .info-bar {
+    width: 100%;
+    margin: 0;
+    margin-bottom: 0.3em;
+    vertical-align: top;
+    display: block;
+    float: left;
+}
+
+.stage-content .entity-display.item .info-bar {
+    width: auto;
+    display: inline-block;
+}
+
+.stage-content .entity-display h1 {
+    display: inline-block;
+    font-size: 1em;
+    margin: 0;
+}
+
+.stage-content .entity-display.item h1 {
+    font-size: 0.9em;
+}
+
+.stage-content .entity-display span {
+    font-size: 0.7em;
+    margin: 0 0.5em;
+    color: #AAAAAA;
+    display: block;
+}
+
+.stage-content .entity-display .attachments.self {
+    display: inline-block;
+    float: right;
+    margin: 0 0.5em;
+    text-align: center;
+}
+
+.stage-content .entity-display .attachments.self > .attachment {
+    background-image:        -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,255,255,0.2)), color-stop(30%,rgba(255,255,255,0)));
+    background-image: -webkit-linear-gradient(top, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
+    background-image:    -moz-linear-gradient(top, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
+    background-image:     -ms-linear-gradient(top, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
+    background-image:      -o-linear-gradient(top, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
+    background-image:   linear-gradient(to bottom, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
+}
+
+.stage-content .entity-display .attachments.self > .attachment:active {
+    background-image:        -webkit-gradient(linear, left bottom, left top, color-stop(0%,rgba(255,255,255,0.2)), color-stop(30%,rgba(255,255,255,0)));
+    background-image: -webkit-linear-gradient(bottom, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
+    background-image:    -moz-linear-gradient(bottom, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
+    background-image:     -ms-linear-gradient(bottom, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
+    background-image:      -o-linear-gradient(bottom, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
+    background-image:         linear-gradient(to top, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
+}
+
+/*
+.stage-content .attachments.command,
+.stage-content .attachments.collapse {
+    display: block;
+    margin: 0 0 0 -0.5em;
+    padding: 0.5em 0.5em 0.5em 0.3em;
+    border-left: none;
+    clear: left;
+}
+.stage-content .attachments.collapse {
+    margin-top: -0.8em;
+}
+.stage-content .attachments.command > .attachment {
+    vertical-align: top;
+}
+
+.stage-content .attachments.collapse .attachment {
+    display: inline-block;
+    border: 1px solid #FF0000;
+    min-height: 1em;
+    min-width: 5.35em;
+    margin: 0.2em 0.2em;
+    text-align: center;
+}
+.stage-content .attachments.command > .attachment > div.collapse,
+.stage-content .attachments.command > .attachment .filler {
+    height: 1.2em;
+}
+.stage-content .attachments.command > .attachment > div > .sprite {
+    width: 0em;
+    height: 0em;
+    display: inline-block;
+    position: relative;
+    border-width: 0.5em;
+    border-style: solid;
+    border-color: transparent;
+    border-bottom-color: #ffffff;
+    bottom: 0.2em;
+}
+.stage-content .attachments.command > .attachment > div.collapse {
+    border: 1px solid #444444;
+    background-color: rgba(20,20,20,0.6);
+}
+.stage-content .attachments.command > .attachment > div.collapsed {
+    background-color: rgba(255,0,0,0.6);
+}
+.stage-content .attachments.command > .attachment > div.collapsed > .sprite {
+    border-color: transparent;
+    border-top-color: #ffffff;
+    bottom: 0;
+    top: 0.3em;
+}
+
+.stage-content .attachments.panel {
+    clear: both;
+}
+
+.stage-content .attachment {
+    overflow: hidden;
+}
+
+.stage-content .entity-display.door .entity-display,
+.stage-content .entity-display.window .entity-display {
+    width: 23%;
+    float: left;
+    margin-right: 1em;
+}
+
+.stage-content .entity-display .attachments.self {
+    display: inline-block;
+    margin: 0 0.5em;
+    text-align: center;
+}
+
+.stage-content .entity-display.door .attachments .self,
+.stage-content .entity-display.window .attachments .self {
+    border: none;
+    display: block;
+}
+
+.stage-content .entity-display .attachments.command > .attachment,
+.stage-content .entity-display .attachments.self > .attachment {
+    display: inline-block;
+}
+
+.stage-content .entity-display .attacments.command > .attachment > div {
+    display: block;
+}
+
+.stage-content .entity-display .attachments.command > .attachment > div,
+.stage-content .entity-display .attachments.self > .attachment {
+            cursor: pointer;
+            text-align: center;
+            margin: 0 0.2em;
+            padding: 0.3em 1em;
+            font-family: sans-serif;
+            font-weight: bold;
+            font-size: 0.7em;
+    -webkit-box-shadow: 0 0 1px 1px rgba(0,0,0,0.7) inset;
+       -moz-box-shadow: 0 0 1px 1px rgba(0,0,0,0.7) inset;
+        -ms-box-shadow: 0 0 1px 1px rgba(0,0,0,0.7) inset;
+         -o-box-shadow: 0 0 1px 1px rgba(0,0,0,0.7) inset;
+            box-shadow: 0 0 1px 1px rgba(0,0,0,0.7) inset;
+}
+
+.stage-content .entity-display .attachments.self .attachment { width: 6em; }
+.stage-content .entity-display .attachments.command .attachment > div.command { width: 5.8em; }
+.stage-content .entity-display .bar .control-button:first-child { margin-left: 1em; }
+
+.stage-content .entity-display.lock > .attachments.command > .attachment > div.command,
+.stage-content .entity-display.curtain > .attachments.command > .attachment > div.command {
+    margin: 0;
+    padding: 0.2em 0;
+    display: block;
+}
+
+.stage-content .entity-display > .attachments.command > .attachment:not(.self) {
+    white-space: pre-wrap;
+}
+
+.stage-content .entity-display .filler {
+    cursor: default !important;
+    border: 1px solid #444444;
+    background-color: rgba(20,20,20,0.6);
+    background-image:        -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,255,255,0.2)), color-stop(30%,rgba(255,255,255,0))) !important;
+    background-image: -webkit-linear-gradient(top, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%) !important;
+    background-image:    -moz-linear-gradient(top, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%) !important;
+    background-image:     -ms-linear-gradient(top, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%) !important;
+    background-image:      -o-linear-gradient(top, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%) !important;
+    background-image:   linear-gradient(to bottom, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%) !important;
+}
+
+.stage-content .entity-display[data-state-door="0"] > .attachments.command > .attachment > div.command.door,
+.stage-content .entity-display[data-state-window="0"] > .attachments.command > .attachment > div.command.window,
+.stage-content .entity-display[data-state-curtain="0"] > .attachments.command > .attachment > div.command.curtain,
+.stage-content .entity-display[data-state-lock="0"] > .attachments.command > .attachment > div.command.lock,
+.stage-content .entity-display.door[data-state-self="0"] > .attachments.self > .attachment,
+.stage-content .entity-display.window[data-state-self="0"] > .attachments.self > .attachment,
+.stage-content .entity-display.curtain[data-state-self="0"] > .attachments.self > .attachment,
+.stage-content .entity-display.lock[data-state-self="0"] > .attachments.self > .attachment {
+    border: 1px solid #444444;
+    background-color: rgba(0,150,0,0.6);
+}
+.stage-content .entity-display[data-state-door="1"] > .attachments.command > .attachment > div.command.door,
+.stage-content .entity-display[data-state-window="1"] > .attachments.command > .attachment > div.command.window,
+.stage-content .entity-display[data-state-curtain="1"] > .attachments.command > .attachment > div.command.curtain,
+.stage-content .entity-display[data-state-lock="1"] > .attachments.command > .attachment > div.command.lock,
+.stage-content .entity-display.door[data-state-self="1"] > .attachments.self > .attachment,
+.stage-content .entity-display.window[data-state-self="1"] > .attachments.self > .attachment,
+.stage-content .entity-display.curtain[data-state-self="1"] > .attachments.self > .attachment,
+.stage-content .entity-display.lock[data-state-self="1"] > .attachments.self > .attachment {
+    border: 1px solid #666666;
+    background-color: rgba(255,200,0,0.6);
+}
+.stage-content .entity-display[data-state-light="0"] > .attachments.command > .attachment > div.command.light,
+.stage-content .entity-display.light[data-state-self="0"] > .attachments.self > .attachment.self {
+    border: 1px solid #444444;
+    background-color: rgba(20,20,20,0.6);
+}
+.stage-content .entity-display[data-state-light="1"] > .attachments.command > .attachment > div.command.light,
+.stage-content .entity-display.light[data-state-self="1"] > .attachments.self > .attachment {
+    border: 1px solid #AAAAAA;
+    background-color: rgba(255,255,255,0.6);
+}
+
+.stage-content .entity-display.door[data-state-self="0"] > .attachments.self > .attachment:after,
+.stage-content .entity-display.window[data-state-self="0"] > .attachments.self > .attachment:after,
+.stage-content .entity-display.curtain[data-state-self="0"] > .attachments.self > .attachment:after {
+    content: 'CLOSED';
+}
+.stage-content .entity-display[data-state-door="0"] > .attachments.command > .attachment > div.command.door:after {
+    content: 'DOORS\A CLOSED';
+}
+.stage-content .entity-display[data-state-window="0"] > .attachments.command > .attachment > div.command.window:after {
+    content: 'WINDOWS\A CLOSED';
+}
+.stage-content .entity-display[data-state-curtain="0"] > .attachments.command > .attachment > div.command.curtain:after {
+    content: 'CURTAINS\A CLOSED';
+}
+.stage-content .entity-display.door[data-state-self="1"] > .attachments.self > .attachment:after,
+.stage-content .entity-display.window[data-state-self="1"] > .attachments.self > .attachment:after,
+.stage-content .entity-display.curtain[data-state-self="1"] > .attachments.self > .attachment:after {
+    content: 'OPEN';
+}
+.stage-content .entity-display[data-state-door="1"] > .attachments.command > .attachment > div.command.door:after {
+    content: 'DOORS\A OPEN';
+}
+.stage-content .entity-display[data-state-window="1"] > .attachments.command > .attachment > div.command.window:after {
+    content: 'WINDOWS\A OPEN';
+}
+.stage-content .entity-display[data-state-curtain="1"] > .attachments.command > .attachment > div.command.curtain:after {
+    content: 'CURTAINS\A OPEN';
+}
+.stage-content .entity-display.lock[data-state-self="0"] > .attachments.self > .attachment:after {
+    content: 'ENGAGED';
+}
+.stage-content .entity-display[data-state-lock="0"] > .attachments.command > .attachment > div.command.lock:after {
+    content: 'LOCKS\A ENGAGED';
+}
+.stage-content .entity-display.lock[data-state-self="1"] > .attachments.self > .attachment:after {
+    content: 'DISENGD';
+}
+.stage-content .entity-display[data-state-lock="1"] > .attachments.command > .attachment > div.command.lock:after {
+    content: 'LOCKS\A DISENGD';
+}
+.stage-content .entity-display.light[data-state-self="0"] > .attachments.self > .attachment:after {
+    content: 'OFF';
+}
+.stage-content .entity-display[data-state-light="0"] > .attachments.command > .attachment > div.command.light:after {
+    content: 'LIGHTS\A OFF';
+}
+.stage-content .entity-display.light[data-state-self="1"] > .attachments.self > .attachment:after {
+    content: 'ON';
+}
+.stage-content .entity-display[data-state-light="1"] > .attachments.command > .attachment > div.command.light:after {
+    content: 'LIGHTS\A ON';
+}
+
+.stage-content .entity-display[data-state-self="-1"] > .attachments.command > .attachment > div.command.self,
+.stage-content .entity-display[data-state-door="-1"] > .attachments.command > .attachment > div.command.door,
+.stage-content .entity-display[data-state-window="-1"] > .attachments.command > .attachment > div.command.window,
+.stage-content .entity-display[data-state-lock="-1"] > .attachments.command > .attachment > div.command.lock,
+.stage-content .entity-display[data-state-curtain="-1"] > .attachments.command > .attachment > div.command.curtain,
+.stage-content .entity-display[data-state-light="-1"] > .attachments.command > .attachment > div.command.light,
+.stage-content .entity-display[data-state-area="-1"] > .attachments.command > .attachment > div.command.area {
+    border: 1px solid #444444;
+    background-color: rgba(0,150,150,0.6);
+}
+
+.stage-content .entity-display[data-state-door="-1"] > .attachments.command > .attachment > div.command.door:after {
+    content: 'DOORS\A PARTIAL';
+}
+.stage-content .entity-display[data-state-window="-1"] > .attachments.command > .attachment > div.command.window:after {
+    content: 'WINDOWS\A PARTIAL';
+}
+.stage-content .entity-display[data-state-lock="-1"] > .attachments.command > .attachment > div.command.lock:after {
+    content: 'LOCKS\A PARTIAL';
+}
+.stage-content .entity-display[data-state-curtain="-1"] > .attachments.command > .attachment > div.command.curtain:after {
+    content: 'CURTAINS\A PARTIAL';
+}
+.stage-content .entity-display[data-state-light="-1"] > .attachments.command > .attachment > div.command.light:after {
+    content: 'LIGHTS\A PARTIAL';
+}
+.stage-content .entity-display[data-state-area="-1"] > .attachments.command > .attachment > div.command.area:after {
+    content: 'AREAS\A PARTIAL';
+}
+
+.stage-content .entity-display[data-state-self="undefined"] > .attachments.self > .attachment,
+.stage-content .entity-display[data-state-door="undefined"] > .attachments.collapse > .attachment.door,
+.stage-content .entity-display[data-state-window="undefined"] > .attachments.collapse > .attachment.window,
+.stage-content .entity-display[data-state-lock="undefined"] > .attachments.collapse > .attachment.lock,
+.stage-content .entity-display[data-state-curtain="undefined"] > .attachments.collapse > .attachment.curtain,
+.stage-content .entity-display[data-state-light="undefined"] > .attachments.collapse > .attachment.light,
+.stage-content .entity-display[data-state-area="undefined"] > .attachments.collapse > .attachment.area,
+.stage-content .entity-display[data-state-door="undefined"] > .attachments.command > .attachment.door,
+.stage-content .entity-display[data-state-window="undefined"] > .attachments.command > .attachment.window,
+.stage-content .entity-display[data-state-lock="undefined"] > .attachments.command > .attachment.lock,
+.stage-content .entity-display[data-state-curtain="undefined"] > .attachments.command > .attachment.curtain,
+.stage-content .entity-display[data-state-light="undefined"] > .attachments.command > .attachment.light,
+.stage-content .entity-display[data-state-area="undefined"] > .attachments.command > .attachment.area {
+    display: none;
+}
+*/
+
+
+/* ----- pretty borders -----
+ * 
+ * Preconfiguration of colors and critical layout params.
+ * Set relative sizes of components separately, e.g.
+ * #parent > .pretty-border > .top { height: 15%; }
+ * #parent > .pretty-border > .middle { height: 70%; }
+ * #parent > .pretty-border > .bottom { height: 15%; }
+ * 
+ */
+.pretty-border {
+    position: relative;
+    display: block;
+    z-index: 100;
+}
+.pretty-border.vertical {
+    width: 1px;
+    height: 100%;
+}
+.pretty-border.horizontal {
+    height: 1px;
+    width: 100%;
+}
+
+.pretty-border > .top,
+.pretty-border > .middle,
+.pretty-border > .bottom,
+.pretty-border > .left,
+.pretty-border > .right {
+    background: rgba(255,255,255,0.25);
+}
+.pretty-border > .top {
+    background:        -webkit-gradient(linear, left top, left bottom, color-stop(0%, rgba(255,255,255,0)), color-stop(100%, rgba(255,255,255,0.25)));
+    background: -webkit-linear-gradient(top, rgba(255,255,255,0) 0%, rgba(255,255,255,0.25) 100%);
+    background:    -moz-linear-gradient(top, rgba(255,255,255,0) 0%, rgba(255,255,255,0.25) 100%);
+    background:     -ms-linear-gradient(top, rgba(255,255,255,0) 0%, rgba(255,255,255,0.25) 100%);
+    background:      -o-linear-gradient(top, rgba(255,255,255,0) 0%, rgba(255,255,255,0.25) 100%);
+    background:   linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.25) 100%);
+}
+.pretty-border > .bottom {
+    background:        -webkit-gradient(linear, left top, left bottom, color-stop(0%, rgba(255,255,255,0.25)), color-stop(100%, rgba(255,255,255,0)));
+    background: -webkit-linear-gradient(top, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 100%);
+    background:    -moz-linear-gradient(top, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 100%);
+    background:     -ms-linear-gradient(top, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 100%);
+    background:      -o-linear-gradient(top, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 100%);
+    background:   linear-gradient(to bottom, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 100%);
+}
+.pretty-border > .left {
+    background:        -webkit-gradient(linear, left top, right top, color-stop(0%, rgba(255,255,255,0)), color-stop(100%, rgba(255,255,255,0.25)));
+    background: -webkit-linear-gradient(left, rgba(255,255,255,0) 0%, rgba(255,255,255,0.25) 100%);
+    background:    -moz-linear-gradient(left, rgba(255,255,255,0) 0%, rgba(255,255,255,0.25) 100%);
+    background:     -ms-linear-gradient(left, rgba(255,255,255,0) 0%, rgba(255,255,255,0.25) 100%);
+    background:      -o-linear-gradient(left, rgba(255,255,255,0) 0%, rgba(255,255,255,0.25) 100%);
+    background:     linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.25) 100%);
+}
+.pretty-border > .right {
+    background:        -webkit-gradient(linear, left top, right top, color-stop(0%, rgba(255,255,255,0.25)), color-stop(100%, rgba(255,255,255,0)));
+    background: -webkit-linear-gradient(left, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 100%);
+    background:    -moz-linear-gradient(left, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 100%);
+    background:     -ms-linear-gradient(left, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 100%);
+    background:      -o-linear-gradient(left, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 100%);
+    background:     linear-gradient(to right, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 100%);
+}
+
+/* ----- decorative classes ----- */
+.pillow-button {
+    background-image:        -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,255,255,0.2)), color-stop(30%,rgba(255,255,255,0)));
+    background-image: -webkit-linear-gradient(top, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
+    background-image:    -moz-linear-gradient(top, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
+    background-image:     -ms-linear-gradient(top, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
+    background-image:      -o-linear-gradient(top, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
+    background-image:   linear-gradient(to bottom, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
+}
+
+.pillow-button:active {
+    background-image:        -webkit-gradient(linear, left bottom, left top, color-stop(0%,rgba(255,255,255,0.2)), color-stop(30%,rgba(255,255,255,0)));
+    background-image: -webkit-linear-gradient(bottom, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
+    background-image:    -moz-linear-gradient(bottom, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
+    background-image:     -ms-linear-gradient(bottom, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
+    background-image:      -o-linear-gradient(bottom, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
+    background-image:         linear-gradient(to top, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
+}
+
+/* ----- colors ----- */
+a {
+    background: transparent;
+    color: #FFFFFF;
+}
+
+a.red, a.green, a.blue, a.orange, a.yellow,
+.menu.secondary.red > li > a,
+.menu.secondary.green > li > a,
+.menu.secondary.blue > li > a,
+.menu.secondary.orange > li > a,
+.menu.secondary.yellow > li > a {
+            transition-timing-function: ease-out;
+    -webkit-transition-property: color;
+       -moz-transition-property: color;
+        -ms-transition-property: color;
+         -o-transition-property: color;
+            transition-property: color;
+    -webkit-transition-duration: 0.15s;
+       -moz-transition-duration: 0.15s;
+        -ms-transition-duration: 0.15s;
+         -o-transition-duration: 0.15s;
+}
+
+a.red:hover,
+a.red.selected,
+.menu.horizontal.red > li > a:active,
+.menu.secondary.red > li > a:hover { color: rgba(196,30,30,1) !important; }
+
+a.green:hover,
+a.green.selected,
+.menu.horizontal.green > li > a:active,
+.menu.secondary.green > li > a:hover { color: rgba(132,169,14,1) !important; }
+
+a.blue:hover,
+a.blue.selected,
+.menu.horizontal.blue > li > a:active,
+.menu.secondary.blue > li > a:hover  { color: rgba(0,134,191,1) !important; }
+
+a.orange:hover,
+a.orange.selected,
+.menu.horizontal.orange > li > a:active,
+.menu.secondary.orange > li > a:hover { color: rgba(240,73,17,1) !important; }
+
+a.yellow:hover,
+a.yellow.selected,
+.menu.horizontal.yellow > li > a:active,
+.menu.secondary.yellow > li > a:hover { color: rgba(255,233,21,1) !important; }
+
+.menu.horizontal.red {
+    border-top: 1px solid rgba(196,30,30,1);
+    background-color: rgba(196,30,30,0.1);
+}
+.menu.horizontal.green {
+    border-top: 1px solid rgba(132,169,14,1);
+    background-color: rgba(132,169,14,0.1);
+}
+.menu.horizontal.blue {
+    border-top: 1px solid rgba(0,134,191,1);
+    background-color: rgba(0,134,191,0.1);
+}
+.menu.horizontal.orange {
+    border-top: 1px solid rgba(240,73,17,1);
+    background-color: rgba(240,73,17,0.1);
+}
+.menu.horizontal.yellow {
+    border-top: 1px solid rgba(255,233,21,1);
+    background-color: rgba(255,255,0,0.1);
+}
+
+#menu-primary > li > a {
+    border-width: 0.1em;
+    border-bottom-width: 0;
+    border-style: solid;
+    border-color: transparent;
+}
+#menu-primary > li > a.no-menu {
+    border-bottom-width: 0.1em;
+}
+
+#menu-primary > li > a.red:active,
+#menu-primary > li > a.red.selected { border-color: rgba(196,30,30,1); }
+#menu-primary > li > a.green:active,
+#menu-primary > li > a.green.selected { border-color: rgba(132,169,14,1); }
+#menu-primary > li > a.blue:active,
+#menu-primary > li > a.blue.selected { border-color: rgba(0,134,191,1); }
+#menu-primary > li > a.orange:active,
+#menu-primary > li > a.orange.selected { border-color: rgba(240,73,17,1); }
+#menu-primary > li > a.yellow:active,
+#menu-primary > li > a.yellow.selected { border-color: rgba(255,233,21,1); }
+
+.selected,
+#menu-primary > li > a:active,
+.menu.secondary > li > a:active {
+            background-image: url('../img/nav-hover.png');
+            background-repeat: no-repeat;
+            background-position: bottom center;
+            background-size: 120% 80%;
+            background-color: rgba(0,0,0,0.5);
+    -webkit-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+       -moz-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+        -ms-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+         -o-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+            box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+}
+
+.menu.secondary.red > li > a:active,
+.menu.secondary.red > li > a.selected {
+    border: 1px solid rgba(196,30,30,1);
+    background-color: rgba(196,30,30,0.5);
+}
+.menu.secondary.green > li > a:active,
+.menu.secondary.green > li > a.selected {
+    border: 1px solid rgba(132,169,14,1);
+    background-color: rgba(132,169,14,0.5);
+}
+.menu.secondary.blue > li > a:active,
+.menu.secondary.blue > li > a.selected {
+    border: 1px solid rgba(0,134,191,1);
+    background-color: rgba(0,134,191,0.5);
+}
+.menu.secondary.orange > li > a:active,
+.menu.secondary.orange > li > a.selected {
+    border: 1px solid rgba(240,73,17,1);
+    background-color: rgba(240,73,17,0.5);
+}
+.menu.secondary.yellow > li > a:active,
+.menu.secondary.yellow > li > a.selected {
+    border: 1px solid rgba(255,233,21,1);
+    background-color: rgba(255,233,21,0.5);
+}
+
+
