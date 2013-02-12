@@ -11,11 +11,11 @@ echo -e "\nInstalling additional packages\n"
 pacman -S --noconfirm python2 python2-pip mysql mysql-python
 
 echo -e "\nInstalling python libraries needed\n"
-wget --no-check-certificate https://raw.github.com/michboon/comp2014/master/Python/requirements.txt
+wget --no-check-certificate https://raw.github.com/michboon/comp2014/script/Python/requirements.txt
 pip2 install -r requirements.txt
 
 echo -e "\nConfiguring mysql"
-wget --no-check-certificate https://raw.github.com/michboon/comp2014/master/Scripts/robohome.sql
+wget --no-check-certificate https://raw.github.com/michboon/comp2014/script/Scripts/robohome.sql
 chmod 777 robohome.sql
 systemctl start mysqld.service
 systemctl enable mysqld.service
