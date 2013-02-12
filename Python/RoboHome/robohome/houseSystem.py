@@ -176,21 +176,37 @@ class House(object):
 
         possibleEvents = self.getEventsForTrigger(item, trigger)
 
-        if len(possibleEvents) < 1:
-            return
+        itemsActedOn = []
+        events = []
 
-        # Until further development just use the first matching event
-        event = possibleEvents[0]
+        for event in possibleEvents:
+            eventItemsActedOn = []
+            eventMatch = True
+            for action in event.actions:
+                if action.isConflictWithOtherActions(itemsActedOn + eventItemsActedOn):
+                    eventMatch = False
+                    break
+                else:
+                    eventItemsActedOn.append(action.getItemsActedOn)
+            if eventMatch == True:
+                itemsActedOn.extend(eventItemsActedOn)
+                events.append(event)
 
-        for condition in event.conditions:
-            if not condition.check():
-                return
+        for event in events:
+            conditionsMatched = True
+            for condition in event.conditions:
+                if not condition.check():
+                    conditionsMatched = False
+                    break
 
-        for action in event.actions:
-            if action.isAllItemsInHouse():
-                action.doAction(self.getItemsByType(action._type))
-            else:
-                action.doAction()
+            if not conditionsMatched:
+                continue
+
+            for action in event.actions:
+                if action.isAllItemsInHouse():
+                    action.doAction(self.getItemsByType(action._type))
+                else:
+                    action.doAction()
 
     def executeFromQueue(self):
         """Executes method from the queue, run in a seperate thread"""

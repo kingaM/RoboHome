@@ -54,8 +54,9 @@ class MockHouse(House):
         self.event1 = MockEvent(1, "mockType1", self.item1, None, "mockTrigger", 1)
         self.event2 = MockEvent(2, "mockType2", self.item2, None, "mockTrigger", 1)
         self.event3 = MockEvent(3, "mockType2", self.item2, None, "mockTrigger2", 1)
+        self.event4 = MockEvent(4, "mockType1", self.item1, None, "mockTrigger", 1)
 
-        self.events = [self.event1, self.event2, self.event3]
+        self.events = [self.event1, self.event2, self.event3, self.event4]
 
 
 class MockEvent:
@@ -79,16 +80,24 @@ class MockCondition:
 
 
 class MockAction:
-    def __init__(self, allItemsInHouse=False, _type=""):
+    def __init__(self, allItemsInHouse=False, _type="", itemsActedOn=(None, None, "mockType"), isConflict=False):
         self.allItemsInHouse = allItemsInHouse
         self.itemsForType = []
         self._type = _type
+        self.itemsActedOn = itemsActedOn
+        self.isConflict = isConflict
 
     def isAllItemsInHouse(self):
         return self.allItemsInHouse
 
     def doAction(self, itemsForType=[]):
         self.itemsForType = itemsForType
+
+    def getItemsActedOn(self):
+        return self.itemsActedOn
+
+    def isConflictWithOtherActions(self, otherItemsActedOn):
+        return self.isConflict
 
 
 class MockRoomTable:
@@ -237,6 +246,7 @@ class TestHouse(unittest.TestCase):
     def test_getEventsForTrigger(self):
         h = MockHouse()
         self.assertEqual(h.getEventsForTrigger(h.item2, "mockTrigger"), [h.event2])
+        self.assertEqual(h.getEventsForTrigger(h.item1, "mockTrigger"), [h.event1, h.event4])
 
     def test_getHouseStructure(self):
         db = MockDatabase()
@@ -262,7 +272,7 @@ class TestHouse(unittest.TestCase):
 
         self.assertTrue(action.doAction.was_called)
 
-    def test_reactToEvent_conditionNotMet(self):
+    def test_reactToEvent_conditionFailed(self):
         h = MockHouse()
         h.event1.conditions = [MockCondition(True), MockCondition(False)]
         action = MockAction()
@@ -273,12 +283,56 @@ class TestHouse(unittest.TestCase):
 
         self.assertFalse(action.doAction.was_called)
 
+    def test_reactToEvent_MultipleEventsConditionFailed(self):
+        h = MockHouse()
+        action1 = MockAction(False, "mockType1", (None, None, "mockType"), False)
+        action1.doAction = MethCallLogger(action1.doAction)
+        action2 = MockAction(False, "mockType1", (None, None, "mockType"), False)
+        action2.doAction = MethCallLogger(action2.doAction)
+        h.event1.actions = [action1]
+        h.event4.actions = [action2]
+        h.event1.conditions = [MockCondition(True), MockCondition(False)]
+        h.event4.conditions = [MockCondition(True)]
+
+        h.reactToEvent("mockIP1", "mockTrigger")
+
+        self.assertFalse(action1.doAction.was_called)
+        self.assertTrue(action2.doAction.was_called)
+
     def test_reactToEvent_allInHouse(self):
         h = MockHouse()
         action = MockAction(True, "mockType1")
         h.event1.actions = [action]
         h.reactToEvent("mockIP1", "mockTrigger")
         self.assertNotEqual(action.itemsForType, [])
+
+    def test_reactToEvent_multipleEvents(self):
+        h = MockHouse()
+        action1 = MockAction(False, "mockType1", (None, None, "mockType"), False)
+        action1.doAction = MethCallLogger(action1.doAction)
+        action2 = MockAction(False, "mockType1", (None, None, "mockType"), False)
+        action2.doAction = MethCallLogger(action2.doAction)
+        h.event1.actions = [action1]
+        h.event4.actions = [action2]
+
+        h.reactToEvent("mockIP1", "mockTrigger")
+
+        self.assertTrue(action1.doAction.was_called)
+        self.assertTrue(action2.doAction.was_called)
+
+    def test_reactToEvent_multipleEventsWithConflict(self):
+        h = MockHouse()
+        action1 = MockAction(False, "mockType1", (None, None, "mockType"), False)
+        action1.doAction = MethCallLogger(action1.doAction)
+        action2 = MockAction(False, "mockType1", (None, None, "mockType"), True)
+        action2.doAction = MethCallLogger(action2.doAction)
+        h.event1.actions = [action1]
+        h.event4.actions = [action2]
+
+        h.reactToEvent("mockIP1", "mockTrigger")
+
+        self.assertTrue(action1.doAction.was_called)
+        self.assertFalse(action2.doAction.was_called)
 
     def test_executeMethod(self):
         db = MockDatabase()

@@ -83,3 +83,25 @@ class Action():
         else:
             for item in itemsForType:
                 getattr(item, self.method)()
+
+    def getItemsActedOn(self):
+        """
+        Gets the items that this action affects
+        """
+        return (self.item, self.room, self._type)
+
+    def isConflictWithOtherActions(self, otherItemsActedOn):
+        """
+        Determines if the results of this action will conflict with other actions
+
+        Arguments:
+        otherItemsActedOn -- a list of the other results to compare with (taken from getItemsActedOn)
+        """
+        for x in otherItemsActedOn:
+            if x[0] == self.item:
+                return True
+            if x[1] == self.room and x[2] == self._type:
+                return True
+            if x[0] == None and x[1] == None and x[2] == self._type:
+                return True
+        return False
