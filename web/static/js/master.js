@@ -344,6 +344,54 @@ APP.ajax_get_version = function(callback) {
 // ---------------------------------------------------------------------
 // Core
 // ---------------------------------------------------------------------
+
+/**
+ * @class APP.ContextMenu
+ * @constructor
+ * This class handles the context menu for each Stage
+ * The context menu is associated with each Stage. Each Stage's construct() and tearDown() will call the 
+ * equivalent of the instance of this object associated with the Stage.
+ */
+APP.ContextMenu = function() {
+    var selector = '#context-menu';
+    
+    /**
+     * @for APP.ContextMenu
+     * @method getContext
+     * Returns the jQuery object of the ContextMenu
+     */
+    this.getContext = function() {
+        return $(selector);
+    }
+    
+    /**
+     * @for APP.ContextMenu
+     * @method construct
+     * This executes the function given in setConstruct().
+     * This method is automatically called by the associated Stage's construct() method
+     */
+    this.construct = function() {};
+    
+    /**
+     * @for APP.ContextMenu
+     * @method setConstruct
+     * Give the function to execute when the ContextMenu's construct() is called
+     */
+    this.setConstruct = function(func) {
+        this.construct = func;
+    }
+    
+    /**
+     * @for APP.ContextMenu
+     * @method tearDown
+     * This clears the ContextMenu area by calling jQuery's .html('')
+     * This is called automatically by the associated Stage's onHide() method
+     */
+    this.tearDown = function() {
+        $(selector).html('');
+    }
+}
+
 /**
  * @class APP.Stage
  * @constructor
@@ -358,13 +406,15 @@ APP.Stage = function(menuId, buttonId, buttonText, stageId) {
     var __menuId = menuId,
         __buttonId = buttonId,
         __buttonText = buttonText,
-        __stageId = stageId;
+        __stageId = stageId,
+        __contextMenu = new APP.ContextMenu();
     
     this.data = {};
     this.menuId = __menuId;
     this.buttonId = __buttonId;
     this.buttonText = __buttonText;
     this.stageId = __stageId;
+    this.contextMenu = __contextMenu;
     
     /**
      * @for APP.Stage
@@ -402,6 +452,7 @@ APP.Stage = function(menuId, buttonId, buttonText, stageId) {
      * @method construct
      * @param {Function} func Function to be passed in
      * This function should specify the behavior for constructing the UI within the stage area.
+     * This function calls the construct() method of this stage's ContextMenu every time it is run.
      * It should only need to construct the DOM structure for update() to run on. It should call update()
      *   to update what the UI with the latest data if it needs to do so. You could call tearDown() at the
      *   beginning to make sure the stage has been cleared for construction.
@@ -417,8 +468,11 @@ APP.Stage = function(menuId, buttonId, buttonText, stageId) {
      * This should be the opposite of what construct() does
      * Set this via setTeardown()
      */
-    this.tearDown = function() {};
-    
+    this.tearDown = function() {
+        this.getContext().html('');
+        this.contextMenu.tearDown();
+    };
+        
     /**
      * @for APP.Stage
      * @method update
@@ -432,10 +486,10 @@ APP.Stage = function(menuId, buttonId, buttonText, stageId) {
 
 /**
  * @for APP.Stage
- * @method getContentArea
+ * @method getContext
  * Gets the content area of the stage
  */
-APP.Stage.prototype.getContentArea = function() {
+APP.Stage.prototype.getContext = function() {
     return $('#' + this.stageId + ' > .' + APP.DOM_HOOK.STAGE_CONTENT);
 };
 
@@ -444,6 +498,7 @@ APP.Stage.prototype.getContentArea = function() {
  * @method setOnShow
  * @param {Function} func Function to be passed in
  * Give function to run when onShow() is called
+ * This function will execute after any hardcoded behavior in onShow()
  */
 APP.Stage.prototype.setOnShow = function(func) {
     var self = this;
@@ -459,6 +514,7 @@ APP.Stage.prototype.setOnShow = function(func) {
  * @method setOnHide
  * @param {Function} func Function to be passed in
  * Give function to execute when onHide() is called
+ * This function will execute after any hardcoded behavior in onHide()
  */
 APP.Stage.prototype.setOnHide = function(func) {
     var self = this;
@@ -474,6 +530,7 @@ APP.Stage.prototype.setOnHide = function(func) {
  * @method setConstruct
  * @param {Function} func Function to be passed in
  * Give function to execute when construct() is called.
+ * This function will execute after any hardcoded behavior in construct()
  */
 APP.Stage.prototype.setConstruct = function(func) {
     var self = this;
@@ -481,6 +538,8 @@ APP.Stage.prototype.setConstruct = function(func) {
         console.log(self.stageId + ' construct() called');
         // console.trace(this);
         func();
+        this.contextMenu.construct(); // this is after func() so if the programmer needs to call
+                                      // tearDown() before construct(), tearDown does not delete the ContextMenu
     }
 };
 
@@ -490,12 +549,15 @@ APP.Stage.prototype.setConstruct = function(func) {
  * @param {Function} func Function to be passed in
  * Give function to execute when tearDown() is called. 
  * tearDown() should be the behavior to clear the stage area of contents
+ * This function will execute after any hardcoded behavior in tearDown()
+ * By default this just executes stage.getContext().html('') and stage.contextMenu.tearDown()
  */
 APP.Stage.prototype.setTearDown = function(func) {
     var self = this;
     this.tearDown = function() {
         console.log(self.stageId + ' tearDown() called');
         // console.trace(this);
+        this.contextMenu.tearDown();
         func();
     }
 };
@@ -506,6 +568,7 @@ APP.Stage.prototype.setTearDown = function(func) {
  * @param {Function} func Function to be passed in
  * Give function to execute when update() is called.
  * update() should be the function that's repeatedly called to update the UI constructed by construct()
+ * This function will execute after any hardcoded behavior in update()
  */
 APP.Stage.prototype.setUpdate = function(func) {
     var self = this;
@@ -515,6 +578,17 @@ APP.Stage.prototype.setUpdate = function(func) {
         func();
     }
 };
+
+/**
+ * @for APP.Stage
+ * @method setUpdate
+ * @param {Function} func Function to be passed in
+ * Give function to construct the Stage's ContextMenu
+ * The given function is called automatically when the Stage's construct() function is called
+ */
+APP.Stage.prototype.setMenuConstruct = function(func) {
+    this.contextMenu.setConstruct(func);
+}
 
 /**
  * @class APP.RoomDisplay
@@ -585,7 +659,7 @@ APP.RoomDisplay.prototype.construct = function() {
         roomPanel.append(itemPanels[j]);
     }
     
-    this.stage.getContentArea().append(roomPanel);
+    this.stage.getContext().append(roomPanel);
 };
 
 /**
@@ -853,41 +927,70 @@ APP.StageManager = function() {
         (function() {
             var stageId = addStage(new APP.Stage(null, 'button-home', '', 'stage-home')),
                 stage = stages.get(stageId),
-                stageData = stage.data;
-                stageContent = stage.getContentArea();
+                stageData = stage.data,
+                stageMenu = stage.contextMenu,
+                stageMenuContext = stageMenu.getContext(),
+                stageContext = stage.getContext();
             
             stage.setOnShow(function() {
                 
             });
             stage.setOnHide(function() {
+                
+            });
+            stage.setMenuConstruct(function() {
                 
             });
             stage.setConstruct(function() {
                 stage.tearDown('');
             });
-            stage.setTearDown(function() {
-                stageContent.html('');
-            });
             stage.setUpdate(function() {
                 
             });
         })();
-
+        
+        // control stages
+        APP.ajax_get_structure(function() {
+            var rooms = APP.data.houseStructure[APP.API.STRUCT.ROOMS];
+            console.log(rooms);
+            for(var i = 0; i < rooms.length; i++) {
+                var roomName = rooms[i][APP.API.STRUCT.ROOM.NAME];
+                
+                (function() {
+                    var stageId = addStage(new APP.Stage('menu-control',
+                        'button-control-' + roomName, roomName, 'stage-control-' + roomName)),
+                        stage = stages.get(stageId),
+                        stageData = stage.data,
+                        stageMenu = stage.contextMenu,
+                        stageMenuContext = stageMenu.getContext(),
+                        stageContext = stage.getContext();
+                        
+                    stageData.roomDisplays.push(new APP.RoomDisplay(stage, rooms[i]));
+                    stageData.roomDisplays[i].construct();
+                })();
+                
+            }
+        });
+        
         // control stage
         (function() {
             var stageId = addStage(new APP.Stage('menu-control', 'button-control-all', 'All', 'stage-control-all')),
                 stage = stages.get(stageId),
                 stageData = stage.data,
-                stageContent = stage.getContentArea();
+                stageMenu = stage.contextMenu,
+                stageMenuContext = stageMenu.getContext(),
+                stageContext = stage.getContext();
             
             stage.setOnShow(function() {
                 stage.construct();
             });
             stage.setOnHide(function() {
-                
+                stage.tearDown();
+            });
+            stage.setMenuConstruct(function() {
+                stageMenuContext.append('foo');
             });
             stage.setConstruct(function() {
-                stage.tearDown();
                 APP.ajax_get_structure(function() {
                     var rooms = APP.data.houseStructure[APP.API.STRUCT.ROOMS];
                     stageData.roomDisplays = [];
@@ -898,54 +1001,20 @@ APP.StageManager = function() {
                 });
                 stage.update();
             });
-            stage.setTearDown(function() {
-                stageContent.html('');
-            });
             stage.setUpdate(function() {
                 
             });
             
-        })();
-        
-        // construct stage
-        (function() {
-            var stageId = addStage(new APP.Stage(null, 'button-construct', '', 'stage-construct')),
-                stage = stages.get(stageId),
-                stageData = stage.data;
-                stageContent = stage.getContentArea();
-            
-            stage.setOnShow(function() {
-                stage.construct();
-            });
-            stage.setOnHide(function() {
-                
-            });
-            stage.setConstruct(function() {
-                stage.tearDown();
-                APP.ajax_get_structure(function() {
-                    var rooms = APP.data.houseStructure[APP.API.STRUCT.ROOMS];
-                    stageData.roomControls = [];
-                    for(var i = 0; i < rooms.length; i++) {
-                        stageData.roomControls.push(new APP.RoomControl(stage, rooms[i]));
-                        stageData.roomControls[i].construct();
-                    }
-                });
-                stage.update();
-            });
-            stage.setTearDown(function() {
-                stageContent.html('');
-            });
-            stage.setUpdate(function() {
-                
-            });
         })();
         
         // eca stage
         (function() {
             var stageId = addStage(new APP.Stage('menu-rules', 'button-rules-eca', 'ECA', 'stage-rules-eca')),
                 stage = stages.get(stageId),
-                stageData = stage.data;
-                stageContent = stage.getContentArea();
+                stageData = stage.data,
+                stageMenu = stage.contextMenu,
+                stageMenuContext = stageMenu.getContext(),
+                stageContext = stage.getContext();
             
             stage.setOnShow(function() {
                 
@@ -953,11 +1022,11 @@ APP.StageManager = function() {
             stage.setOnHide(function() {
                 
             });
-            stage.setConstruct(function() {
-                tearDown();
+            stage.setMenuConstruct(function() {
+                
             });
-            stage.setTearDown(function() {
-                stageContent.html('');
+            stage.setConstruct(function() {
+                stage.tearDown();
             });
             stage.setUpdate(function() {
                 

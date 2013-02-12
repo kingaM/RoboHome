@@ -118,68 +118,6 @@ body {
     overflow-y: auto;
 }
 
-/*
-#console {
-    font-size: 0.9em;
-    background-image: url('../img/grid.png');
-}
-#console > div > div {
-    word-wrap: break-word;
-    padding: 0.5em;
-}
-#console > div:nth-child(2n+1) {
-    
-}
-#console > div:nth-child(2n+1) {
-    
-}
-#console > div > div {
-    border-style: solid;
-    border-width: 0;
-    border-color: transparent;
-}
-
-#console > div > div { border-color: #ffffff; }
-#console > div.normal > div { border-color: rgba(132,169,14,1); }
-#console > div.error > div { border-color: rgba(196,30,30,1); }
-#console > div.outgoing > div {
-    border-left-width: 0.15em;
-}
-#console > div.incoming > div {
-    border-right-width: 0.15em;
-}
-
-#console div.console-head {
-    cursor: pointer;
-    background-color: rgba(20,20,20,0.6);
-    font-family: Courier, monospace;
-    background-image:        -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,255,255,0.2)), color-stop(5%,rgba(255,255,255,0)));
-    background-image: -webkit-linear-gradient(top, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 5%);
-    background-image:    -moz-linear-gradient(top, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 5%);
-    background-image:     -ms-linear-gradient(top, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 5%);
-    background-image:      -o-linear-gradient(top, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 5%);
-    background-image:   linear-gradient(to bottom, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 5%);
-    -webkit-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
-       -moz-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
-        -ms-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
-         -o-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
-            box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
-}
-
-#console div.console-head:active {
-    background-image:        -webkit-gradient(linear, left bottom, left top, color-stop(0%,rgba(255,255,255,0.2)), color-stop(5%,rgba(255,255,255,0)));
-    background-image: -webkit-linear-gradient(bottom, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 5%);
-    background-image:    -moz-linear-gradient(bottom, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 5%);
-    background-image:     -ms-linear-gradient(bottom, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 5%);
-    background-image:      -o-linear-gradient(bottom, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 5%);
-    background-image:         linear-gradient(to top, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 5%);
-}
-
-#console div.console-body {
-    background-color: rgba(0,200,200,0.1);
-}
-*/
-
 #time, #day, #date, #time, #am-pm, #day, #date {
     font-family: 'serene';
 }
