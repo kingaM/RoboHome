@@ -243,7 +243,7 @@ div.stage {
     background-color: rgba(255,255,255,0.1);
 }
 
-.stage-content > .entity-display.room {
+.stage-content > .entity-display.item-type {
     width: 29%;
     float: left;
     margin: 0 0.5em 0.5em 0.5em;
@@ -260,33 +260,31 @@ div.stage {
          -o-transition-duration: 0.5s;
 }
 
-.stage-content > .entity-display.room:hover {
+.stage-content > .entity-display.item-type:hover {
     background-color: rgba(0,200,200,0.2);
 }
 
 @media only screen and (max-width: 1200px) {
-    .stage-content > .entity-display.room {
+    .stage-content > .entity-display.item-type {
         width: 41.5%;
         font-size: 200%;
     }
 }
 
 @media only screen and (max-width: 600px) {
-    .stage-content > .entity-display.room {
+    .stage-content > .entity-display.item-type {
         width: 92%;
         font-size: 300%;
     }
 }
 
-.stage-content .entity-display.area:hover {
-    background-color: rgba(0,255,255,0.12);
-}
-
+/*
 .stage-content .entity-display.door { border-left: 0.15em solid rgba(0,134,191,1); }
 .stage-content .entity-display.lock { border-left: 0.15em solid rgba(196,30,30,1); }
 .stage-content .entity-display.window { border-left: 0.15em solid rgba(93,33,182,1); }
 .stage-content .entity-display.curtain { border-left: 0.15em solid rgba(93,33,182,1); }
 .stage-content .entity-display.light { border-left: 0.15em solid rgba(255,233,21,1); }
+*/
 
 .stage-content .entity-display .info-bar {
     width: 100%;
