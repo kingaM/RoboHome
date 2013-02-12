@@ -20,4 +20,4 @@ chmod 777 robohome.sql
 systemctl start mysqld.service
 systemctl enable mysqld.service
 systemctl daemon-reload
-mysql -u root --password= robohome < robohome.sql
+mysql -u root --password= < robohome.sql
