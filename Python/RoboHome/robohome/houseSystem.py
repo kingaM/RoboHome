@@ -1,6 +1,6 @@
 from item import *
 import eca
-from priorityQueue import PriorityQueue
+from priorityQueue import MyPriorityQueue
 from threading import Thread
 
 types = {'motionSensor' : Item , 'lightSensor' : Item, 'temperatureSensor' : Item , 'energyMonitor' : Item , 'button' : Item , 'door' : Openable, 'window' : Openable, 'curtain' : Openable, 'plug' : OnOff, 'light' : Lights, 'radiator' : RadiatorValve}
@@ -14,7 +14,7 @@ class House(object):
         self.database = database
         self.rooms = {}
         self.events = []
-        self.queue = PriorityQueue()
+        self.queue = MyPriorityQueue()
         self.methodThread = Thread(name="Method Thread", target=self.executeFromQueue)
         self.methodThread.start()
 
@@ -195,8 +195,8 @@ class House(object):
     def executeFromQueue(self):
         """Executes method from the queue, run in a seperate thread"""
         while True:
-            if not queue.isEmpty():
-                executeMethod(*queue.get())
+            if not self.queue.empty():
+                executeMethod(*self.queue.get())
 
 
     def addToQueue(self, roomId, itemId, method, args=[]):
