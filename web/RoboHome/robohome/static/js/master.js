@@ -30,6 +30,7 @@ APP.CONSTANTS.VERSION = '0.1';
 APP.DOM_HOOK = {};
 APP.DOM_HOOK.STAGE_CONTENT = 'stage-content';
 APP.DOM_HOOK.ENTITY = {};
+APP.DOM_HOOK.ENTITY.ITEM_TYPE = 'item-type';
 APP.DOM_HOOK.ENTITY.ROOM = 'room';
 APP.DOM_HOOK.ENTITY.ITEM = 'item';
 APP.DOM_HOOK.ENTITY.DOOR = 'door';
@@ -43,25 +44,26 @@ APP.API.WRAPPER.STATUS_CODE = 'statusCode';
 APP.API.WRAPPER.CONTENT = 'content';
 APP.API.VERSION = {};
 APP.API.VERSION.SUPPORTED_TYPES = 'supportedTypes';
-APP.API.VERSION.SUPPORTED_BRANDS = 'supportedBrands';
-APP.API.VERSION.DISCRETE = 'discrete';
-APP.API.VERSION.CONTINUOUS = 'continuous';
-APP.API.VERSION.METHODS = 'methods';
-APP.API.VERSION.STATES = 'states';
-APP.API.VERSION.STATE = {};
-APP.API.VERSION.STATE.STATE = 'state';
-APP.API.VERSION.STATE.NAME = 'name';
+APP.API.VERSION.SUPPORTED_TYPE = {};
+APP.API.VERSION.SUPPORTED_TYPE.NAME = 'name';
+APP.API.VERSION.SUPPORTED_TYPE.SUPPORTED_BRANDS = 'supportedBrands';
+APP.API.VERSION.SUPPORTED_TYPE.METHODS = 'methods';
+APP.API.VERSION.SUPPORTED_TYPE.STATES = 'states';
+APP.API.VERSION.SUPPORTED_TYPE.STATE = {};
+APP.API.VERSION.SUPPORTED_TYPE.STATE.STATE = 'state';
+APP.API.VERSION.SUPPORTED_TYPE.STATE.NAME = 'name';
 APP.API.STRUCT = {};
 APP.API.STRUCT.ROOMS = 'rooms';
 APP.API.STRUCT.ROOM = {};
 APP.API.STRUCT.ROOM.ID = 'id';
 APP.API.STRUCT.ROOM.NAME = 'name';
-APP.API.STRUCT.ROOM.ITEM_TYPES = 'itemTypes';
-APP.API.STRUCT.ROOM.ITEM_TYPE = {};
-APP.API.STRUCT.ROOM.ITEM_TYPE.ID = 'id';
-APP.API.STRUCT.ROOM.ITEM_TYPE.BRAND = 'brand';
-APP.API.STRUCT.ROOM.ITEM_TYPE.IP = 'ip';
-APP.API.STRUCT.ROOM.ITEM_TYPE.NAME = 'name';
+APP.API.STRUCT.ROOM.ITEMS = 'items';
+APP.API.STRUCT.ROOM.ITEM = {};
+APP.API.STRUCT.ROOM.ITEM.ITEM_TYPE = 'itemType';
+APP.API.STRUCT.ROOM.ITEM.ID = 'id';
+APP.API.STRUCT.ROOM.ITEM.BRAND = 'brand';
+APP.API.STRUCT.ROOM.ITEM.IP = 'ip';
+APP.API.STRUCT.ROOM.ITEM.NAME = 'name';
 
 // RESTful API URL specification
 // Remember to specify the trailing slash so Flask does not have to redirect
@@ -341,6 +343,10 @@ APP.ajax_get_version = function(callback) {
 }
 
 // ---------------------------------------------------------------------
+// String ops + misc
+// ---------------------------------------------------------------------
+
+// ---------------------------------------------------------------------
 // Core
 // ---------------------------------------------------------------------
 
@@ -596,10 +602,14 @@ APP.Stage.prototype.setMenuConstruct = function(func) {
  * @param {Object} roomData Object with room data specified according to API
  * This class handles the controlling of all items contained within one room
  */
-APP.ItemTypeDisplay = function(stage, itemTypes) {
-    this.stage = stage;
-    this.itemTypes = itemTypes;
+APP.ItemTypeDisplay = function(stage, itemType, items) {
+    var __stage = stage,
+        __itemType = itemType,
+        __items = items;
     
+    this.stage = __stage;
+    this.itemType = __itemType;
+    this.items = __items;
 };
 
 /**
@@ -608,7 +618,6 @@ APP.ItemTypeDisplay = function(stage, itemTypes) {
  * Constructs the representation of this object on the stage
  */
 APP.ItemTypeDisplay.prototype.construct = function() {
-
 
     function constructItemPanels(items) {
         var itemPanel,
@@ -639,32 +648,32 @@ APP.ItemTypeDisplay.prototype.construct = function() {
         }
         return itemPanels;
     }
-
-    for(var itemType in this.itemTypes) {
-        if(this.itemTypes.hasOwnProperty(itemType)) {
-            
-            var roomPanel,
-                infoBar,
-                itemPanels;
-                
-            itemPanels = constructItemPanels(this.items);
-            roomPanel = $('<div></div').attr({
-                class: 'entity-display ' + APP.DOM_HOOK.ENTITY.ROOM,
-                'data-id': this.room[APP.API.STRUCT.ROOM.ID],
-                'data-name': this.room[APP.API.STRUCT.ROOM.NAME]
-            });
-            
-            infoBar = $('<div></div>').addClass('info-bar');
-            infoBar.append($('<h1>' + this.room[APP.API.STRUCT.ROOM.NAME] + '</h1>').addClass('entity-name'));
-            roomPanel.append(infoBar);
-            
-            for(var j = 0; j < itemPanels.length; j++) {
-                roomPanel.append(itemPanels[j]);
-            }
-            
-            this.stage.getContext().append(roomPanel);
-        }
+    
+    var itemTypePanel,
+        infoBar,
+        itemPanels,
+        displayedName;
+        
+    itemPanels = constructItemPanels(this.items);
+    itemTypePanel = $('<div></div').attr({
+        class: 'entity-display ' + APP.DOM_HOOK.ENTITY.ITEM_TYPE,
+        'data-name': this.itemType
+    });
+    
+    infoBar = $('<div></div>').addClass('info-bar');
+    displayedName = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][this.itemType][APP.API.VERSION.SUPPORTED_TYPE.NAME];
+    if(displayedName === undefined) {
+        displayedName === this.itemType;
     }
+    infoBar.append($('<h1>' + displayedName + '</h1>').addClass('entity-name'));
+    itemTypePanel.append(infoBar);
+    
+    for(var j = 0; j < itemPanels.length; j++) {
+        itemTypePanel.append(itemPanels[j]);
+    }
+    
+    this.stage.getContext().append(itemTypePanel);
+            
 };
 
 /**
@@ -1005,14 +1014,15 @@ APP.StageManager = function() {
         // control stages
         APP.ajax_get_structure(function() {
             var rooms = APP.data.houseStructure[APP.API.STRUCT.ROOMS];
-            console.log(rooms);
             for(var i = 0; i < rooms.length; i++) {
                 
+                // for each room...
                 (function() {
                     var room = rooms[i],
                         roomName = room[APP.API.STRUCT.ROOM.NAME],
+                        safeRoomName = roomName.replace(' ', '-'),
                         stageId = addStage(new APP.Stage('menu-control',
-                            'button-control-' + roomName, roomName, 'stage-control-' + roomName)),
+                            'button-control-' + safeRoomName, roomName, 'stage-control-' + safeRoomName)),
                         stage = stages.get(stageId),
                         stageData = stage.data,
                         stageMenu = stage.contextMenu,
@@ -1029,17 +1039,27 @@ APP.StageManager = function() {
                         stageMenuContext.append(room[APP.API.STRUCT.ROOM.NAME]);
                     });
                     stage.setConstruct(function() {
-                    
-                        var rooms = APP.data.houseStructure[APP.API.STRUCT.ROOMS],
-                            itemTypes = (room[APP.API.STRUCT.ROOM.ITEM_TYPES]);
-                            
-                        console.log(itemTypes);
-                        stageData.itemTypeDisplay = new APP.ItemTypeDisplay(stage, itemTypes);
-                        stageData.itemTypeDisplay.construct();
+                        var itemTypes = {},
+                            items = room[APP.API.STRUCT.ROOM.ITEMS],
+                            item,
+                            itemType;
+                        for(var j = 0; j < items.length; j++) {
+                            item = items[j];
+                            itemType = item[APP.API.STRUCT.ROOM.ITEM.ITEM_TYPE];
+                            if(itemTypes[itemType] === undefined) {
+                                itemTypes[itemType] = [];
+                            }
+                            itemTypes[itemType].push(item);
+                        }
                         
-                        // stageData.roomDisplays.push(new APP.RoomDisplay(stage, rooms[i]));
-                        // stageData.roomDisplays[i].construct();
-                            
+                        stageData.itemTypeDisplays = {};
+                        for(var itemType in itemTypes) {
+                            if(itemTypes.hasOwnProperty(itemType)) {
+                                stageData.itemTypeDisplays[itemType] = new APP.ItemTypeDisplay(stage, itemType, itemTypes[itemType]);
+                                stageData.itemTypeDisplays[itemType].construct();
+                            }
+                        }
+                        
                         console.log(stageData);
                         stage.update();
                     });
@@ -1050,8 +1070,6 @@ APP.StageManager = function() {
                         
                     });
                     
-                    // stageData.roomDisplays.push(new APP.RoomDisplay(stage, rooms[i]));
-                    // stageData.roomDisplays[i].construct();
                 })();
                 
             }

@@ -38,6 +38,50 @@ def pack(content={}, statusCode=200):
         SETTINGS['API']['CONTENT']: content
     }
 
+# Mock content ------------------------------------------------------------
+MOCK_CONTENT = {
+    'GET_VERSION': pack({
+        'supportedTypes': {
+            'door': {
+                'name': 'Doors',
+                'supportedBrands': [],
+                'methods': [],
+                'states': []
+            },
+            'curtain': {
+                'name': 'Curtains',
+                'supportedBrands': [],
+                'methods': [],
+                'states': []
+            },
+            'window': {
+                'name': 'Windows',
+                'supportedBrands': [],
+                'methods': [],
+                'states': []
+            },
+            'motionSensor': {
+                'name': 'Motion sensors',
+                'supportedBrands': [],
+                'methods': [],
+                'states': []
+            },
+            'plug': {
+                'name': 'Plugs',
+                'supportedBrands': [],
+                'methods': [],
+                'states': []
+            },
+            'light': {
+                'name': 'Lights',
+                'supportedBrands': [],
+                'methods': [],
+                'states': []
+            }
+        }
+    })
+}
+
 # App config ---------------------------------------------------------------
 app = Flask(__name__)
 app.debug = True
@@ -61,7 +105,8 @@ def home():
 def rooms_version():
     if request.method == 'GET':
         # Return initial info when connecting to server for the first time
-        return jsonify(pack(house.getVersion()))
+        # return jsonify(pack(house.getVersion()))
+        return jsonify(MOCK_CONTENT['GET_VERSION'])
 
 
 @app.route('/version/<string:version>/structure/', methods=['GET'])
