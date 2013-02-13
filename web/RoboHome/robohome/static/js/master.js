@@ -52,6 +52,7 @@ APP.API.VERSION.SUPPORTED_TYPE.STATES = 'states';
 APP.API.VERSION.SUPPORTED_TYPE.STATE = {};
 APP.API.VERSION.SUPPORTED_TYPE.STATE.STATE = 'state';
 APP.API.VERSION.SUPPORTED_TYPE.STATE.NAME = 'name';
+APP.API.VERSION.SUPPORTED_TYPE.STATE.METHOD = 'method';
 APP.API.STRUCT = {};
 APP.API.STRUCT.ROOMS = 'rooms';
 APP.API.STRUCT.ROOM = {};
@@ -85,6 +86,9 @@ APP.URL.ROOMS_ROOMID_ITEMS = function(roomId) {
 APP.URL.ROOMS_ROOMID_ITEMS_ITEMID = function(roomId, itemId) {
     return '/version/' + APP.CONSTANTS.VERSION + '/rooms/' + roomId + '/items/' + itemId + '/';
 };
+APP.URL.ROOMS_ROOMID_ITEMS_ITEMID_CMD = function(roomId, itemId, cmd) {
+    return '/version/' + APP.CONSTANTS.VERSION + '/rooms/' + roomId + '/items/' + itemId + '/' + cmd + '/';
+}
 APP.URL.EVENTS = '/version/' + APP.CONSTANTS.VERSION + '/events/';
 APP.URL.EVENTS_EVENTID = function(eventId) {
     return '/version/' + APP.CONSTANTS.VERSION + '/events/' + eventId + '/';
@@ -366,6 +370,22 @@ APP.ajax_get_state = function(callback) {
     );
 }
 
+/**
+ * @method APP.ajax_put_rooms_roomId_items_itemId
+ * @param {int} roomId ID of room
+ * @param {int} itemId ID of item
+ * @param {String} cmd Command to send to the item
+ * @param {Function} callback Callback function to execute after response is received
+ * Updates the specified item in the room with the new state
+ */
+APP.ajax_put_rooms_roomId_items_itemId_cmd = function(roomId, itemId, cmd, callback) {
+    APP.ajax('PUT', APP.URL.ROOMS_ROOMID_ITEMS_ITEMID_CMD(roomId, itemId, cmd), '',
+        function(json) {
+            callback();
+        }
+    );
+}
+
 // ---------------------------------------------------------------------
 // Core
 // ---------------------------------------------------------------------
@@ -420,7 +440,7 @@ APP.ContextMenu = function() {
 /**
  * @class APP.Poller
  * @constructor
- * This class handles periodic AJAX calls
+ * This class handles periodic function calls via window.setInterval
  */
 APP.Poller = function() {
     this.intervalId;
@@ -712,21 +732,53 @@ APP.ItemTypeDisplay = function(stage, itemType, items) {
  * Constructs the representation of this object on the stage
  */
 APP.ItemTypeDisplay.prototype.construct = function() {
+    var self = this;
 
     function constructItemPanels(items) {
+        
         var itemPanel,
             infoBar,
             attachmentsSelf,
             itemPanels = [];
         
         for(var i = 0; i < items.length; i++) {
+        
             itemPanel = $('<div></div>').attr({
                 class: 'entity-display ' + APP.DOM_HOOK.ENTITY.ITEM,
-                'data-id': items[i][APP.API.STRUCT.ROOM.ITEM.ID],
+                'data-id': items[i][APP.API.STRUCT.ROOM.ITEM.ID], // currently used
                 'data-ip': items[i][APP.API.STRUCT.ROOM.ITEM.IP],
                 'data-name': items[i][APP.API.STRUCT.ROOM.ITEM.NAME],
                 'data-brand': items[i][APP.API.STRUCT.ROOM.ITEM.BRAND],
-                'data-itemtype': items[i][APP.API.STRUCT.ROOM.ITEM.ITEM_TYPE]
+                'data-itemtype': items[i][APP.API.STRUCT.ROOM.ITEM.ITEM_TYPE] // currently used
+            });
+            
+            itemPanel.click(function() {
+                if(items[0].state !== undefined) { // if state information has been retrieved
+                    var dis = $(this),
+                        itemId = $(this).attr('data-id'),
+                        itemType = $(this).attr('data-itemtype');
+                        
+                    $(this).addClass('updating');
+                    function getNextState(itemId) {
+                        for(var j = 0; j < self.items.length; j++) {
+                            console.log(itemId);
+                            console.log(self.items[j][APP.API.STRUCT.ROOM.ITEM.ID]);
+                            if(self.items[j][APP.API.STRUCT.ROOM.ITEM.ID] === parseInt(itemId)) {
+                                return APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][itemType][APP.API.VERSION.SUPPORTED_TYPE.STATES][(items[j].state + 1) % 2][APP.API.VERSION.SUPPORTED_TYPE.STATE.METHOD];
+                            }
+                        }
+                    }
+                    
+                    APP.ajax_put_rooms_roomId_items_itemId_cmd(
+                        self.stage.data.roomId,
+                        itemId,
+                        getNextState(itemId),
+                        function() {
+                            dis.removeClass('updating');
+                            self.update();
+                        }
+                    )
+                }
             });
             
             infoBar = $('<div></div>').addClass('info-bar');
@@ -749,7 +801,7 @@ APP.ItemTypeDisplay.prototype.construct = function() {
         displayedName;
         
     itemPanels = constructItemPanels(this.items);
-    itemTypePanel = $('<div></div').attr({
+    itemTypePanel = $('<div></div>').attr({
         class: 'entity-display ' + APP.DOM_HOOK.ENTITY.ITEM_TYPE,
         'data-name': this.itemType
     });
@@ -1069,7 +1121,7 @@ APP.StageManager = function() {
                             }
                             itemTypes[itemType].push(item);
                         }
-                        
+                        stageData.roomId = room[APP.API.STRUCT.ROOM.ITEM.ID];
                         stageData.itemTypeDisplays = {};
                         for(var itemType in itemTypes) {
                             if(itemTypes.hasOwnProperty(itemType)) {

@@ -69,55 +69,55 @@ MOCK_CONTENT = {
             'door': {
                 'name': 'Doors',
                 'supportedBrands': [],
-                'methods': [],
+                'methods': ['close', 'open'],
                 'states': [
-                    { 'id': 0, 'name': 'Closed' },
-                    { 'id': 1, 'name': 'Open' }
+                    { 'id': 0, 'name': 'Closed', 'method': 'close'},
+                    { 'id': 1, 'name': 'Open', 'method': 'open'}
                 ]
             },
             'curtain': {
                 'name': 'Curtains',
                 'supportedBrands': [],
-                'methods': [],
+                'methods': ['close', 'open'],
                 'states': [
-                    { 'id': 0, 'name': 'Closed' },
-                    { 'id': 1, 'name': 'Open' }
+                    { 'id': 0, 'name': 'Closed', 'method': 'close'},
+                    { 'id': 1, 'name': 'Open', 'method': 'open'}
                 ]
             },
             'window': {
                 'name': 'Windows',
                 'supportedBrands': [],
-                'methods': [],
+                'methods': ['close', 'open'],
                 'states': [
-                    { 'id': 0, 'name': 'Closed' },
-                    { 'id': 1, 'name': 'Open' }
+                    { 'id': 0, 'name': 'Closed', 'method': 'close'},
+                    { 'id': 1, 'name': 'Open', 'method': 'open'}
                 ]
             },
             'motionSensor': {
                 'name': 'Motion sensors',
                 'supportedBrands': [],
-                'methods': [],
+                'methods': ['off', 'on'],
                 'states': [
-                    { 'id': 0, 'name': 'Off' },
-                    { 'id': 1, 'name': 'On' }
+                    { 'id': 0, 'name': 'Off', 'method': 'off' },
+                    { 'id': 1, 'name': 'On', 'method': 'on' }
                 ]
             },
             'plug': {
                 'name': 'Plugs',
                 'supportedBrands': [],
-                'methods': [],
+                'methods': ['off', 'on'],
                 'states': [
-                    { 'id': 0, 'name': 'Off' },
-                    { 'id': 1, 'name': 'On' }
+                    { 'id': 0, 'name': 'Off', 'method': 'off' },
+                    { 'id': 1, 'name': 'On', 'method': 'on' }
                 ]
             },
             'light': {
                 'name': 'Lights',
                 'supportedBrands': [],
-                'methods': [],
+                'methods': ['off', 'on'],
                 'states': [
-                    { 'id': 0, 'name': 'Off' },
-                    { 'id': 1, 'name': 'On' }
+                    { 'id': 0, 'name': 'Off', 'method': 'off' },
+                    { 'id': 1, 'name': 'On', 'method': 'on' }
                 ]
             }
         }
@@ -208,6 +208,7 @@ def rooms_roomId(version, roomId):
         pass
 
 
+
 @app.route('/version/<string:version>/rooms/<int:roomId>/items/', methods=['POST'])
 def rooms_roomId_items(version, roomId):
     if request.method == 'POST':
@@ -228,6 +229,16 @@ def rooms_roomId_items_itemId(version, roomId, itemId):
     if request.method == 'DELETE':
         # Remove specified item
         pass
+
+
+        
+@app.route('/version/<string:version>/rooms/<int:roomId>/items/<int:itemId>/<string:cmd>/', methods=['PUT'])
+def rooms_roomId_items_itemId_cmd(version, roomId, itemId, cmd):
+    if request.method == 'PUT':
+        # Command item
+        strBuffer = str(roomId) + ' ' + str(itemId) + ' ' + cmd
+        return strBuffer
+
 
 
 @app.route('/version/<string:version>/events/', methods=['GET', 'POST'])

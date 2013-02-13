@@ -295,7 +295,12 @@ div.stage {
     float: left;
 }
 
+.stage-content .entity-display.item {
+    padding: 0;
+}
+
 .stage-content .entity-display.item .info-bar {
+    margin: 1em;
     width: auto;
     display: inline-block;
 }
@@ -310,6 +315,46 @@ div.stage {
     font-size: 0.9em;
 }
 
+@-webkit-keyframes updating {
+    from { background-position: 0 50%; }
+    to   { background-position: 4em 50%; }
+}
+@-moz-keyframes updating {
+    from { background-position: 0 50%; }
+    to   { background-position: 2em 50%; }
+}
+@-ms-keyframes updating {
+    from { background-position: 0 50%; }
+    to   { background-position: 2em 50%; }
+}
+@-o-keyframes updating {
+    from { background-position: 0 50%; }
+    to   { background-position: 2em 50%; }
+}
+@keyframes updating {
+    from { background-position: 0 50%; }
+    to   { background-position: 2em 50%; }
+}
+
+.stage-content .entity-display.updating {
+            background-color: transparent;
+            background-repeat: repeat;
+            background-size: 2em 2em;
+            background-position: 0 50%;
+            content: 'foo';
+            background-image:        -webkit-gradient(linear, left top, right bottom, color-stop(0%,transparent), color-stop(25%,transparent), color-stop(25%,rgba(255, 255, 255, 0.1)), color-stop(50%,rgba(255, 255, 255, 0.1)), color-stop(50%,transparent), color-stop(75%,transparent), color-stop(75%,rgba(255, 255, 255, 0.1)), color-stop(100%,rgba(255, 255, 255, 0.1)));
+            background-image: -webkit-linear-gradient(315deg, transparent, transparent 25%, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.1) 50%, transparent 50%, transparent 75%, rgba(255, 255, 255, 0.1) 75%, rgba(255, 255, 255, 0.1) 100%);
+            background-image:    -moz-linear-gradient(315deg, transparent, transparent 25%, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.1) 50%, transparent 50%, transparent 75%, rgba(255, 255, 255, 0.1) 75%, rgba(255, 255, 255, 0.1) 100%);
+            background-image:     -ms-linear-gradient(315deg, transparent, transparent 25%, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.1) 50%, transparent 50%, transparent 75%, rgba(255, 255, 255, 0.1) 75%, rgba(255, 255, 255, 0.1) 100%);
+            background-image:      -o-linear-gradient(315deg, transparent, transparent 25%, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.1) 50%, transparent 50%, transparent 75%, rgba(255, 255, 255, 0.1) 75%, rgba(255, 255, 255, 0.1) 100%);
+            background-image:         linear-gradient(315deg, transparent, transparent 25%, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.1) 50%, transparent 50%, transparent 75%, rgba(255, 255, 255, 0.1) 75%, rgba(255, 255, 255, 0.1) 100%);
+    -webkit-animation: updating 1s linear infinite;
+       -moz-animation: updating 1s linear infinite;
+        -ms-animation: updating 1s linear infinite;
+         -o-animation: updating 1s linear infinite;
+            animation: updating 1s linear infinite;
+}
+
 .stage-content .entity-display span {
     font-size: 0.7em;
     margin: 0 0.5em;
@@ -319,6 +364,10 @@ div.stage {
 
 .stage-content .entity-display .status {
     font-family: 'serene';
+}
+
+.entity-display.item .status {
+    margin: 1em;
 }
 
 .stage-content .entity-display .attachments.self {
