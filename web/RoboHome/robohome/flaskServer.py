@@ -18,6 +18,7 @@ from houseSystem import House
 from databaseTables import Database
 
 SETTINGS = {
+    'LANGUAGE': 'en',
     'VERSION_NUMBER': '0.1',
     'SERVER': {
         'HOST': '127.0.0.1',
@@ -28,6 +29,29 @@ SETTINGS = {
         'CONTENT': 'content'
     }
 }
+
+
+LOCALIZATION = {
+    'curtain': {
+        'en': { 's': 'Curtain', 'p': 'Curtains' }
+    },
+    'door': {
+        'en': { 's': 'Door', 'p': 'Doors' }
+    },
+    'light': {
+        'en': { 's': 'Light', 'p': 'Lights' }
+    },
+    'motionSensor': {
+        'en': { 's': 'Motion sensor', 'p': 'Motion sensors' }
+    },
+    'plug': {
+        'en': { 's': 'Plug', 'p': 'Plugs' }
+    },
+    'window': {
+        'en': { 's': 'Window', 'p': 'Windows' }
+    }
+}
+
 
 # Common methods ----------------------------------------------------------
 
@@ -46,39 +70,77 @@ MOCK_CONTENT = {
                 'name': 'Doors',
                 'supportedBrands': [],
                 'methods': [],
-                'states': []
+                'states': [
+                    { 'id': 0, 'name': 'Closed' },
+                    { 'id': 1, 'name': 'Open' }
+                ]
             },
             'curtain': {
                 'name': 'Curtains',
                 'supportedBrands': [],
                 'methods': [],
-                'states': []
+                'states': [
+                    { 'id': 0, 'name': 'Closed' },
+                    { 'id': 1, 'name': 'Open' }
+                ]
             },
             'window': {
                 'name': 'Windows',
                 'supportedBrands': [],
                 'methods': [],
-                'states': []
+                'states': [
+                    { 'id': 0, 'name': 'Closed' },
+                    { 'id': 1, 'name': 'Open' }
+                ]
             },
             'motionSensor': {
                 'name': 'Motion sensors',
                 'supportedBrands': [],
                 'methods': [],
-                'states': []
+                'states': [
+                    { 'id': 0, 'name': 'Off' },
+                    { 'id': 1, 'name': 'On' }
+                ]
             },
             'plug': {
                 'name': 'Plugs',
                 'supportedBrands': [],
                 'methods': [],
-                'states': []
+                'states': [
+                    { 'id': 0, 'name': 'Off' },
+                    { 'id': 1, 'name': 'On' }
+                ]
             },
             'light': {
                 'name': 'Lights',
                 'supportedBrands': [],
                 'methods': [],
-                'states': []
+                'states': [
+                    { 'id': 0, 'name': 'Off' },
+                    { 'id': 1, 'name': 'On' }
+                ]
             }
         }
+    }),
+    'GET_STATE': pack({
+        'states': [
+            { 'id': 0, 'state': 0 },
+            { 'id': 1, 'state': 1 },
+            { 'id': 2, 'state': 0 },
+            { 'id': 3, 'state': 1 },
+            { 'id': 4, 'state': 0 },
+            { 'id': 5, 'state': 1 },
+            { 'id': 6, 'state': 0 },
+            { 'id': 7, 'state': 1 },
+            { 'id': 8, 'state': 0 },
+            { 'id': 9, 'state': 1 },
+            { 'id': 10, 'state': 0 },
+            { 'id': 11, 'state': 1 },
+            { 'id': 12, 'state': 0 },
+            { 'id': 13, 'state': 1 },
+            { 'id': 14, 'state': 0 },
+            { 'id': 15, 'state': 1 }
+        ]
     })
 }
 
@@ -120,7 +182,8 @@ def structure(version):
 def state(version):
     if request.method == 'GET':
         # Return flat list of each component's id and its associated state
-        return jsonify(pack(house.getState()))
+        # return jsonify(pack(house.getState()))
+        return jsonify(MOCK_CONTENT['GET_STATE'])
 
 
 @app.route('/version/<string:version>/rooms/', methods=['POST'])

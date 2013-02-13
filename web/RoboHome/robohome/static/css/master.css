@@ -273,18 +273,18 @@ div.stage {
 
 @media only screen and (max-width: 600px) {
     .stage-content > .entity-display.item-type {
-        width: 92%;
+        width: 88%;
         font-size: 300%;
     }
 }
 
-/*
-.stage-content .entity-display.door { border-left: 0.15em solid rgba(0,134,191,1); }
-.stage-content .entity-display.lock { border-left: 0.15em solid rgba(196,30,30,1); }
-.stage-content .entity-display.window { border-left: 0.15em solid rgba(93,33,182,1); }
-.stage-content .entity-display.curtain { border-left: 0.15em solid rgba(93,33,182,1); }
-.stage-content .entity-display.light { border-left: 0.15em solid rgba(255,233,21,1); }
-*/
+.stage-content .entity-display .item {
+    cursor: pointer;
+}
+
+.stage-content .entity-display .item:hover {
+    border: 1px solid rgba(0,134,191,1);
+}
 
 .stage-content .entity-display .info-bar {
     width: 100%;
@@ -317,29 +317,15 @@ div.stage {
     display: block;
 }
 
+.stage-content .entity-display .status {
+    font-family: 'serene';
+}
+
 .stage-content .entity-display .attachments.self {
     display: inline-block;
     float: right;
     margin: 0 0.5em;
     text-align: center;
-}
-
-.stage-content .entity-display .attachments.self > .attachment {
-    background-image:        -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,255,255,0.2)), color-stop(30%,rgba(255,255,255,0)));
-    background-image: -webkit-linear-gradient(top, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
-    background-image:    -moz-linear-gradient(top, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
-    background-image:     -ms-linear-gradient(top, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
-    background-image:      -o-linear-gradient(top, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
-    background-image:   linear-gradient(to bottom, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
-}
-
-.stage-content .entity-display .attachments.self > .attachment:active {
-    background-image:        -webkit-gradient(linear, left bottom, left top, color-stop(0%,rgba(255,255,255,0.2)), color-stop(30%,rgba(255,255,255,0)));
-    background-image: -webkit-linear-gradient(bottom, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
-    background-image:    -moz-linear-gradient(bottom, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
-    background-image:     -ms-linear-gradient(bottom, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
-    background-image:      -o-linear-gradient(bottom, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
-    background-image:         linear-gradient(to top, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
 }
 
 /*
@@ -505,105 +491,6 @@ div.stage {
 .stage-content .entity-display.light[data-state-self="1"] > .attachments.self > .attachment {
     border: 1px solid #AAAAAA;
     background-color: rgba(255,255,255,0.6);
-}
-
-.stage-content .entity-display.door[data-state-self="0"] > .attachments.self > .attachment:after,
-.stage-content .entity-display.window[data-state-self="0"] > .attachments.self > .attachment:after,
-.stage-content .entity-display.curtain[data-state-self="0"] > .attachments.self > .attachment:after {
-    content: 'CLOSED';
-}
-.stage-content .entity-display[data-state-door="0"] > .attachments.command > .attachment > div.command.door:after {
-    content: 'DOORS\A CLOSED';
-}
-.stage-content .entity-display[data-state-window="0"] > .attachments.command > .attachment > div.command.window:after {
-    content: 'WINDOWS\A CLOSED';
-}
-.stage-content .entity-display[data-state-curtain="0"] > .attachments.command > .attachment > div.command.curtain:after {
-    content: 'CURTAINS\A CLOSED';
-}
-.stage-content .entity-display.door[data-state-self="1"] > .attachments.self > .attachment:after,
-.stage-content .entity-display.window[data-state-self="1"] > .attachments.self > .attachment:after,
-.stage-content .entity-display.curtain[data-state-self="1"] > .attachments.self > .attachment:after {
-    content: 'OPEN';
-}
-.stage-content .entity-display[data-state-door="1"] > .attachments.command > .attachment > div.command.door:after {
-    content: 'DOORS\A OPEN';
-}
-.stage-content .entity-display[data-state-window="1"] > .attachments.command > .attachment > div.command.window:after {
-    content: 'WINDOWS\A OPEN';
-}
-.stage-content .entity-display[data-state-curtain="1"] > .attachments.command > .attachment > div.command.curtain:after {
-    content: 'CURTAINS\A OPEN';
-}
-.stage-content .entity-display.lock[data-state-self="0"] > .attachments.self > .attachment:after {
-    content: 'ENGAGED';
-}
-.stage-content .entity-display[data-state-lock="0"] > .attachments.command > .attachment > div.command.lock:after {
-    content: 'LOCKS\A ENGAGED';
-}
-.stage-content .entity-display.lock[data-state-self="1"] > .attachments.self > .attachment:after {
-    content: 'DISENGD';
-}
-.stage-content .entity-display[data-state-lock="1"] > .attachments.command > .attachment > div.command.lock:after {
-    content: 'LOCKS\A DISENGD';
-}
-.stage-content .entity-display.light[data-state-self="0"] > .attachments.self > .attachment:after {
-    content: 'OFF';
-}
-.stage-content .entity-display[data-state-light="0"] > .attachments.command > .attachment > div.command.light:after {
-    content: 'LIGHTS\A OFF';
-}
-.stage-content .entity-display.light[data-state-self="1"] > .attachments.self > .attachment:after {
-    content: 'ON';
-}
-.stage-content .entity-display[data-state-light="1"] > .attachments.command > .attachment > div.command.light:after {
-    content: 'LIGHTS\A ON';
-}
-
-.stage-content .entity-display[data-state-self="-1"] > .attachments.command > .attachment > div.command.self,
-.stage-content .entity-display[data-state-door="-1"] > .attachments.command > .attachment > div.command.door,
-.stage-content .entity-display[data-state-window="-1"] > .attachments.command > .attachment > div.command.window,
-.stage-content .entity-display[data-state-lock="-1"] > .attachments.command > .attachment > div.command.lock,
-.stage-content .entity-display[data-state-curtain="-1"] > .attachments.command > .attachment > div.command.curtain,
-.stage-content .entity-display[data-state-light="-1"] > .attachments.command > .attachment > div.command.light,
-.stage-content .entity-display[data-state-area="-1"] > .attachments.command > .attachment > div.command.area {
-    border: 1px solid #444444;
-    background-color: rgba(0,150,150,0.6);
-}
-
-.stage-content .entity-display[data-state-door="-1"] > .attachments.command > .attachment > div.command.door:after {
-    content: 'DOORS\A PARTIAL';
-}
-.stage-content .entity-display[data-state-window="-1"] > .attachments.command > .attachment > div.command.window:after {
-    content: 'WINDOWS\A PARTIAL';
-}
-.stage-content .entity-display[data-state-lock="-1"] > .attachments.command > .attachment > div.command.lock:after {
-    content: 'LOCKS\A PARTIAL';
-}
-.stage-content .entity-display[data-state-curtain="-1"] > .attachments.command > .attachment > div.command.curtain:after {
-    content: 'CURTAINS\A PARTIAL';
-}
-.stage-content .entity-display[data-state-light="-1"] > .attachments.command > .attachment > div.command.light:after {
-    content: 'LIGHTS\A PARTIAL';
-}
-.stage-content .entity-display[data-state-area="-1"] > .attachments.command > .attachment > div.command.area:after {
-    content: 'AREAS\A PARTIAL';
-}
-
-.stage-content .entity-display[data-state-self="undefined"] > .attachments.self > .attachment,
-.stage-content .entity-display[data-state-door="undefined"] > .attachments.collapse > .attachment.door,
-.stage-content .entity-display[data-state-window="undefined"] > .attachments.collapse > .attachment.window,
-.stage-content .entity-display[data-state-lock="undefined"] > .attachments.collapse > .attachment.lock,
-.stage-content .entity-display[data-state-curtain="undefined"] > .attachments.collapse > .attachment.curtain,
-.stage-content .entity-display[data-state-light="undefined"] > .attachments.collapse > .attachment.light,
-.stage-content .entity-display[data-state-area="undefined"] > .attachments.collapse > .attachment.area,
-.stage-content .entity-display[data-state-door="undefined"] > .attachments.command > .attachment.door,
-.stage-content .entity-display[data-state-window="undefined"] > .attachments.command > .attachment.window,
-.stage-content .entity-display[data-state-lock="undefined"] > .attachments.command > .attachment.lock,
-.stage-content .entity-display[data-state-curtain="undefined"] > .attachments.command > .attachment.curtain,
-.stage-content .entity-display[data-state-light="undefined"] > .attachments.command > .attachment.light,
-.stage-content .entity-display[data-state-area="undefined"] > .attachments.command > .attachment.area {
-    display: none;
 }
 */
 

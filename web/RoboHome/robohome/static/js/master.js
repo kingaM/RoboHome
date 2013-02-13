@@ -64,6 +64,10 @@ APP.API.STRUCT.ROOM.ITEM.ID = 'id';
 APP.API.STRUCT.ROOM.ITEM.BRAND = 'brand';
 APP.API.STRUCT.ROOM.ITEM.IP = 'ip';
 APP.API.STRUCT.ROOM.ITEM.NAME = 'name';
+APP.API.STATE = {};
+APP.API.STATE.STATES = 'states';
+APP.API.STATE.STATE = 'state';
+APP.API.STATE.ID = 'id';
 
 // RESTful API URL specification
 // Remember to specify the trailing slash so Flask does not have to redirect
@@ -319,7 +323,7 @@ APP.ajax = function(requestType, url, payload, callback) {
 
 /**
  * @method APP.ajax_get_structure
- * @param {Function} callback Callback function to execute after data is set up
+ * @param {Function} callback Callback function to execute after response is received
  * Retrieves the latest house structure from the server
  */
 APP.ajax_get_structure = function(callback) {
@@ -332,6 +336,11 @@ APP.ajax_get_structure = function(callback) {
     );
 };
 
+/**
+ * @method APP.ajax_get_version
+ * @param {Function} callback Callback function to execute after response is received
+ * Retrieves version information and all information that's supposed to be cached
+ */
 APP.ajax_get_version = function(callback) {
     APP.ajax('GET', APP.URL.VERSION, '',
         function(json) {
@@ -342,9 +351,20 @@ APP.ajax_get_version = function(callback) {
     );
 }
 
-// ---------------------------------------------------------------------
-// String ops + misc
-// ---------------------------------------------------------------------
+/**
+ * @method APP.ajax_get_status
+ * @param {Function} callback Callback function to execute after response is received
+ * Retrieves the latest available states of all sensors (items)
+ */
+APP.ajax_get_state = function(callback) {
+    APP.ajax('GET', APP.URL.STATE, '',
+        function(json) {
+            var obj = APP.unpackToPayload(json);
+            APP.data.state = obj;
+            callback();
+        }
+    );
+}
 
 // ---------------------------------------------------------------------
 // Core
@@ -398,6 +418,46 @@ APP.ContextMenu = function() {
 }
 
 /**
+ * @class APP.Poller
+ * @constructor
+ * This class handles periodic AJAX calls
+ */
+APP.Poller = function() {
+    this.intervalId;
+    this.frequency;
+    this.poll = function() {};
+}
+
+/**
+ * @for APP.Poller
+ * @method startPolling
+ */
+APP.Poller.prototype.startPolling = function() {
+    if(this.frequency) {
+        this.intervalId = window.setInterval(this.poll, this.frequency);
+    }
+}
+
+/**
+ * @for APP.Poller
+ * @method stopPolling
+ */
+APP.Poller.prototype.stopPolling = function() {
+    window.clearInterval(this.intervalId);
+}
+
+/**
+ * @for APP.Poller
+ * @method setPoll
+ * @param {int} frequency Frequency to call the function
+ * @param {Function} func Function to execute repeatedly when startPolling() is called
+ */
+APP.Poller.prototype.setPoll = function(frequency, func) {
+    this.frequency = frequency;
+    this.poll = func;
+}
+
+/**
  * @class APP.Stage
  * @constructor
  * @param {String} menuId       Element id of menu containing button
@@ -406,13 +466,22 @@ APP.ContextMenu = function() {
  * @param {String} stageId      Id of DOM element which represents the stage
  * Class responsible for running a stage in the UI.
  * Construction and updating behavior are configured via modifying construct() and update()
+ * NOTE: setOnShow(), setOnHide(), setTearDown(), onShow(), onHide(), and tearDown() have hardcoded default behavior
  */
 APP.Stage = function(menuId, buttonId, buttonText, stageId) {
     var __menuId = menuId,
         __buttonId = buttonId,
         __buttonText = buttonText,
         __stageId = stageId,
-        __contextMenu = new APP.ContextMenu();
+        __contextMenu = new APP.ContextMenu(),
+        __poller = new APP.Poller(),
+        __colorClass;
+    
+    if(this.menuId === null) {
+        __colorClass = $('#' + __buttonId).attr('data-color-class');
+    } else {
+        __colorClass = $('#' + __menuId).attr('data-color-class');
+    }
     
     this.data = {};
     this.menuId = __menuId;
@@ -420,6 +489,8 @@ APP.Stage = function(menuId, buttonId, buttonText, stageId) {
     this.buttonText = __buttonText;
     this.stageId = __stageId;
     this.contextMenu = __contextMenu;
+    this.poller = __poller;
+    this.colorClass = __colorClass;
     
     /**
      * @for APP.Stage
@@ -437,9 +508,11 @@ APP.Stage = function(menuId, buttonId, buttonText, stageId) {
      * This function is executed when the stage is shown
      * Set this via setOnShow()
      * onShow() and onHide() are called by APP.MenuManager automatically when buttons are clicked on
-     * Depending on the stage, this might call update() or construct()
+     * NOTE: This method has default behavior. (calls construct())
      */
-    this.onShow = function() {};
+    this.onShow = function() {
+        this.construct();
+    };
     
     /**
      * @for APP.Stage
@@ -448,9 +521,11 @@ APP.Stage = function(menuId, buttonId, buttonText, stageId) {
      * This function is executed when the stage is hidden.
      * Set this via setOnHide()
      * onShow() and onHide() are called by APP.MenuManager automatically when buttons are clicked on
-     * Depending on the stage, this might be the place to call tearDown()
+     * NOTE: This method has default behavior (calls tearDown())
      */
-    this.onHide = function() {};
+    this.onHide = function() {
+        this.tearDown();
+    };
     
     /**
      * @for APP.Stage
@@ -472,10 +547,12 @@ APP.Stage = function(menuId, buttonId, buttonText, stageId) {
      * This function should specify the behavior for deconstructing the UI within the stage area.
      * This should be the opposite of what construct() does
      * Set this via setTeardown()
+     * NOTE: This method has default behavior (see source for details)
      */
     this.tearDown = function() {
-        this.getContext().html('');
-        this.contextMenu.tearDown();
+        this.getContext().html('');     // clear stage area
+        this.contextMenu.tearDown();    // clear context menu
+        this.poller.stopPolling();      // stop any polling
     };
         
     /**
@@ -487,6 +564,7 @@ APP.Stage = function(menuId, buttonId, buttonText, stageId) {
      * Set this via setUpdate()
      */
     this.update = function() {};
+    
 };
 
 /**
@@ -504,12 +582,14 @@ APP.Stage.prototype.getContext = function() {
  * @param {Function} func Function to be passed in
  * Give function to run when onShow() is called
  * This function will execute after any hardcoded behavior in onShow()
+ * Default behavior: construct()
  */
 APP.Stage.prototype.setOnShow = function(func) {
     var self = this;
     this.onShow = function() {
         console.log(self.stageId + ' onShow() called');
         // console.trace(this);
+        this.construct(); // default behavior
         func();
     }
 };
@@ -520,12 +600,14 @@ APP.Stage.prototype.setOnShow = function(func) {
  * @param {Function} func Function to be passed in
  * Give function to execute when onHide() is called
  * This function will execute after any hardcoded behavior in onHide()
+ * Default behavior: tearDown()
  */
 APP.Stage.prototype.setOnHide = function(func) {
     var self = this;
     this.onHide = function() {
         console.log(self.stageId + ' onHide() called');
         // console.trace(this);
+        this.tearDown(); // default behavior
         func();
     }
 };
@@ -536,6 +618,7 @@ APP.Stage.prototype.setOnHide = function(func) {
  * @param {Function} func Function to be passed in
  * Give function to execute when construct() is called.
  * This function will execute after any hardcoded behavior in construct()
+ * Default behavior: contextMenu.construct() after func()
  */
 APP.Stage.prototype.setConstruct = function(func) {
     var self = this;
@@ -554,15 +637,16 @@ APP.Stage.prototype.setConstruct = function(func) {
  * @param {Function} func Function to be passed in
  * Give function to execute when tearDown() is called. 
  * tearDown() should be the behavior to clear the stage area of contents
- * This function will execute after any hardcoded behavior in tearDown()
- * By default this just executes stage.getContext().html('') and stage.contextMenu.tearDown()
+ * Default behavior: getcontext().html(''); contextMenu.tearDown(); poller.stopPolling();
  */
 APP.Stage.prototype.setTearDown = function(func) {
     var self = this;
     this.tearDown = function() {
         console.log(self.stageId + ' tearDown() called');
         // console.trace(this);
+        this.getContext().html('');
         this.contextMenu.tearDown();
+        this.poller.stopPolling();
         func();
     }
 };
@@ -573,7 +657,7 @@ APP.Stage.prototype.setTearDown = function(func) {
  * @param {Function} func Function to be passed in
  * Give function to execute when update() is called.
  * update() should be the function that's repeatedly called to update the UI constructed by construct()
- * This function will execute after any hardcoded behavior in update()
+ * Default behavior: none
  */
 APP.Stage.prototype.setUpdate = function(func) {
     var self = this;
@@ -593,6 +677,16 @@ APP.Stage.prototype.setUpdate = function(func) {
  */
 APP.Stage.prototype.setMenuConstruct = function(func) {
     this.contextMenu.setConstruct(func);
+}
+
+/**
+ * @for APP.Stage
+ * @method setPollFunction
+ * @param {int} frequency Frequency to execute the given function, in milliseconds
+ * @param {Function} func Function to execute repeatedly
+ */
+APP.Stage.prototype.setPollFunction = function(frequency, func) {
+    this.poller.setPoll(frequency, func);
 }
 
 /**
@@ -641,7 +735,7 @@ APP.ItemTypeDisplay.prototype.construct = function() {
             itemPanel.append(infoBar);
             
             attachmentsSelf = $('<div></div>').addClass('attachments self');
-            attachmentsSelf.append($('<div>foo</div>').addClass('attachment'));
+            attachmentsSelf.append($('<div><img src="../static/img/ajax-loader.gif"></img></div>').addClass('status'));
             itemPanel.append(attachmentsSelf);
             
             itemPanels.push(itemPanel);
@@ -682,88 +776,17 @@ APP.ItemTypeDisplay.prototype.construct = function() {
  * Constructs the representation of this object on the stage
  */
 APP.ItemTypeDisplay.prototype.update = function() {
-    //TODO
-};
-
-/**
- * @class APP.RoomDisplay
- * @constructor
- * @param {Stage} stage Stage object hosting this RoomDisplay
- * @param {Object} roomData Object with room data specified according to API
- * This class handles the controlling of all items contained within one room
- */
-APP.RoomDisplay = function(stage, roomData) {
-    this.stage = stage;
-    this.room = roomData;
-    this.items = this.room.items;
-};
-
-/**
- * @for APP.RoomDisplay
- * @method construct
- * Constructs the representation of this object on the stage
- */
-APP.RoomDisplay.prototype.construct = function() {
-    
-    function constructItemPanels(items) {
-        var itemPanel,
-            infoBar,
-            attachmentsSelf,
-            itemPanels = [];
-        
-        for(var i = 0; i < items.length; i++) {
-            itemPanel = $('<div></div>').attr({
-                class: 'entity-display ' + APP.DOM_HOOK.ENTITY.ITEM,
-                'data-id': items[i][APP.API.STRUCT.ROOM.ITEM.ID],
-                'data-ip': items[i][APP.API.STRUCT.ROOM.ITEM.IP],
-                'data-name': items[i][APP.API.STRUCT.ROOM.ITEM.NAME],
-                'data-brand': items[i][APP.API.STRUCT.ROOM.ITEM.BRAND],
-                'data-itemtype': items[i][APP.API.STRUCT.ROOM.ITEM.ITEM_TYPE]
-            });
-            
-            infoBar = $('<div></div>').addClass('info-bar');
-            infoBar.append($('<h1>' + items[i][APP.API.STRUCT.ROOM.ITEM.NAME] + '</h1>').addClass('entity-name'));
-            infoBar.append($('<span>' + items[i][APP.API.STRUCT.ROOM.ITEM.IP] + '</span>').addClass('entity-ip'));
-            itemPanel.append(infoBar);
-            
-            attachmentsSelf = $('<div></div>').addClass('attachments self');
-            attachmentsSelf.append($('<div>foo</div>').addClass('attachment'));
-            itemPanel.append(attachmentsSelf);
-            
-            itemPanels.push(itemPanel);
-        }
-        return itemPanels;
+    var states = APP.data.state[APP.API.STATE.STATES],
+        id;
+    // update info
+    for(var i = 0; i < this.items.length; i++) {
+        id = this.items[i][APP.API.STRUCT.ROOM.ITEM.ID];
+        this.items[i][APP.API.STATE.STATE] = states[id][APP.API.STATE.STATE];
     }
-    
-    var roomPanel,
-        infoBar,
-        itemPanels;
-        
-    itemPanels = constructItemPanels(this.items);
-    roomPanel = $('<div></div').attr({
-        class: 'entity-display ' + APP.DOM_HOOK.ENTITY.ROOM,
-        'data-id': this.room[APP.API.STRUCT.ROOM.ID],
-        'data-name': this.room[APP.API.STRUCT.ROOM.NAME]
-    });
-    
-    infoBar = $('<div></div>').addClass('info-bar');
-    infoBar.append($('<h1>' + this.room[APP.API.STRUCT.ROOM.NAME] + '</h1>').addClass('entity-name'));
-    roomPanel.append(infoBar);
-    
-    for(var j = 0; j < itemPanels.length; j++) {
-        roomPanel.append(itemPanels[j]);
+    // update UI
+    for(var j = 0; j < this.items.length; j++) {
+        $('.entity-display.item[data-id = ' + this.items[j][APP.API.STRUCT.ROOM.ITEM.ID] + '] .status').html(APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][this.itemType][APP.API.VERSION.SUPPORTED_TYPE.STATES][this.items[j][APP.API.STATE.STATE]][APP.API.VERSION.SUPPORTED_TYPE.STATE.NAME]);
     }
-    
-    this.stage.getContext().append(roomPanel);
-};
-
-/**
- * @for APP.RoomDisplay
- * @method update
- * Updates an existing representation of this object on the stage
- */
-APP.RoomDisplay.prototype.update = function() {
-    //TODO
 };
 
 /**
@@ -809,7 +832,7 @@ APP.MenuManager = function(stageManager) {
             function constructButton(buttonId, buttonText, cls, menuId) {
                 var button;
                 if (document.getElementById(buttonId) === null) { 
-                    button = $('<a>' + buttonText + '</a>').attr({id: buttonId, class: cls, href: '#'});
+                    button = $('<a>' + buttonText + '</a>').attr({id: buttonId, class: cls, 'data-color-class': cls, href: '#'});
                     if(menuId === null) { button.addClass('no-menu'); }
                     button = $('<li></li>').append(button);
                     $('#menu-primary').append(button);
@@ -821,7 +844,7 @@ APP.MenuManager = function(stageManager) {
                 var menu;
                 if(menuId !== null) {
                     if(document.getElementById(menuId) === null) {
-                        menu = $('<ul></ul>').attr({id: menuId, class: 'menu horizontal secondary ' + cls});
+                        menu = $('<ul></ul>').attr({id: menuId, class: 'menu horizontal secondary ' + cls, 'data-color-class': cls});
                         secondaryMenuWrapper.append(menu);
                     } else {
                         menu = $('#' + menuId);
@@ -911,7 +934,7 @@ APP.StageManager = function() {
             // construct stage template
             if(document.getElementById(stage.stageId) === null) {
                 var stageElement = $('<div></div>').attr({id: stage.stageId, class: 'stage'});
-                stageElement.append($('<div></div>').addClass('stage-content'));
+                stageElement.append($('<div></div>').addClass('stage-content ' + stage.colorClass));
                 $(stageContainerSelector).append(stageElement);
             }
             
@@ -969,17 +992,7 @@ APP.StageManager = function() {
             }
             
         },
-        
-        construct = function(stageId) {
-            stages.get(stageId).construct();
-        },
-        
-        update = function() {
-            if(activeStageId !== undefined) {
-                stages.get(activeStageId).update();
-            }
-        },
-        
+                
         init = function() {
         
         // home stage
@@ -992,21 +1005,24 @@ APP.StageManager = function() {
                 stageContext = stage.getContext();
             
             stage.setOnShow(function() {
-                
+                // default
             });
             stage.setOnHide(function() {
-                
+                // default
             });
             stage.setMenuConstruct(function() {
-                
+                // default
             });
             stage.setConstruct(function() {
-                stage.tearDown();
+                // default
             });
             stage.setTearDown(function() {
-                stageContext.html('');
+                // default
             });
             stage.setUpdate(function() {
+                // default
+            });
+            stage.setPollFunction(1000, function() {
                 
             });
         })();
@@ -1026,16 +1042,18 @@ APP.StageManager = function() {
                         stage = stages.get(stageId),
                         stageData = stage.data,
                         stageMenu = stage.contextMenu,
+                        stagePoller = stage.poller,
                         stageMenuContext = stageMenu.getContext(),
                         stageContext = stage.getContext();
                     
                     stage.setOnShow(function() {
-                        stage.construct();
+                        // default
                     });
                     stage.setOnHide(function() {
-                        stage.tearDown();
+                        // default
                     });
                     stage.setMenuConstruct(function() {
+                        // TODO
                         stageMenuContext.append(room[APP.API.STRUCT.ROOM.NAME]);
                     });
                     stage.setConstruct(function() {
@@ -1059,15 +1077,20 @@ APP.StageManager = function() {
                                 stageData.itemTypeDisplays[itemType].construct();
                             }
                         }
-                        
-                        console.log(stageData);
-                        stage.update();
+                        stagePoller.startPolling();
                     });
                     stage.setTearDown(function() {
-                        stageContext.html('');
+                        // default
                     });
                     stage.setUpdate(function() {
-                        
+                        for(var display in stageData.itemTypeDisplays) {
+                            if(stageData.itemTypeDisplays.hasOwnProperty(display)) {
+                                stageData.itemTypeDisplays[display].update(APP.data.state);
+                            }
+                        }
+                    });
+                    stage.setPollFunction(1000, function() {
+                        APP.ajax_get_state(stage.update);
                     });
                     
                 })();
@@ -1094,12 +1117,15 @@ APP.StageManager = function() {
                 
             });
             stage.setConstruct(function() {
-                stage.tearDown();
+                // default
             });
             stage.setTearDown(function() {
-                stageContext.html('');
+                // default
             });
             stage.setUpdate(function() {
+                // default
+            });
+            stage.setPollFunction(1000, function() {
                 
             });
         })();
@@ -1121,57 +1147,13 @@ APP.StageManager = function() {
      * @param {String | null} stageId Element id of stage to toggle on/off, or null to toggle off regardless of current active stage
      */
     this.toggleStage = toggleStage;
-    
-    /**
-     * @for APP.StageManager
-     * @method construct
-     * @param {String} stageId Id of Stage object to construct
-     * Calls the construct() method of the specified Stage object
-     */
-    this.construct = construct;
-    
-    /**
-     * @for APP.StageManager
-     * @method update
-     * Calls the update() method of the specified stage
-     */
-    this.update = update;
-    
+        
     /**
      * @for APP.StageManager
      * @method init
      */
     this.init = init;
 };
-
-/**
- *  Polls sensors at a specified frequency
- */
-/*
-APP.poller = {
-    __intervalId: undefined,
-    __frequency: undefined,
-    // frequency in ms
-    setFrequency: function(frequency) {
-        APP.poller.__frequency = frequency;
-    },
-    startPolling: function() {
-        if(APP.poller.__frequency !== undefined) {
-            APP.poller.__intervalId = window.setInterval(APP.poller.poll, APP.poller.__frequency);
-        }
-    },
-    stopPolling: function() {
-        window.clearInterval(APP.poller.__intervalId);
-    },
-    poll: function() {
-        APP.ajaxPost('ENTITY_UPDATE', '', '/updateinfo', 'normal', function(json) {
-            var contentObj = APP.unpackToContent(json);
-            APP.DataHandler.updateEntityMap(contentObj);
-            APP.UIConstructor.updateUIValues(APP.Data.EntityMap);
-        });
-    }
-}
-*/
 
 /**
  * @static
@@ -1213,15 +1195,16 @@ APP.clock = {
             timeOfDay;
             
         if (currentMinutes < 10) { currentMinutes = "0" + currentMinutes; }
-        
-        if (currentHours > 12) {
-            currentHours -= 12;
-            timeOfDay = "PM";
+        if (currentHours >= 12) {
+            if (currentHours === 12) {
+                currentHours = 12;
+                timeOfDay = 'PM';
+            } else {
+                currentHours -= 12;
+                timeOfDay = 'PM';
+            }
         } else {
             timeOfDay = "AM";
-            if (currentHours === 0) {
-                currentHours = 12;
-            }
         }
 
         switch(currentDay) {
