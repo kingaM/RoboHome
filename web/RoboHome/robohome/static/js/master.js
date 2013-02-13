@@ -608,7 +608,7 @@ APP.Stage.prototype.setOnShow = function(func) {
     var self = this;
     this.onShow = function() {
         console.log(self.stageId + ' onShow() called');
-        // console.trace(this);
+        console.trace(this);
         this.construct(); // default behavior
         func();
     }
@@ -626,7 +626,7 @@ APP.Stage.prototype.setOnHide = function(func) {
     var self = this;
     this.onHide = function() {
         console.log(self.stageId + ' onHide() called');
-        // console.trace(this);
+        console.trace(this);
         this.tearDown(); // default behavior
         func();
     }
@@ -644,7 +644,7 @@ APP.Stage.prototype.setConstruct = function(func) {
     var self = this;
     this.construct = function() {
         console.log(self.stageId + ' construct() called');
-        // console.trace(this);
+        console.trace(this);
         func();
         this.contextMenu.construct(); // this is after func() so if the programmer needs to call
                                       // tearDown() before construct(), tearDown does not delete the ContextMenu
@@ -663,7 +663,7 @@ APP.Stage.prototype.setTearDown = function(func) {
     var self = this;
     this.tearDown = function() {
         console.log(self.stageId + ' tearDown() called');
-        // console.trace(this);
+        console.trace(this);
         this.getContext().html('');
         this.contextMenu.tearDown();
         this.poller.stopPolling();
@@ -683,7 +683,7 @@ APP.Stage.prototype.setUpdate = function(func) {
     var self = this;
     this.update = function() {
         console.log(self.stageId + ' update() called');
-        // console.trace(this);
+        console.trace(this);
         func();
     }
 };
@@ -871,7 +871,7 @@ APP.MenuManager = function(stageManager) {
             'button-config' : {
                 menuId: 'menu-config',
                 buttonText: 'Config',
-                class: 'orange'
+                class: 'yellow'
             }
         },
         primaryMenu = $('#menu-primary'),
