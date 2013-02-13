@@ -21,8 +21,8 @@ SETTINGS = {
     'LANGUAGE': 'en',
     'VERSION_NUMBER': '0.1',
     'SERVER': {
-        'HOST': '127.0.0.1',
-        'PORT': 80
+        'HOST': '0.0.0.0',
+        'PORT': 9090
     },
     'API': {
         'STATUS_CODE': 'statusCode',
