@@ -871,7 +871,7 @@ APP.MenuManager = function(stageManager) {
             'button-config' : {
                 menuId: 'menu-config',
                 buttonText: 'Config',
-                class: 'yellow'
+                class: 'orange'
             }
         },
         primaryMenu = $('#menu-primary'),
@@ -1044,7 +1044,7 @@ APP.StageManager = function() {
             }
             
         },
-                
+        
         init = function() {
         
         // home stage
