@@ -3,7 +3,12 @@ import eca
 from priorityQueue import MyPriorityQueue
 from threading import Thread
 
-types = {'motionSensor' : Item , 'lightSensor' : Item, 'temperatureSensor' : Item , 'energyMonitor' : Item , 'button' : Item , 'door' : Openable, 'window' : Openable, 'curtain' : Openable, 'plug' : OnOff, 'light' : Lights, 'radiator' : RadiatorValve}
+types = {'motionSensor' : Item , 'lightSensor' : Item, 'temperatureSensor' : Item , 'energyMonitor' : Item , 'button' : Item , 'door' : Openable, 'window' : Openable, 'curtain' : Openable, 'plug' : OnOff, 'lights' : Lights, 'radiator' : RadiatorValve}
+
+# MOCK DATA FOR NOW
+typesNice = {'motionSensor' : 'Motion Sensor' , 'lightSensor' : 'Light Sensor', 'temperatureSensor' : 'Temperature Sensor' , 'energyMonitor' : 'Energy Monitor' , 'button' : 'Button' , 'door' : 'Door', 'window' : 'Window', 'curtain' : 'Curtain', 'plug' : 'Plug', 'lights' : 'Lights', 'radiator' : 'Radiator Valve'}
+
+states = {Item : [], Openable : [{'id' : 1, 'name' : 'opened', 'method' : 'open'}, {'id' : 0, 'name' : 'closed', 'method' : 'close'}], OnOff : [{'id' : 1, 'name' : 'on', 'method' : 'on'}, {'id' : 0, 'name' : 'off', 'method' : 'off'}], Lights :[{'id' : 1, 'name' : 'on', 'method' : 'on'}, {'id' : 0, 'name' : 'off', 'method' : 'off'}], RadiatorValve : [] }
 
 class House(object):
     """
@@ -162,8 +167,28 @@ class House(object):
         """
         Returns the API version that this house is compatible with
         """
-
-        pass
+        methods = self.database.getMethodsWithTypes()
+        methodList = [[]]
+        namesList = []
+        j = 0
+        for i in range(0, len(methods)):
+            temp = i+1
+            if temp > len(methods) - 1:
+                temp = 0
+            if methods[i][0] == methods[temp][0]:
+                methodList[j].append(methods[i][1])
+            else:
+                namesList.append(methods[i][0])
+                methodList.append([])
+                methodList[j].append(methods[i][1])
+                j +=1
+        methodsJSON = zip(namesList, methodList)
+        dictVersion = {}
+        for m in methodsJSON:
+            dictVersion[m[0]] = {'name' : typesNice[m[0]], 'methods': m[1], 'supportedBrands' : [], 'states' : states[types[m[0]]]}
+        finalDict = {}
+        finalDict['supportedTypes'] = dictVersion
+        return finalDict
 
     def getEventsForTrigger(self, item, trigger):
         """

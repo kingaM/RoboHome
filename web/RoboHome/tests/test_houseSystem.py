@@ -169,14 +169,17 @@ class MockActionsTable:
 
 class MockDatabase:
 
-    def __init__(self):
+    def __init__(self, mockM=()):
         self.room = MockRoomTable()
         self.types = MockTypesTable()
         self.items = MockItemsTable()
         self.events = MockEventsTable()
         self.conditions = MockConditionsTable()
         self.actions = MockActionsTable()
+        self.mockMethods = mockM
 
+    def getMethodsWithTypes(self):
+        return self.mockMethods
 
 class TestHouse(unittest.TestCase):
 
@@ -399,6 +402,18 @@ class TestHouse(unittest.TestCase):
         h = House(db)
         h.rooms = {}
         self.assertEqual(h.getState(), {'states' : []})
+
+    def test_getVersion(self):
+        tupleDB = (('motionSensor', 'getState'), ('lights', 'on'), ('lights', 'off'), ('lights', 'getState'))
+        db = MockDatabase(tupleDB)
+        h = House(db)
+        self.assertEqual(h.getVersion(), {'supportedTypes' : {'motionSensor': {'states': [], 'supportedBrands': [], 'name': 'Motion Sensor', 'methods': ['getState']}, 'lights': {'states': [{'method': 'on', 'id': 1, 'name': 'on'}, {'method': 'off', 'id': 0, 'name': 'off'}], 'supportedBrands': [], 'name': 'Lights', 'methods':['on', 'off', 'getState']}}})
+
+    def test_getVersionEmpty(self):
+        tupleDB = ()
+        db = MockDatabase(tupleDB)
+        h = House(db)
+        self.assertEqual(h.getVersion(), {'supportedTypes' : {}})
 
 class TestRoom(unittest.TestCase):
 
