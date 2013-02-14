@@ -16,6 +16,7 @@ class House(object):
         self.events = []
         self.queue = MyPriorityQueue()
         self.methodThread = Thread(name="Method Thread", target=self.executeFromQueue)
+        self.methodThread.daemon = True
         self.methodThread.start()
 
     def initFromDatabase(self):
@@ -152,12 +153,16 @@ class House(object):
         """
         Returns the state of the house
         """
-        pass
+        states = []
+        for r in self.rooms:
+            states = states + self.rooms[r].getState()
+        return {'states' : states}
 
     def getVersion(self):
         """
         Returns the API version that this house is compatible with
         """
+
         pass
 
     def getEventsForTrigger(self, item, trigger):
@@ -251,7 +256,6 @@ class House(object):
         """
         return getattr(self.rooms[roomId].items[itemId], method)(*args)
 
-
 class Room:
     """
     A class to represent a room inside the house
@@ -274,3 +278,7 @@ class Room:
     def getStructure(self):
         """Returns a structure of the room as a dict"""
         return {'id' : self.id, 'name' : self.name, 'items': [ {'id' : self.items[i]._id, 'name' : self.items[i].name, 'itemType' : self.items[i]._type, 'brand' : self.items[i].brand, 'ip' : self.items[i].ip} for i in self.items]}
+
+    def getState(self):
+        """Returns a list of states of all the items in the room as a dict"""
+        return [ {'id' : self.items[i]._id, 'state' : self.items[i].getState()} for i in self.items]

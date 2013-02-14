@@ -33,6 +33,9 @@ class MockRoom:
     def getStructure(self):
         return {'id': self.id, 'name': self.name, 'items': []}
 
+    def getState(self):
+        return [{'id' : self.items[i]._id, 'state' : 1} for i in self.items]
+
 
 class MockHouse(House):
     def __init__(self):
@@ -374,6 +377,29 @@ class TestHouse(unittest.TestCase):
         h.updateRoom(1, "new name")
         self.assertEqual(h.rooms[1].name, "new name")
 
+    def test_getState(self):
+        db = MockDatabase()
+        h = House(db)
+        item1 = MockItem(1, "mockName", "mockBrand", "motionSensor", "mockIP")
+        room = MockRoom(1, "lounge")
+        room.items = {1: item1}
+        h.rooms = {1: room, 2 : room}
+        self.assertEqual(h.getState(), {'states' : [{"id" : 1, "state" : 1}, {"id" : 1, "state" : 1} ]})
+
+    def test_getState_noItems(self):
+        db = MockDatabase()
+        h = House(db)
+        room = MockRoom(1, "lounge")
+        room.items = {}
+        h.rooms = {1: room, 2 : room}
+        self.assertEqual(h.getState(), {'states' : []})
+
+    def test_getState_noRooms(self):
+        db = MockDatabase()
+        h = House(db)
+        h.rooms = {}
+        self.assertEqual(h.getState(), {'states' : []})
+
 class TestRoom(unittest.TestCase):
 
     def test_init(self):
@@ -406,6 +432,14 @@ class TestRoom(unittest.TestCase):
         name = "test"
         r = Room(_id, name)
         self.assertEqual(r.getStructure(), {'id': 1, 'name': "test", 'items': []})
+
+    def test_getState(self):
+        item = MockItem(1, 'a', 'a', 'a', '1')
+        _id = 1
+        name = "test"
+        r = Room(_id, name)
+        r.addItem(1, item)
+        self.assertEqual(r.getState(),  [{'id': 1, 'state': 1}])
 
 if __name__ == '__main__':
     unittest.main()
