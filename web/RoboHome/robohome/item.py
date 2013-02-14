@@ -10,6 +10,7 @@ class Item(object):
         self.brand = brand
         self.ip = ip
         self._type = _type
+        self.state = 1
 
     def getState(self):
         return 1
@@ -25,13 +26,16 @@ class Openable(Item):
 
     def open(self):
         print "Open openable object"
+        self.state = 1
         pass
 
     def close(self):
         print "Close openable object"
+        self.state = 0
         pass
 
-    def setOpen(percentage):
+    def setOpen(self, percentage):
+        self.state = percentage
         pass
 
 """
@@ -44,9 +48,13 @@ class OnOff(Item):
         super(OnOff, self).__init__(_id, name, brand, _type, ip)
 
     def on(self):
+        "OnOff object on"
+        self.state = 1
         pass
 
     def off(self):
+        "OnOff object off"
+        self.state = 0
         pass
 
 """
@@ -58,6 +66,8 @@ class Lights(OnOff):
         super(OnOff, self).__init__(_id, name, brand, _type, ip)
 
     def setBrightness(self, brightness):
+        print "Set brightness of lights to ", brightness
+        self.state = brightness
         pass
 """
 A class for radiator valves in the house, extends Item
@@ -68,6 +78,8 @@ class RadiatorValve(Item):
         super(RadiatorValve, self).__init__(_id, name, brand, _type, ip)
 
     def setTemperature(self, degrees):
+        print "Set temperature of radiator valve to ", degrees
+        self.state = degrees
         pass
 
 
