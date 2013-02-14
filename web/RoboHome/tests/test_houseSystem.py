@@ -404,7 +404,7 @@ class TestHouse(unittest.TestCase):
         self.assertEqual(h.getState(), {'states' : []})
 
     def test_getVersion(self):
-        tupleDB = (('motionSensor', 'getState'), ('lights', 'on'), ('lights', 'off'), ('lights', 'getState'))
+        tupleDB = (('motionSensor', 'getState'), ('light', 'on'), ('light', 'off'), ('light', 'getState'))
         db = MockDatabase(tupleDB)
         h = House(db)
         self.assertEqual(h.getVersion(), {'supportedTypes' : {'motionSensor': {'states': [], 'supportedBrands': [], 'name': 'Motion Sensor', 'methods': ['getState']}, 'lights': {'states': [{'method': 'on', 'id': 1, 'name': 'on'}, {'method': 'off', 'id': 0, 'name': 'off'}], 'supportedBrands': [], 'name': 'Lights', 'methods':['on', 'off', 'getState']}}})

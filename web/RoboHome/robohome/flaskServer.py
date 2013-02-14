@@ -168,7 +168,7 @@ def rooms_version():
     if request.method == 'GET':
         # Return initial info when connecting to server for the first time
         # return jsonify(pack(house.getVersion()))
-        return jsonify(MOCK_CONTENT['GET_VERSION'])
+        return jsonify(pack(house.getVersion()))
 
 
 @app.route('/version/<string:version>/structure/', methods=['GET'])
@@ -183,7 +183,7 @@ def state(version):
     if request.method == 'GET':
         # Return flat list of each component's id and its associated state
         # return jsonify(pack(house.getState()))
-        return jsonify(MOCK_CONTENT['GET_STATE'])
+        return jsonify(pack(house.getState()))
 
 
 @app.route('/version/<string:version>/rooms/', methods=['POST'])
@@ -197,6 +197,7 @@ def rooms(version):
 def rooms_roomId(version, roomId):
     if request.method == 'GET':
         # Return state of room
+        return jsonify(pack(house.rooms[int(roomId)].getState()))
         pass
 
     if request.method == 'PUT':
@@ -220,6 +221,7 @@ def rooms_roomId_items(version, roomId):
 def rooms_roomId_items_itemId(version, roomId, itemId):
     if request.method == 'GET':
         # Return state of item
+        return jsonify(pack(house.rooms[int(roomId)].items[itemId].getState()))
         pass
 
     if request.method == 'PUT':
@@ -237,8 +239,8 @@ def rooms_roomId_items_itemId_cmd(version, roomId, itemId, cmd):
     if request.method == 'PUT':
         # Command item
         strBuffer = str(roomId) + ' ' + str(itemId) + ' ' + cmd
+        house.addToQueue(int(roomId), int(itemId), cmd)
         return strBuffer
-
 
 
 @app.route('/version/<string:version>/events/', methods=['GET', 'POST'])
