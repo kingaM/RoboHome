@@ -430,7 +430,7 @@ APP.ContextMenu = function() {
      * @for APP.ContextMenu
      * @method tearDown
      * This clears the ContextMenu area by calling jQuery's .html('')
-     * This is called automatically by the associated Stage's onHide() method
+     * This is called automatically by the associated Stage's onTearDown() method
      */
     this.tearDown = function() {
         $(selector).html('');
@@ -571,6 +571,7 @@ APP.Stage = function(menuId, buttonId, buttonText, stageId) {
      */
     this.tearDown = function() {
         this.getContext().html('');     // clear stage area
+        this.data = {};                 // clear data
         this.contextMenu.tearDown();    // clear context menu
         this.poller.stopPolling();      // stop any polling
     };
@@ -608,8 +609,8 @@ APP.Stage.prototype.setOnShow = function(func) {
     var self = this;
     this.onShow = function() {
         console.log(self.stageId + ' onShow() called');
-        console.trace(this);
-        this.construct(); // default behavior
+        // console.trace(this);
+        self.construct(); // default behavior
         func();
     }
 };
@@ -626,8 +627,8 @@ APP.Stage.prototype.setOnHide = function(func) {
     var self = this;
     this.onHide = function() {
         console.log(self.stageId + ' onHide() called');
-        console.trace(this);
-        this.tearDown(); // default behavior
+        // console.trace(this);
+        self.tearDown(); // default behavior
         func();
     }
 };
@@ -644,9 +645,9 @@ APP.Stage.prototype.setConstruct = function(func) {
     var self = this;
     this.construct = function() {
         console.log(self.stageId + ' construct() called');
-        console.trace(this);
+        // console.trace(this);
         func();
-        this.contextMenu.construct(); // this is after func() so if the programmer needs to call
+        self.contextMenu.construct(); // this is after func() so if the programmer needs to call
                                       // tearDown() before construct(), tearDown does not delete the ContextMenu
     }
 };
@@ -663,10 +664,11 @@ APP.Stage.prototype.setTearDown = function(func) {
     var self = this;
     this.tearDown = function() {
         console.log(self.stageId + ' tearDown() called');
-        console.trace(this);
-        this.getContext().html('');
-        this.contextMenu.tearDown();
-        this.poller.stopPolling();
+        // console.trace(this);
+        self.getContext().html('');
+        self.data = {};
+        self.contextMenu.tearDown();
+        self.poller.stopPolling();
         func();
     }
 };
@@ -683,7 +685,7 @@ APP.Stage.prototype.setUpdate = function(func) {
     var self = this;
     this.update = function() {
         console.log(self.stageId + ' update() called');
-        console.trace(this);
+        // console.trace(this);
         func();
     }
 };
@@ -761,8 +763,6 @@ APP.ItemTypeDisplay.prototype.construct = function() {
                     $(this).addClass('updating');
                     function getNextState(itemId) {
                         for(var j = 0; j < self.items.length; j++) {
-                            console.log(itemId);
-                            console.log(self.items[j][APP.API.STRUCT.ROOM.ITEM.ID]);
                             if(self.items[j][APP.API.STRUCT.ROOM.ITEM.ID] === parseInt(itemId)) {
                                 return APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][itemType][APP.API.VERSION.SUPPORTED_TYPE.STATES][(items[j].state + 1) % 2][APP.API.VERSION.SUPPORTED_TYPE.STATE.METHOD];
                             }
@@ -1050,11 +1050,7 @@ APP.StageManager = function() {
         // home stage
         (function() {
             var stageId = addStage(new APP.Stage(null, 'button-home', '', 'stage-home')),
-                stage = stages.get(stageId),
-                stageData = stage.data,
-                stageMenu = stage.contextMenu,
-                stageMenuContext = stageMenu.getContext(),
-                stageContext = stage.getContext();
+                stage = stages.get(stageId);
             
             stage.setOnShow(function() {
                 // default
@@ -1091,12 +1087,7 @@ APP.StageManager = function() {
                         safeRoomName = roomName.replace(' ', '-'),
                         stageId = addStage(new APP.Stage('menu-control',
                             'button-control-' + safeRoomName, roomName, 'stage-control-' + safeRoomName)),
-                        stage = stages.get(stageId),
-                        stageData = stage.data,
-                        stageMenu = stage.contextMenu,
-                        stagePoller = stage.poller,
-                        stageMenuContext = stageMenu.getContext(),
-                        stageContext = stage.getContext();
+                        stage = stages.get(stageId);
                     
                     stage.setOnShow(function() {
                         // default
@@ -1106,10 +1097,11 @@ APP.StageManager = function() {
                     });
                     stage.setMenuConstruct(function() {
                         // TODO
-                        stageMenuContext.append(room[APP.API.STRUCT.ROOM.NAME]);
+                        stage.contextMenu.getContext().append(room[APP.API.STRUCT.ROOM.NAME]);
                     });
                     stage.setConstruct(function() {
-                        var itemTypes = {},
+                        stage.data.itemTypes = {};
+                        var itemTypes = stage.data.itemTypes,
                             items = room[APP.API.STRUCT.ROOM.ITEMS],
                             item,
                             itemType;
@@ -1121,23 +1113,23 @@ APP.StageManager = function() {
                             }
                             itemTypes[itemType].push(item);
                         }
-                        stageData.roomId = room[APP.API.STRUCT.ROOM.ITEM.ID];
-                        stageData.itemTypeDisplays = {};
+                        stage.data.roomId = room[APP.API.STRUCT.ROOM.ITEM.ID];
+                        stage.data.itemTypeDisplays = {};
                         for(var itemType in itemTypes) {
                             if(itemTypes.hasOwnProperty(itemType)) {
-                                stageData.itemTypeDisplays[itemType] = new APP.ItemTypeDisplay(stage, itemType, itemTypes[itemType]);
-                                stageData.itemTypeDisplays[itemType].construct();
+                                stage.data.itemTypeDisplays[itemType] = new APP.ItemTypeDisplay(stage, itemType, itemTypes[itemType]);
+                                stage.data.itemTypeDisplays[itemType].construct();
                             }
                         }
-                        stagePoller.startPolling();
+                        stage.poller.startPolling();
                     });
                     stage.setTearDown(function() {
                         // default
                     });
                     stage.setUpdate(function() {
-                        for(var display in stageData.itemTypeDisplays) {
-                            if(stageData.itemTypeDisplays.hasOwnProperty(display)) {
-                                stageData.itemTypeDisplays[display].update(APP.data.state);
+                        for(var display in stage.data.itemTypeDisplays) {
+                            if(stage.data.itemTypeDisplays.hasOwnProperty(display)) {
+                                stage.data.itemTypeDisplays[display].update(APP.data.state);
                             }
                         }
                     });
@@ -1153,20 +1145,16 @@ APP.StageManager = function() {
         // eca stage
         (function() {
             var stageId = addStage(new APP.Stage('menu-rules', 'button-rules-eca', 'ECA', 'stage-rules-eca')),
-                stage = stages.get(stageId),
-                stageData = stage.data,
-                stageMenu = stage.contextMenu,
-                stageMenuContext = stageMenu.getContext(),
-                stageContext = stage.getContext();
+                stage = stages.get(stageId);
             
             stage.setOnShow(function() {
-                
+                // default
             });
             stage.setOnHide(function() {
-                
+                // default
             });
             stage.setMenuConstruct(function() {
-                
+                // default
             });
             stage.setConstruct(function() {
                 // default
@@ -1364,24 +1352,24 @@ APP.resizer = {
 
 $(document).ready(function() {
     
-APP.ajax_get_version(function() {
-    // Instantiate manager objects
-    var stageManager = new APP.StageManager(),
-        menuManager = new APP.MenuManager(stageManager);
-    
-    // Construct menus
-    menuManager.init();
-    stageManager.init();
-    
-    // Start clock
-    APP.clock.startClock();
-    
-    // Listen to size changes
-    APP.windowResizeListener.listen();
-    APP.resizer.resizeAll();
-    
-    // remove UI mask
-    // start polling    
-});
+    APP.ajax_get_version(function() {
+        // Instantiate manager objects
+        var stageManager = new APP.StageManager(),
+            menuManager = new APP.MenuManager(stageManager);
+        
+        // Construct menus
+        menuManager.init();
+        stageManager.init();
+        
+        // Start clock
+        APP.clock.startClock();
+        
+        // Listen to size changes
+        APP.windowResizeListener.listen();
+        APP.resizer.resizeAll();
+        
+        // remove UI mask
+        // start polling    
+    });
         
 });
