@@ -1,30 +1,14 @@
-/* Add additional stylesheets below
--------------------------------------------------- */
-/*
-  Bootstrap's documentation styles
-  Special styles for presenting Bootstrap's documentation and examples
-*/
-
-
 
 /* Body and structure
 -------------------------------------------------- */
 
-body {
-  position: relative;
-  padding-top: 40px;
-}
+
 
 /* Code in headings */
 h3 code {
   font-size: 14px;
   font-weight: normal;
 }
-
-
-
-/* Tweak navbar brand link to be super sleek
--------------------------------------------------- */
 
 
 
@@ -43,11 +27,6 @@ section > ul li {
   margin-bottom: 5px;
 }
 
-#url > p{
-  border-style: solid;
-  border-width: 0.5px;
-  padding: 1px;
-}
 
 .ca
 
@@ -80,14 +59,14 @@ hr.soften {
   color: #FFF;
   text-align: center;
   text-shadow: 0 1px 3px rgba(0,0,0,.4), 0 0 30px rgba(0,0,0,.075);
-  background: #020031; /* Old browsers */
-  background: -moz-linear-gradient(45deg,  #020031 0%, #6d3353 100%); /* FF3.6+ */
-  background: -webkit-gradient(linear, left bottom, right top, color-stop(0%,#020031), color-stop(100%,#6d3353)); /* Chrome,Safari4+ */
-  background: -webkit-linear-gradient(45deg,  #020031 0%,#6d3353 100%); /* Chrome10+,Safari5.1+ */
-  background: -o-linear-gradient(45deg,  #020031 0%,#6d3353 100%); /* Opera 11.10+ */
-  background: -ms-linear-gradient(45deg,  #020031 0%,#6d3353 100%); /* IE10+ */
-  background: linear-gradient(45deg,  #020031 0%,#6d3353 100%); /* W3C */
-  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#020031', endColorstr='#6d3353',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
+  background: #4169E1; /* Old browsers */
+  background: -moz-linear-gradient(45deg,  #4169E1 0%, #000000 100%); /* FF3.6+ */
+  background: -webkit-gradient(linear, left bottom, right top, color-stop(0%,#4169E1), color-stop(100%,#000000)); /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(45deg,  #4169E1 0%,#000000 100%); /* Chrome10+,Safari5.1+ */
+  background: -o-linear-gradient(45deg,  #4169E1 0%,#000000 100%); /* Opera 11.10+ */
+  background: -ms-linear-gradient(45deg,  #4169E1 0%,#000000 100%); /* IE10+ */
+  background: linear-gradient(45deg,  #4169E1 0%,#000000 100%); /* W3C */
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#4169E1', endColorstr='#000000',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
   -webkit-box-shadow: inset 0 3px 7px rgba(0,0,0,.2), inset 0 -3px 7px rgba(0,0,0,.2);
      -moz-box-shadow: inset 0 3px 7px rgba(0,0,0,.2), inset 0 -3px 7px rgba(0,0,0,.2);
           box-shadow: inset 0 3px 7px rgba(0,0,0,.2), inset 0 -3px 7px rgba(0,0,0,.2);
