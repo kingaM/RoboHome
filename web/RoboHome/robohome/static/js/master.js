@@ -831,13 +831,12 @@ APP.ItemTypeDisplay.prototype.update = function() {
     var states = APP.data.state[APP.API.STATE.STATES],
         id;
     // update info
-    console.log(states);
-    console.log(this.items);
     for(var i = 0; i < this.items.length; i++) {
         id = this.items[i][APP.API.STRUCT.ROOM.ITEM.ID];
         for(var j = 0; j < states.length; j++) {
             if(states[j][APP.API.STATE.ID] === id) {
                 this.items[i][APP.API.STATE.STATE] = states[j][APP.API.STATE.STATE];
+                break;
             }
         }
     }
