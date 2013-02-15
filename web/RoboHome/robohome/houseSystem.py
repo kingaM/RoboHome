@@ -8,7 +8,7 @@ types = {'motionSensor' : Item , 'lightSensor' : Item, 'temperatureSensor' : Ite
 # MOCK DATA FOR NOW
 typesNice = {'motionSensor' : 'Motion Sensor' , 'lightSensor' : 'Light Sensor', 'temperatureSensor' : 'Temperature Sensor' , 'energyMonitor' : 'Energy Monitor' , 'button' : 'Button' , 'door' : 'Door', 'window' : 'Window', 'curtain' : 'Curtain', 'plug' : 'Plug', 'light' : 'Light', 'radiator' : 'Radiator Valve'}
 
-states = {Item : [], Openable : [{'id' : 1, 'name' : 'opened', 'method' : 'open'}, {'id' : 0, 'name' : 'closed', 'method' : 'close'}], OnOff : [{'id' : 1, 'name' : 'on', 'method' : 'on'}, {'id' : 0, 'name' : 'off', 'method' : 'off'}], Lights :[{'id' : 1, 'name' : 'on', 'method' : 'on'}, {'id' : 0, 'name' : 'off', 'method' : 'off'}], RadiatorValve : [] }
+states = {'motionSensor' : [{'id' : 1, 'name' : 'motion detected'}, {'id' : 0, 'name' : 'no motion'}], 'lightSensor' : [{'id' : 1, 'name' : 'light'}, {'id' : 0, 'name' : 'dark'}], 'temperatureSensor' : [{'id' : 1, 'name' : 'hot'}, {'id' : 0, 'name' : 'cold'}], 'energyMonitor' : [{'id' : 1, 'name' : 'high'}, {'id' : 0, 'name' : 'low'}], 'button' : [{'id' : 1, 'name' : 'on'}, {'id' : 0, 'name' : 'off'}], 'door' : [{'id' : 1, 'name' : 'opened', 'method' : 'open'}, {'id' : 0, 'name' : 'closed', 'method' : 'close'}], 'window' : [{'id' : 1, 'name' : 'opened', 'method' : 'open'}, {'id' : 0, 'name' : 'closed', 'method' : 'close'}], 'curtain' : [{'id' : 1, 'name' : 'opened', 'method' : 'open'}, {'id' : 0, 'name' : 'closed', 'method' : 'close'}], 'plug' : [{'id' : 1, 'name' : 'on', 'method' : 'on'}, {'id' : 0, 'name' : 'off', 'method' : 'off'}], 'light' :[{'id' : 1, 'name' : 'on', 'method' : 'on'}, {'id' : 0, 'name' : 'off', 'method' : 'off'}], 'radiator' : [{'id' : 0, 'temperature' : 'setTemperature'}]}
 
 class House(object):
     """
@@ -185,7 +185,7 @@ class House(object):
         methodsJSON = zip(namesList, methodList)
         dictVersion = {}
         for m in methodsJSON:
-            dictVersion[m[0]] = {'name' : typesNice[m[0]], 'methods': m[1], 'supportedBrands' : [], 'states' : states[types[m[0]]]}
+            dictVersion[m[0]] = {'name' : typesNice[m[0]], 'methods': m[1], 'supportedBrands' : [], 'states' : states[m[0]]}
         finalDict = {}
         finalDict['supportedTypes'] = dictVersion
         return finalDict
@@ -254,10 +254,7 @@ class House(object):
         """Executes method from the queue, run in a seperate thread"""
         while True:
             if not self.queue.empty():
-                print "Executing method..."
-                debug = self.queue.get()
-                print debug
-                self.executeMethod(*debug)
+                self.executeMethod(*self.queue.get())
 
     def addToQueue(self, roomId, itemId, method, args=[]):
         """
