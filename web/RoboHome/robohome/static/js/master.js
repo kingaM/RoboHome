@@ -297,21 +297,25 @@ APP.unpackToPayload = function(json) {
  * @param {String} url          URL string to send request to
  * @param {Object} payload      Object to pack
  * @param {Function} callback   Callback function
+ * @param {Function} error      Function to execute if AJAX request fails
  */
-APP.ajax = function(requestType, url, payload, callback) {
+APP.ajax = function(requestType, url, payload, callback, error) {
     var messageObj,
-        internalCallback;
+        internalCallback,
+        internalError;
     
     message = APP.packToJSON(payload);
-    
-    /* this is so that side effects such as logging
-     * can be specified here
-     */
     internalCallback = function(args) {
-        // side effects go here
         console.log('AJAX callback called ' + url);
-        // --
-        callback(args);
+        if(callback) {
+            callback(args);
+        }
+    };
+    internalError = function(args) {
+        console.log('AJAX error ' + url);
+        if(error) {
+            error(args);
+        }
     };
     $.ajax({
         type: requestType,
@@ -321,7 +325,8 @@ APP.ajax = function(requestType, url, payload, callback) {
         cache: false,
         contentType: 'application/json',
         dataType: 'text',
-        success: internalCallback
+        success: internalCallback,
+        error: internalError
     });
 };
 
@@ -330,43 +335,48 @@ APP.ajax = function(requestType, url, payload, callback) {
  * @param {Function} callback Callback function to execute after response is received
  * Retrieves the latest house structure from the server
  */
-APP.ajax_get_structure = function(callback) {
+APP.ajax_get_structure = function(callback, error) {
     APP.ajax('GET', APP.URL.STRUCTURE, '',
         function(json) {
             var obj = APP.unpackToPayload(json);
             APP.data.houseStructure = obj;
             callback();
-        }
+        },
+        error
     );
 };
 
 /**
  * @method APP.ajax_get_version
  * @param {Function} callback Callback function to execute after response is received
+ * @param {Function} error      Function to execute if AJAX request fails
  * Retrieves version information and all information that's supposed to be cached
  */
-APP.ajax_get_version = function(callback) {
+APP.ajax_get_version = function(callback, error) {
     APP.ajax('GET', APP.URL.VERSION, '',
         function(json) {
             var obj = APP.unpackToPayload(json);
             APP.data.cache = obj;
             callback();
-        }
+        },
+        error
     );
 }
 
 /**
  * @method APP.ajax_get_status
  * @param {Function} callback Callback function to execute after response is received
+ * @param {Function} error      Function to execute if AJAX request fails
  * Retrieves the latest available states of all sensors (items)
  */
-APP.ajax_get_state = function(callback) {
+APP.ajax_get_state = function(callback, error) {
     APP.ajax('GET', APP.URL.STATE, '',
         function(json) {
             var obj = APP.unpackToPayload(json);
             APP.data.state = obj;
             callback();
-        }
+        },
+        error
     );
 }
 
@@ -376,13 +386,15 @@ APP.ajax_get_state = function(callback) {
  * @param {int} itemId ID of item
  * @param {String} cmd Command to send to the item
  * @param {Function} callback Callback function to execute after response is received
+ * @param {Function} error      Function to execute if AJAX request fails
  * Updates the specified item in the room with the new state
  */
-APP.ajax_put_rooms_roomId_items_itemId_cmd = function(roomId, itemId, cmd, callback) {
+APP.ajax_put_rooms_roomId_items_itemId_cmd = function(roomId, itemId, cmd, callback, error) {
     APP.ajax('PUT', APP.URL.ROOMS_ROOMID_ITEMS_ITEMID_CMD(roomId, itemId, cmd), '',
         function(json) {
             callback();
-        }
+        },
+        error
     );
 }
 
@@ -524,7 +536,6 @@ APP.Stage = function(menuId, buttonId, buttonText, stageId) {
     /**
      * @for APP.Stage
      * @method onShow
-     * @param {Function} func Function to be passed in
      * This function is executed when the stage is shown
      * Set this via setOnShow()
      * onShow() and onHide() are called by APP.MenuManager automatically when buttons are clicked on
@@ -537,7 +548,6 @@ APP.Stage = function(menuId, buttonId, buttonText, stageId) {
     /**
      * @for APP.Stage
      * @method onHide
-     * @param {Function} func Function to be passed in
      * This function is executed when the stage is hidden.
      * Set this via setOnHide()
      * onShow() and onHide() are called by APP.MenuManager automatically when buttons are clicked on
@@ -550,7 +560,6 @@ APP.Stage = function(menuId, buttonId, buttonText, stageId) {
     /**
      * @for APP.Stage
      * @method construct
-     * @param {Function} func Function to be passed in
      * This function should specify the behavior for constructing the UI within the stage area.
      * This function calls the construct() method of this stage's ContextMenu every time it is run.
      * It should only need to construct the DOM structure for update() to run on. It should call update()
@@ -563,7 +572,6 @@ APP.Stage = function(menuId, buttonId, buttonText, stageId) {
     /**
      * @for APP.Stage
      * @method tearDown
-     * @param {Function} func Function to be passed in
      * This function should specify the behavior for deconstructing the UI within the stage area.
      * This should be the opposite of what construct() does
      * Set this via setTeardown()
@@ -579,13 +587,19 @@ APP.Stage = function(menuId, buttonId, buttonText, stageId) {
     /**
      * @for APP.Stage
      * @method update
-     * @param {Function} func Function to be passed in
      * This function should specify the behavior for updating an existing UI within the stage area, without
      * having to repeatedly construct() and tearDown()
      * Set this via setUpdate()
      */
     this.update = function() {};
     
+    /**
+     * @for APP.Stage
+     * @method updateError
+     * This function should specify the behavior of the UI if the update AJAX request fails
+     * Set this via setUpdateError()
+     */
+    this.updateError = function() {};
 };
 
 /**
@@ -689,6 +703,23 @@ APP.Stage.prototype.setUpdate = function(func) {
         func();
     }
 };
+
+/**
+ * @for APP.Stage
+ * @method setUpdate
+ * @param {Function} func Function to be passed in
+ * Give function to execute when updateError() is called.
+ * updateError() should be the function that's called if the updating AJAX request fails
+ * Default behavior: none
+ */
+APP.Stage.prototype.setUpdateError = function(func) {
+    var self = this;
+    this.updateError = function() {
+        console.log(self.stageId + ' updateError() called');
+        // console.trace(this);
+        func();
+    }
+}
 
 /**
  * @for APP.Stage
@@ -851,6 +882,21 @@ APP.ItemTypeDisplay.prototype.update = function() {
             }
         }
         
+    }
+};
+
+/**
+ * @for APP.ItemTypeDisplay
+ * @method updateError
+ * Updates the representation to show that an error has occured in fetching the latest state data
+ */
+APP.ItemTypeDisplay.prototype.updateError = function() {
+    var throbber = $('<img src="../static/img/ajax-loader.gif"></img>'),
+        id;
+    
+    for(var i = 0; i < this.items.length; i++) {
+        id = this.items[i][APP.API.STRUCT.ROOM.ITEM.ID];
+        $('.entity-display.item[data-id = ' + this.items[i][APP.API.STRUCT.ROOM.ITEM.ID] + '] .status').html(throbber);
     }
 };
 
@@ -1083,6 +1129,9 @@ APP.StageManager = function() {
             stage.setUpdate(function() {
                 // default
             });
+            stage.setUpdateError(function() {
+                // default
+            });
             stage.setPollFunction(1000, function() {
                 
             });
@@ -1146,8 +1195,15 @@ APP.StageManager = function() {
                             }
                         }
                     });
+                    stage.setUpdateError(function() {
+                        for(var display in stage.data.itemTypeDisplays) {
+                            if(stage.data.itemTypeDisplays.hasOwnProperty(display)) {
+                                stage.data.itemTypeDisplays[display].updateError();
+                            }
+                        }
+                    });
                     stage.setPollFunction(1000, function() {
-                        APP.ajax_get_state(stage.update);
+                        APP.ajax_get_state(stage.update, stage.updateError);
                     });
                     
                 })();
@@ -1176,6 +1232,9 @@ APP.StageManager = function() {
                 // default
             });
             stage.setUpdate(function() {
+                // default
+            });
+            stage.setUpdateError(function() {
                 // default
             });
             stage.setPollFunction(1000, function() {
