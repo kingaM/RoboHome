@@ -2,15 +2,7 @@ from item import *
 import eca
 from priorityQueue import MyPriorityQueue
 from threading import Thread
-
-types = {'motionSensor' : Item , 'lightSensor' : Item, 'temperatureSensor' : Item , 'energyMonitor' : Item , 'button' : Item , 'door' : Openable, 'window' : Openable, 'curtain' : Openable, 'plug' : OnOff, 'light' : Lights, 'radiator' : RadiatorValve}
-
-# MOCK DATA FOR NOW
-typesNice = {'motionSensor' : 'Motion Sensor' , 'lightSensor' : 'Light Sensor', 'temperatureSensor' : 'Temperature Sensor' , 'energyMonitor' : 'Energy Monitor' , 'button' : 'Button' , 'door' : 'Door', 'window' : 'Window', 'curtain' : 'Curtain', 'plug' : 'Plug', 'light' : 'Light', 'radiator' : 'Radiator Valve'}
-
-states = {'motionSensor' : [{'id' : 1, 'name' : 'motion detected'}, {'id' : 0, 'name' : 'no motion'}], 'lightSensor' : [{'id' : 1, 'name' : 'light'}, {'id' : 0, 'name' : 'dark'}], 'temperatureSensor' : [{'id' : 1, 'name' : 'hot'}, {'id' : 0, 'name' : 'cold'}], 'energyMonitor' : [{'id' : 1, 'name' : 'high'}, {'id' : 0, 'name' : 'low'}], 'button' : [{'id' : 1, 'name' : 'on'}, {'id' : 0, 'name' : 'off'}], 'door' : [{'id' : 1, 'name' : 'opened', 'method' : 'open'}, {'id' : 0, 'name' : 'closed', 'method' : 'close'}], 'window' : [{'id' : 1, 'name' : 'opened', 'method' : 'open'}, {'id' : 0, 'name' : 'closed', 'method' : 'close'}], 'curtain' : [{'id' : 1, 'name' : 'opened', 'method' : 'open'}, {'id' : 0, 'name' : 'closed', 'method' : 'close'}], 'plug' : [{'id' : 1, 'name' : 'on', 'method' : 'on'}, {'id' : 0, 'name' : 'off', 'method' : 'off'}], 'light' :[{'id' : 1, 'name' : 'on', 'method' : 'on'}, {'id' : 0, 'name' : 'off', 'method' : 'off'}], 'radiator' : [{'id' : 0, 'temperature' : 'setTemperature'}]}
-
-passive = {Item : True, Openable : False, OnOff : False, Lights : False, RadiatorValve : False}
+import staticData as data
 
 class House(object):
     """
@@ -36,7 +28,7 @@ class House(object):
             if len(items) > 0:
                 for item in items:
                     type = self.database.types.getNameForId(item[5])
-                    self.rooms[room[0]].items[item[0]] = (types[type](item[0], item[1], item[2],  type, item[3]))
+                    self.rooms[room[0]].items[item[0]] = (data.types[type](item[0], item[1], item[2],  type, item[3]))
 
         events = self.database.events.getEvents()
 
@@ -81,8 +73,25 @@ class House(object):
         roomId -- the id of the room
         name -- new name for the given room
         """
-        self.database.room.updateEntry(roomId, name)
-        self.rooms[roomId] = Room(roomId, name)
+        if roomId in self.rooms:
+            self.database.room.updateEntry(roomId, name)
+            self.rooms[roomId] = Room(roomId, name)
+        else:
+            raise KeyError("Invalid roomId")
+
+    def deleteRoom(self, roomId):
+        """
+        Deletes a specific roomId
+
+        Arguments:
+        roomId -- the id of the room to delete
+        """
+        if roomId in self.rooms:
+            self.database.room.deleteRoom(roomId)
+            del self.rooms[roomId]
+        else:
+            raise KeyError("Invalid roomId")
+
 
     def addItem(self, roomId, name, brand, type, ip):
         """
@@ -95,13 +104,53 @@ class House(object):
         type -- the type of the item (e.g. motionSensor)
         ip -- the ip of the item
         """
+        if roomId in self.rooms:
+            typeId = self.database.types.getIdForName(type)
+            itemId = self.database.items.addEntry(name, brand, ip, roomId, typeId)
+            item = data.types[type](itemId, name, brand, type, ip)
+            self.rooms[roomId].addItem(itemId, item)
+        else:
+            raise KeyError("Invalid roomId")
+        return itemId
 
-        typeId = self.database.types.getIdForName(type)
-        itemId = self.database.items.addEntry(name, brand, ip, roomId, typeId)
-        item = types[type](itemId, name, brand, type, ip)
-        self.rooms[roomId].addItem(itemId, item)
+    def updateItem(self, roomId, itemId, name, brand, type, ip):
+        """
+        Updates an item to the house system and the database
+
+        Arguments:
+        roomId  -- the id of the room in which the item is
+        itemId -- the id of the room to update
+        name -- new/current if unchanged name of the item
+        brand -- new/current if unchanged brand of the item (e.g. arduino)
+        type -- new/current if unchanged type of the item (e.g. motionSensor)
+        ip -- tnew/current if unchangedhe ip of the item
+        """
+        if roomId in self.rooms and itemId in self.rooms[roomId].items:
+            typeId = self.database.types.getIdForName(type)
+            self.rooms[roomId].items[itemId].name = name
+            self.rooms[roomId].items[itemId].brand = brand
+            self.rooms[roomId].items[itemId].ip = ip
+            self.rooms[roomId].items[itemId]._type = type
+            self.rooms[roomId].items[itemId].roomId = roomId
+            self.database.items.updateEntry(itemId, name, brand, ip, roomId, typeId)
+        else:
+            raise KeyError("Invalid roomId or itemId")
 
         return itemId
+
+    def deleteItem(self, roomId, itemId):
+        """
+        Deletes an item 
+
+        Arguments:
+        roomId -- the id of the room in which the item is
+        itemid -- the id of the item to be deleted
+        """
+        if roomId in self.rooms and itemId in self.rooms[roomId].items:
+            self.database.items.deleteEntry(itemId)
+            del self.rooms[roomId].items[itemId]
+        else:
+            raise KeyError("Invalid roomId or itemId")
 
     def getItemById(self, itemId):
         """
@@ -187,7 +236,7 @@ class House(object):
         methodsJSON = zip(namesList, methodList)
         dictVersion = {}
         for m in methodsJSON:
-            dictVersion[m[0]] = {'name' : typesNice[m[0]], 'isPassive' : passive[types[m[0]]], 'methods': m[1], 'supportedBrands' : [], 'states' : states[m[0]]}
+            dictVersion[m[0]] = {'name' : data.typesNice[m[0]], 'isPassive' : data.passive[data.types[m[0]]], 'methods': m[1], 'supportedBrands' : [], 'states' : data.states[m[0]]}
         finalDict = {}
         finalDict['supportedTypes'] = dictVersion
         return finalDict
