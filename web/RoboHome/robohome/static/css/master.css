@@ -267,7 +267,7 @@ div.stage {
 @media only screen and (max-width: 1200px) {
     .stage-content > .entity-display.item-type {
         width: 41.5%;
-        font-size: 200%;
+        font-size: 180%;
     }
 }
 
@@ -315,6 +315,10 @@ div.stage {
     font-size: 0.9em;
 }
 
+.stage-content .entity-display.item:active {
+    border: 1px solid #FFFFFF;
+}
+
 @-webkit-keyframes updating {
     from { background-position: 0 50%; }
     to   { background-position: 4em 50%; }
@@ -341,7 +345,6 @@ div.stage {
             background-repeat: repeat;
             background-size: 2em 2em;
             background-position: 0 50%;
-            content: 'foo';
             background-image:        -webkit-gradient(linear, left top, right bottom, color-stop(0%,transparent), color-stop(25%,transparent), color-stop(25%,rgba(255, 255, 255, 0.1)), color-stop(50%,rgba(255, 255, 255, 0.1)), color-stop(50%,transparent), color-stop(75%,transparent), color-stop(75%,rgba(255, 255, 255, 0.1)), color-stop(100%,rgba(255, 255, 255, 0.1)));
             background-image: -webkit-linear-gradient(315deg, transparent, transparent 25%, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.1) 50%, transparent 50%, transparent 75%, rgba(255, 255, 255, 0.1) 75%, rgba(255, 255, 255, 0.1) 100%);
             background-image:    -moz-linear-gradient(315deg, transparent, transparent 25%, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.1) 50%, transparent 50%, transparent 75%, rgba(255, 255, 255, 0.1) 75%, rgba(255, 255, 255, 0.1) 100%);

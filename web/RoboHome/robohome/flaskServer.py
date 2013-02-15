@@ -30,29 +30,6 @@ SETTINGS = {
     }
 }
 
-
-LOCALIZATION = {
-    'curtain': {
-        'en': { 's': 'Curtain', 'p': 'Curtains' }
-    },
-    'door': {
-        'en': { 's': 'Door', 'p': 'Doors' }
-    },
-    'light': {
-        'en': { 's': 'Light', 'p': 'Lights' }
-    },
-    'motionSensor': {
-        'en': { 's': 'Motion sensor', 'p': 'Motion sensors' }
-    },
-    'plug': {
-        'en': { 's': 'Plug', 'p': 'Plugs' }
-    },
-    'window': {
-        'en': { 's': 'Window', 'p': 'Windows' }
-    }
-}
-
-
 # Common methods ----------------------------------------------------------
 
 # Pack content object into communications wrapper API format and return it as a dictionary
@@ -238,9 +215,9 @@ def rooms_roomId_items_itemId(version, roomId, itemId):
 def rooms_roomId_items_itemId_cmd(version, roomId, itemId, cmd):
     if request.method == 'PUT':
         # Command item
-        strBuffer = str(roomId) + ' ' + str(itemId) + ' ' + cmd
+        strBuffer = str(roomId) + ' ' + str(itemId) + ' ' + cmd # TODO remove
         house.addToQueue(int(roomId), int(itemId), cmd)
-        return strBuffer
+        return strBuffer # TODO remove
 
 
 @app.route('/version/<string:version>/events/', methods=['GET', 'POST'])

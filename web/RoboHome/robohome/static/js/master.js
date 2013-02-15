@@ -50,7 +50,7 @@ APP.API.VERSION.SUPPORTED_TYPE.SUPPORTED_BRANDS = 'supportedBrands';
 APP.API.VERSION.SUPPORTED_TYPE.METHODS = 'methods';
 APP.API.VERSION.SUPPORTED_TYPE.STATES = 'states';
 APP.API.VERSION.SUPPORTED_TYPE.STATE = {};
-APP.API.VERSION.SUPPORTED_TYPE.STATE.STATE = 'state';
+APP.API.VERSION.SUPPORTED_TYPE.STATE.ID = 'id';
 APP.API.VERSION.SUPPORTED_TYPE.STATE.NAME = 'name';
 APP.API.VERSION.SUPPORTED_TYPE.STATE.METHOD = 'method';
 APP.API.STRUCT = {};
@@ -825,24 +825,32 @@ APP.ItemTypeDisplay.prototype.construct = function() {
 /**
  * @for APP.ItemTypeDisplay
  * @method update
- * Constructs the representation of this object on the stage
+ * Updates the representation of this object on the stage
  */
 APP.ItemTypeDisplay.prototype.update = function() {
     var states = APP.data.state[APP.API.STATE.STATES],
+        stateList = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][this.itemType][APP.API.VERSION.SUPPORTED_TYPE.STATES],
         id;
-    // update info
+    
+    // for every item of type
     for(var i = 0; i < this.items.length; i++) {
         id = this.items[i][APP.API.STRUCT.ROOM.ITEM.ID];
+        
+        // update info
         for(var j = 0; j < states.length; j++) {
             if(states[j][APP.API.STATE.ID] === id) {
                 this.items[i][APP.API.STATE.STATE] = states[j][APP.API.STATE.STATE];
                 break;
             }
         }
-    }
-    // update UI
-    for(var j = 0; j < this.items.length; j++) {
-        $('.entity-display.item[data-id = ' + this.items[j][APP.API.STRUCT.ROOM.ITEM.ID] + '] .status').html(APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][this.itemType][APP.API.VERSION.SUPPORTED_TYPE.STATES][this.items[j][APP.API.STATE.STATE]][APP.API.VERSION.SUPPORTED_TYPE.STATE.NAME]);
+        // update UI
+        for(var k = 0; k < stateList.length; k++) {
+            if(stateList[k][APP.API.VERSION.SUPPORTED_TYPE.STATE.ID] === this.items[i].state) {
+                $('.entity-display.item[data-id = ' + this.items[i][APP.API.STRUCT.ROOM.ITEM.ID] + '] .status').html(stateList[k][APP.API.VERSION.SUPPORTED_TYPE.STATE.NAME]);
+                break;
+            }
+        }
+        
     }
 };
 
