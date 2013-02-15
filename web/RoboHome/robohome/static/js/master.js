@@ -36,6 +36,8 @@ APP.DOM_HOOK.ENTITY.ITEM = 'item';
 APP.DOM_HOOK.ENTITY.DOOR = 'door';
 APP.DOM_HOOK.ENTITY.LIGHT = 'light';
 APP.DOM_HOOK.ENTITY.WINDOW = 'window';
+APP.DOM_HOOK.UNINITIALIZED = 'uninitialized';
+APP.DOM_HOOK.CONNECTION_ERROR = 'connection-error';
 
 // These are property name bindings as specified by the API
 APP.API = {};
@@ -233,8 +235,14 @@ APP.Map.prototype.getKeys = function() {
 // ---------------------------------------------------------------------
 
 APP.data = {
-    houseStructure: undefined,
-    cache: undefined
+    cache: undefined, // data which does not change unless the version changes
+    lastDisconnectTime: undefined,
+    connection: { // stores Date objects corresponding to last attempt, successful, or unsuccessful connection
+        lastAttempt: 'never',
+        lastSuccess: 'never',
+        lastNoSuccess: 'never'
+    },
+    state: undefined
 };
 
 // ---------------------------------------------------------------------
@@ -306,17 +314,20 @@ APP.ajax = function(requestType, url, payload, callback, error) {
     
     message = APP.packToJSON(payload);
     internalCallback = function(args) {
-        console.log('AJAX callback called ' + url);
+        APP.data.connection.lastSuccess = APP.data.connection.lastAttempt;
+        console.log('AJAX callback called ' + url + ' ' + APP.clock.getTimestamp(APP.data.connection.lastSuccess));
         if(callback) {
             callback(args);
         }
     };
     internalError = function(args) {
-        console.log('AJAX error ' + url);
+        APP.data.connection.lastNoSuccess = APP.data.connection.lastAttempt;
+        console.log('AJAX error ' + url + ' ' + APP.clock.getTimestamp(APP.data.connection.lastNoSuccess));
         if(error) {
             error(args);
         }
     };
+    APP.data.connection.lastAttempt = APP.clock.getCurrentDate();
     $.ajax({
         type: requestType,
         url: url,
@@ -777,7 +788,7 @@ APP.ItemTypeDisplay.prototype.construct = function() {
         for(var i = 0; i < items.length; i++) {
         
             itemPanel = $('<div></div>').attr({
-                class: 'entity-display ' + APP.DOM_HOOK.ENTITY.ITEM,
+                class: 'entity-display ' + APP.DOM_HOOK.ENTITY.ITEM + ' ' + APP.DOM_HOOK.UNINITIALIZED,
                 'data-id': items[i][APP.API.STRUCT.ROOM.ITEM.ID], // currently used
                 'data-ip': items[i][APP.API.STRUCT.ROOM.ITEM.IP],
                 'data-name': items[i][APP.API.STRUCT.ROOM.ITEM.NAME],
@@ -789,13 +800,19 @@ APP.ItemTypeDisplay.prototype.construct = function() {
                 if(items[0].state !== undefined) { // if state information has been retrieved
                     var dis = $(this),
                         itemId = $(this).attr('data-id'),
-                        itemType = $(this).attr('data-itemtype');
+                        itemType = $(this).attr('data-itemtype'),
+                        states = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][itemType][APP.API.VERSION.SUPPORTED_TYPE.STATES];
                         
                     $(this).addClass('updating');
                     function getNextState(itemId) {
                         for(var j = 0; j < self.items.length; j++) {
                             if(self.items[j][APP.API.STRUCT.ROOM.ITEM.ID] === parseInt(itemId)) {
-                                return APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][itemType][APP.API.VERSION.SUPPORTED_TYPE.STATES][(items[j].state + 1) % 2][APP.API.VERSION.SUPPORTED_TYPE.STATE.METHOD];
+                                console.log(self.items[j]);
+                                for(var k = 0; k < states.length; k++) {
+                                    if(self.items[j][APP.API.STATE.STATE] === states[k][APP.API.VERSION.SUPPORTED_TYPE.STATE.ID]) {
+                                        return APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][itemType][APP.API.VERSION.SUPPORTED_TYPE.STATES][(k + 1) % states.length][APP.API.VERSION.SUPPORTED_TYPE.STATE.METHOD];
+                                    }
+                                }
                             }
                         }
                     }
@@ -877,6 +894,7 @@ APP.ItemTypeDisplay.prototype.update = function() {
         // update UI
         for(var k = 0; k < stateList.length; k++) {
             if(stateList[k][APP.API.VERSION.SUPPORTED_TYPE.STATE.ID] === this.items[i].state) {
+                $('.entity-display.item[data-id = ' + this.items[i][APP.API.STRUCT.ROOM.ITEM.ID] + ']').removeClass(APP.DOM_HOOK.UNINITIALIZED + ' ' + APP.DOM_HOOK.CONNECTION_ERROR);
                 $('.entity-display.item[data-id = ' + this.items[i][APP.API.STRUCT.ROOM.ITEM.ID] + '] .status').html(stateList[k][APP.API.VERSION.SUPPORTED_TYPE.STATE.NAME]);
                 break;
             }
@@ -891,12 +909,19 @@ APP.ItemTypeDisplay.prototype.update = function() {
  * Updates the representation to show that an error has occured in fetching the latest state data
  */
 APP.ItemTypeDisplay.prototype.updateError = function() {
-    var throbber = $('<img src="../static/img/ajax-loader.gif"></img>'),
-        id;
+    var id,
+        itemPanel;
     
-    for(var i = 0; i < this.items.length; i++) {
-        id = this.items[i][APP.API.STRUCT.ROOM.ITEM.ID];
-        $('.entity-display.item[data-id = ' + this.items[i][APP.API.STRUCT.ROOM.ITEM.ID] + '] .status').html(throbber);
+    if(APP.data.state) { // if client has old state data
+        this.update();
+    
+        for(var i = 0; i < this.items.length; i++) {
+            id = this.items[i][APP.API.STRUCT.ROOM.ITEM.ID];
+            itemPanel = $('.entity-display.item[data-id = ' + this.items[i][APP.API.STRUCT.ROOM.ITEM.ID] + ']')
+            if(! itemPanel.hasClass(APP.DOM_HOOK.UNINITIALIZED)) {
+                $('.entity-display.item[data-id = ' + this.items[i][APP.API.STRUCT.ROOM.ITEM.ID] + ']').addClass(APP.DOM_HOOK.CONNECTION_ERROR); 
+            }
+        }
     }
 };
 
@@ -1272,14 +1297,26 @@ APP.StageManager = function() {
  * This object handles time and the clock
  */
 APP.clock = {
-
+    
+    /**
+     * @for APP.clock
+     * @method getCurrentDate
+     * returns the current date object
+     */
+    getCurrentDate: function() {
+        return new Date();
+    },
+    
     /**
      * @for APP.clock
      * @method getTimestamp
+     * @param {Date} dateInput Input Date object. If not defined, this method uses the current date
      * @return {String} String formatted to represent current time, from hours to milliseconds
      */
-    getTimestamp: function() {
-        var date = new Date();
+    getTimestamp: function(dateInput) {
+        var date;
+        if(dateInput) { date = dateInput; }
+        else { date = new Date(); }
         function pad(num) {
             return (num < 10) ? "0" + num : num;
         }
@@ -1288,7 +1325,7 @@ APP.clock = {
             if(num < 100) { return "0" + num; }
             return num;
         }
-        return (pad(date.getHours()) + '' + pad(date.getMinutes()) + ' ' + pad(date.getSeconds()) + '.' + padK(date.getMilliseconds()));
+        return (pad(date.getFullYear()) + ' ' + pad(parseInt(date.getMonth()) + 1) + ' ' + pad(date.getDate()) + ' ' + pad(date.getHours()) + '' + pad(date.getMinutes()) + ' ' + pad(date.getSeconds()) + ' ' + padK(date.getMilliseconds()));
     },
     
     /**

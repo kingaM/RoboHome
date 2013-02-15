@@ -246,7 +246,7 @@ div.stage {
 .stage-content > .entity-display.item-type {
     width: 29%;
     float: left;
-    margin: 0 0.5em 0.5em 0.5em;
+    margin: 0 0.5em 1em 0.5em;
     background-color: rgba(0,200,200,0.1);
             transition-timing-function: ease-out;
     -webkit-transition-property: width;
@@ -369,8 +369,16 @@ div.stage {
     font-family: 'serene';
 }
 
-.entity-display.item .status {
+.stage-content .entity-display.item .status {
     margin: 1em;
+}
+
+.stage-content .entity-display.item.connection-error .status {
+    color: rgba(196,30,30,1);
+}
+
+.stage-content .entity-display.item.connection-error .status:before {
+    content: url('../img/ajax-loader.gif');
 }
 
 .stage-content .entity-display .attachments.self {
