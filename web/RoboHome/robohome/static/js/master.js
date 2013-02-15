@@ -36,7 +36,8 @@ APP.DOM_HOOK.ENTITY.ITEM = 'item';
 APP.DOM_HOOK.ENTITY.DOOR = 'door';
 APP.DOM_HOOK.ENTITY.LIGHT = 'light';
 APP.DOM_HOOK.ENTITY.WINDOW = 'window';
-APP.DOM_HOOK.UNINITIALIZED = 'uninitialized';
+APP.DOM_HOOK.UPDATING = 'updating';
+APP.DOM_HOOK.UPDATED = 'updated';
 APP.DOM_HOOK.CONNECTION_ERROR = 'connection-error';
 
 // These are property name bindings as specified by the API
@@ -236,11 +237,10 @@ APP.Map.prototype.getKeys = function() {
 
 APP.data = {
     cache: undefined, // data which does not change unless the version changes
-    lastDisconnectTime: undefined,
     connection: { // stores Date objects corresponding to last attempt, successful, or unsuccessful connection
-        lastAttempt: 'never',
-        lastSuccess: 'never',
-        lastNoSuccess: 'never'
+        lastAttempt: undefined,
+        lastSuccess: undefined,
+        lastNoSuccess: undefined
     },
     state: undefined
 };
@@ -314,14 +314,16 @@ APP.ajax = function(requestType, url, payload, callback, error) {
     
     message = APP.packToJSON(payload);
     internalCallback = function(args) {
-        APP.data.connection.lastSuccess = APP.data.connection.lastAttempt;
+        APP.data.connection.lastSuccess = new Date();
+        APP.data.connection.lastSuccess.setTime(APP.data.connection.lastAttempt);
         console.log('AJAX callback called ' + url + ' ' + APP.clock.getTimestamp(APP.data.connection.lastSuccess));
         if(callback) {
             callback(args);
         }
     };
     internalError = function(args) {
-        APP.data.connection.lastNoSuccess = APP.data.connection.lastAttempt;
+        APP.data.connection.lastNoSuccess = new Date();
+        APP.data.connection.lastNoSuccess.setTime(APP.data.connection.lastAttempt);
         console.log('AJAX error ' + url + ' ' + APP.clock.getTimestamp(APP.data.connection.lastNoSuccess));
         if(error) {
             error(args);
@@ -788,7 +790,7 @@ APP.ItemTypeDisplay.prototype.construct = function() {
         for(var i = 0; i < items.length; i++) {
         
             itemPanel = $('<div></div>').attr({
-                class: 'entity-display ' + APP.DOM_HOOK.ENTITY.ITEM + ' ' + APP.DOM_HOOK.UNINITIALIZED,
+                class: 'entity-display ' + APP.DOM_HOOK.ENTITY.ITEM,
                 'data-id': items[i][APP.API.STRUCT.ROOM.ITEM.ID], // currently used
                 'data-ip': items[i][APP.API.STRUCT.ROOM.ITEM.IP],
                 'data-name': items[i][APP.API.STRUCT.ROOM.ITEM.NAME],
@@ -803,7 +805,7 @@ APP.ItemTypeDisplay.prototype.construct = function() {
                         itemType = $(this).attr('data-itemtype'),
                         states = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][itemType][APP.API.VERSION.SUPPORTED_TYPE.STATES];
                         
-                    $(this).addClass('updating');
+                    $(this).addClass(APP.DOM_HOOK.UPDATING);
                     function getNextState(itemId) {
                         for(var j = 0; j < self.items.length; j++) {
                             if(self.items[j][APP.API.STRUCT.ROOM.ITEM.ID] === parseInt(itemId)) {
@@ -822,7 +824,7 @@ APP.ItemTypeDisplay.prototype.construct = function() {
                         itemId,
                         getNextState(itemId),
                         function() {
-                            dis.removeClass('updating');
+                            dis.addClass(APP.DOM_HOOK.UPDATED);
                             self.update();
                         }
                     )
@@ -878,7 +880,9 @@ APP.ItemTypeDisplay.prototype.construct = function() {
 APP.ItemTypeDisplay.prototype.update = function() {
     var states = APP.data.state[APP.API.STATE.STATES],
         stateList = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][this.itemType][APP.API.VERSION.SUPPORTED_TYPE.STATES],
-        id;
+        id,
+        itemPanel,
+        statePanel;
     
     // for every item of type
     for(var i = 0; i < this.items.length; i++) {
@@ -894,8 +898,10 @@ APP.ItemTypeDisplay.prototype.update = function() {
         // update UI
         for(var k = 0; k < stateList.length; k++) {
             if(stateList[k][APP.API.VERSION.SUPPORTED_TYPE.STATE.ID] === this.items[i].state) {
-                $('.entity-display.item[data-id = ' + this.items[i][APP.API.STRUCT.ROOM.ITEM.ID] + ']').removeClass(APP.DOM_HOOK.UNINITIALIZED + ' ' + APP.DOM_HOOK.CONNECTION_ERROR);
-                $('.entity-display.item[data-id = ' + this.items[i][APP.API.STRUCT.ROOM.ITEM.ID] + '] .status').html(stateList[k][APP.API.VERSION.SUPPORTED_TYPE.STATE.NAME]);
+                itemPanel = $('.entity-display.item[data-id = ' + this.items[i][APP.API.STRUCT.ROOM.ITEM.ID] + ']');
+                statePanel = $('.entity-display.item[data-id = ' + this.items[i][APP.API.STRUCT.ROOM.ITEM.ID] + '] .status');
+                itemPanel.removeClass(APP.DOM_HOOK.CONNECTION_ERROR + ' ' + APP.DOM_HOOK.UPDATING + ' ' + APP.DOM_HOOK.UPDATING);
+                statePanel.html(stateList[k][APP.API.VERSION.SUPPORTED_TYPE.STATE.NAME]);
                 break;
             }
         }
@@ -909,17 +915,21 @@ APP.ItemTypeDisplay.prototype.update = function() {
  * Updates the representation to show that an error has occured in fetching the latest state data
  */
 APP.ItemTypeDisplay.prototype.updateError = function() {
-    var id,
-        itemPanel;
+    var stateList = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][this.itemType][APP.API.VERSION.SUPPORTED_TYPE.STATES],
+        id,
+        itemPanel,
+        statePanel;
     
-    if(APP.data.state) { // if client has old state data
-        this.update();
-    
-        for(var i = 0; i < this.items.length; i++) {
-            id = this.items[i][APP.API.STRUCT.ROOM.ITEM.ID];
-            itemPanel = $('.entity-display.item[data-id = ' + this.items[i][APP.API.STRUCT.ROOM.ITEM.ID] + ']')
-            if(! itemPanel.hasClass(APP.DOM_HOOK.UNINITIALIZED)) {
-                $('.entity-display.item[data-id = ' + this.items[i][APP.API.STRUCT.ROOM.ITEM.ID] + ']').addClass(APP.DOM_HOOK.CONNECTION_ERROR); 
+    for(var i = 0; i < this.items.length; i++) {
+        id = this.items[i][APP.API.STRUCT.ROOM.ITEM.ID];
+        
+        if(APP.data.state) { // if client has old state data
+            for(var k = 0; k < stateList.length; k++) {
+                itemPanel = $('.entity-display.item[data-id = ' + this.items[i][APP.API.STRUCT.ROOM.ITEM.ID] + ']');
+                statePanel = $('.entity-display.item[data-id = ' + this.items[i][APP.API.STRUCT.ROOM.ITEM.ID] + '] .status');
+                itemPanel.addClass(APP.DOM_HOOK.CONNECTION_ERROR);
+                statePanel.html(stateList[k][APP.API.VERSION.SUPPORTED_TYPE.STATE.NAME]);
+                break;
             }
         }
     }
@@ -1187,6 +1197,8 @@ APP.StageManager = function() {
                         stage.contextMenu.getContext().append(room[APP.API.STRUCT.ROOM.NAME]);
                     });
                     stage.setConstruct(function() {
+                        stage.getContext().append($('<div></div>').attr({id: 'context-bar'}));
+                        
                         stage.data.itemTypes = {};
                         var itemTypes = stage.data.itemTypes,
                             items = room[APP.API.STRUCT.ROOM.ITEMS],
@@ -1214,6 +1226,7 @@ APP.StageManager = function() {
                         // default
                     });
                     stage.setUpdate(function() {
+                        $('#context-bar').html('');
                         for(var display in stage.data.itemTypeDisplays) {
                             if(stage.data.itemTypeDisplays.hasOwnProperty(display)) {
                                 stage.data.itemTypeDisplays[display].update(APP.data.state);
@@ -1221,6 +1234,7 @@ APP.StageManager = function() {
                         }
                     });
                     stage.setUpdateError(function() {
+                        $('#context-bar').html('Caution: Connection to server lost. Displaying last available state info retrieved at ' + APP.clock.getTimestamp(APP.data.connection.lastSuccess));
                         for(var display in stage.data.itemTypeDisplays) {
                             if(stage.data.itemTypeDisplays.hasOwnProperty(display)) {
                                 stage.data.itemTypeDisplays[display].updateError();
