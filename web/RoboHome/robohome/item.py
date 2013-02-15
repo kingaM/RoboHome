@@ -13,7 +13,7 @@ class Item(object):
         self.state = 1
 
     def getState(self):
-        return 1
+        return self.state
         
 """
 A class for all openable objects in the house, extends Item
@@ -48,12 +48,12 @@ class OnOff(Item):
         super(OnOff, self).__init__(_id, name, brand, _type, ip)
 
     def on(self):
-        "OnOff object on"
+        print "OnOff object on"
         self.state = 1
         pass
 
     def off(self):
-        "OnOff object off"
+        print "OnOff object off"
         self.state = 0
         pass
 
@@ -63,7 +63,7 @@ A class for any lighting components in the house, extends OnOff
 class Lights(OnOff):
 
     def __init__(self, _id, name, brand, _type, ip):
-        super(OnOff, self).__init__(_id, name, brand, _type, ip)
+        super(Lights, self).__init__(_id, name, brand, _type, ip)
 
     def setBrightness(self, brightness):
         print "Set brightness of lights to ", brightness

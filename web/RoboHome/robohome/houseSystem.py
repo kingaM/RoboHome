@@ -254,8 +254,10 @@ class House(object):
         """Executes method from the queue, run in a seperate thread"""
         while True:
             if not self.queue.empty():
-                self.executeMethod(*self.queue.get())
-
+                print "Executing method..."
+                debug = self.queue.get()
+                print debug
+                self.executeMethod(*debug)
 
     def addToQueue(self, roomId, itemId, method, args=[]):
         """

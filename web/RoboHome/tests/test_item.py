@@ -2,12 +2,13 @@ import unittest
 from robohome.item import Item, Openable
 
 class MethCallLogger(object):
-   def __init__(self, meth):
+   def __init__(self, meth, args=[]):
      self.meth = meth
      self.was_called = False
+     self.args = args
 
    def __call__(self, code=None):
-     self.meth()
+     self.meth(*self.args)
      self.was_called = True
 
 class TestItem(unittest.TestCase):
@@ -124,7 +125,7 @@ class TestOpenable(unittest.TestCase):
         i.close()
         assert(i.close.was_called)
 
-    def test_openBy(self):
+    def test_setOpen(self):
         _id = 1
         name = "test"
         brand = "RF"
@@ -132,11 +133,10 @@ class TestOpenable(unittest.TestCase):
         ip = "0.0.0.0"
         percentage = 10
         i = Openable(_id, name, brand, _type, ip)
-        i.setOpen = MethCallLogger(i.setOpen)
+        i.setOpen = MethCallLogger(i.setOpen, [percentage])
         i.setOpen(percentage)
         assert(i.setOpen.was_called)
 
-    #should fail but doesn't
     def test_setOpen_noarg(self):
         _id = 1
         name = "test"
@@ -144,9 +144,7 @@ class TestOpenable(unittest.TestCase):
         _type = "door"
         ip = "0.0.0.0"
         i = Openable(_id, name, brand, _type, ip)
-        i.setOpen = MethCallLogger(i.setOpen)
-        i.setOpen()
-        assert(i.setOpen.was_called)
+        self.assertRaises(TypeError, i.setOpen)
 
 if __name__ == '__main__':
     unittest.main()
