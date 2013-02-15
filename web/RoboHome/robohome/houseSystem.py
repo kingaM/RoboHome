@@ -10,6 +10,8 @@ typesNice = {'motionSensor' : 'Motion Sensor' , 'lightSensor' : 'Light Sensor', 
 
 states = {'motionSensor' : [{'id' : 1, 'name' : 'motion detected'}, {'id' : 0, 'name' : 'no motion'}], 'lightSensor' : [{'id' : 1, 'name' : 'light'}, {'id' : 0, 'name' : 'dark'}], 'temperatureSensor' : [{'id' : 1, 'name' : 'hot'}, {'id' : 0, 'name' : 'cold'}], 'energyMonitor' : [{'id' : 1, 'name' : 'high'}, {'id' : 0, 'name' : 'low'}], 'button' : [{'id' : 1, 'name' : 'on'}, {'id' : 0, 'name' : 'off'}], 'door' : [{'id' : 1, 'name' : 'opened', 'method' : 'open'}, {'id' : 0, 'name' : 'closed', 'method' : 'close'}], 'window' : [{'id' : 1, 'name' : 'opened', 'method' : 'open'}, {'id' : 0, 'name' : 'closed', 'method' : 'close'}], 'curtain' : [{'id' : 1, 'name' : 'opened', 'method' : 'open'}, {'id' : 0, 'name' : 'closed', 'method' : 'close'}], 'plug' : [{'id' : 1, 'name' : 'on', 'method' : 'on'}, {'id' : 0, 'name' : 'off', 'method' : 'off'}], 'light' :[{'id' : 1, 'name' : 'on', 'method' : 'on'}, {'id' : 0, 'name' : 'off', 'method' : 'off'}], 'radiator' : [{'id' : 0, 'temperature' : 'setTemperature'}]}
 
+passive = {Item : True, Openable : False, OnOff : False, Lights : False, RadiatorValve : False}
+
 class House(object):
     """
     Main class to represent the house
@@ -185,7 +187,7 @@ class House(object):
         methodsJSON = zip(namesList, methodList)
         dictVersion = {}
         for m in methodsJSON:
-            dictVersion[m[0]] = {'name' : typesNice[m[0]], 'methods': m[1], 'supportedBrands' : [], 'states' : states[m[0]]}
+            dictVersion[m[0]] = {'name' : typesNice[m[0]], 'isPassive' : passive[types[m[0]]], 'methods': m[1], 'supportedBrands' : [], 'states' : states[m[0]]}
         finalDict = {}
         finalDict['supportedTypes'] = dictVersion
         return finalDict
