@@ -1,30 +1,12 @@
 <?php
 
-/*
-$connectionInfo = array("UID" => "robohome@kaajaykdh7", "pwd" => "comp2014!", "Database" => "robohome", "LoginTimeout" => 30, "Encrypt" => 1);
-$serverName = "tcp:kaajaykdh7.database.windows.net,1433";
-$conn = sqlsrv_connect($serverName, $connectionInfo);
-*/
-// DB connection info
-$host = "tcp:kaajaykdh7.database.windows.net";
-$user = "robohome@kaajaykdh7";
-$pwd = "comp2014!";
-$db = "robohome";
-// Connect to database.
-try {
-    $conn = new PDO( "sqlsrv:Server= $host ; Database = $db ", $user, $pwd);
-    $conn->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
-}
-catch(Exception $e){
-    die(var_dump($e));
-}
-/*
-$sql_select = "SELECT * FROM users";
-$stmt = $conn->query($sql_select);
-$registrants = $stmt->fetchAll(); 
+define('DB_SERVER', 'us-cdbr-azure-west-b.cleardb.com');
+define('DB_USERNAME', 'bdd230a1dee8da');
+define('DB_PASSWORD', '57a02569');
+define('DB_DATABASE', 'robohom');
 
-    foreach($registrants as $registrant) {
-        echo $registrant['email']."</br>";
-    }
-*/
+define('USERS_TABLE_NAME', 'users');
+
+$connection = mysql_connect(DB_SERVER, DB_USERNAME, DB_PASSWORD) or die(mysql_error());
+$database = mysql_select_db(DB_DATABASE) or die(mysql_error());
 ?>
