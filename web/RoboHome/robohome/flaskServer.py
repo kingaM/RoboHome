@@ -209,7 +209,7 @@ def rooms_roomId_items_itemId(version, roomId, itemId):
     if request.method == 'DELETE':
         # Remove specified item
         house.deleteItem(int(roomId), int(itemId))
-        pass
+        return jsonify(pack('success'))
 
 
 @app.route('/version/<string:version>/rooms/<int:roomId>/items/<int:itemId>/<string:cmd>/', methods=['PUT'])
@@ -217,7 +217,7 @@ def rooms_roomId_items_itemId_cmd(version, roomId, itemId, cmd):
     if request.method == 'PUT':
         # Command item
         house.addToQueue(int(roomId), int(itemId), cmd)
-        return jsonify(pack({}))
+        return jsonify(pack('success'))
 
 
 @app.route('/version/<string:version>/events/', methods=['GET', 'POST'])

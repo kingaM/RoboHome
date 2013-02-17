@@ -675,8 +675,8 @@ APP.Stage.prototype.setConstruct = function(func) {
     this.construct = function() {
         console.log(self.stageId + ' construct() called');
         // console.trace(this);
-        self.contextMenu.construct();
         func();
+        self.contextMenu.construct();
     }
 };
 
@@ -1206,7 +1206,7 @@ APP.StageManager = function() {
                                 placeholder: 'Room name'})
                             );
                             rooms.append($('<a href="#">Add</a>').attr({id: 'context-add-room-button', class: 'button'}));
-                            rooms.append($('<h3></h3>').html('Remove this room ('+ room[APP.API.STRUCT.ROOM.NAME] + ')'));
+                            rooms.append($('<h3></h3>').html('Remove this room ('+ roomName + ')'));
                             rooms.append($('<input></input>').attr({
                                 id: 'context-remove-room-name-input',
                                 type: 'text',
@@ -1216,8 +1216,17 @@ APP.StageManager = function() {
                             return rooms;
                         }
                         
-                        function constructItemsPanel() {
-                            var items = $('<div></div>');
+                        function constructItemsPanel(roomItems) {
+                            var supportedTypes = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES],
+                                supportedBrands,
+                                items = $('<div></div>'),
+                                addSelect,
+                                internalAddItemId, // value used to locate type + brand
+                                removeSelect,
+                                internalRemoveItemId, // value used to locate type + brand
+                                itemTypes,
+                                optgroup;
+                                
                             items.append($('<h2></h2>').html('Items'));
                             items.append($('<h3></h3>').html('Add'));
                             items.append($('<input></input>').attr({
@@ -1230,10 +1239,42 @@ APP.StageManager = function() {
                                 type: 'text',
                                 placeholder: 'Item\'s static IP address'})
                             );
-                            items.append($('<select></select>').attr({id: 'context-add-item-select'}));
+                            addSelect = $('<select></select>').attr({id: 'context-add-item-select'});
+                            internalAddItemId = 0;
+                            for(var type in supportedTypes) {
+                                if(supportedTypes.hasOwnProperty(type)) {
+                                    optgroup = $('<optgroup></optgroup>').attr({label: supportedTypes[type][APP.API.VERSION.SUPPORTED_TYPE.STATE.NAME]});
+                                    supportedBrands = supportedTypes[type][APP.API.VERSION.SUPPORTED_TYPE.SUPPORTED_BRANDS];
+                                    for(var i = 0; i < supportedBrands.length; i++) {
+                                        optgroup.append($('<option>' + supportedBrands[i] + '</option>').attr({
+                                            'data-type': type,
+                                            'data-brand': supportedBrands[i],
+                                            value: internalAddItemId})
+                                        );
+                                        internalAddItemId++;
+                                    }
+                                    addSelect.append(optgroup);
+                                }
+                            }
+                            items.append(addSelect);
                             items.append($('<a href="#">Add</a>').attr({id: 'context-add-item-button', class: 'button'}));
                             items.append($('<h3></h3>').html('Remove'));
-                            items.append($('<select></select>').attr({id: 'context-remove-item-select'}));
+                            removeSelect = $('<select></select>').attr({id: 'context-remove-item-select'});
+                            internalRemoveItemId = 0;
+                            itemTypes = stage.data.itemTypes;
+                            for(var itemType in itemTypes) {
+                                console.log(itemType);
+                                if(itemTypes.hasOwnProperty(itemType)) {
+                                    optgroup = $('<optgroup></optgroup>').attr({label: supportedTypes[itemType][APP.API.VERSION.SUPPORTED_TYPE.STATE.NAME]});
+                                    for(var j = 0; j < roomItems.length; j++) {
+                                        if(roomItems[j][APP.API.STRUCT.ROOM.ITEM.ITEM_TYPE] === itemType) {
+                                            optgroup.append($('<option>' + roomItems[j][APP.API.STRUCT.ROOM.NAME] + ' (' + roomItems[j][APP.API.STRUCT.ROOM.ITEM.IP] + ' | ' + roomItems[j][APP.API.STRUCT.ROOM.ITEM.BRAND] + ')' + '</option>').attr({value: roomItems[j][APP.API.STRUCT.ROOM.ID]}));
+                                        }
+                                    }
+                                    removeSelect.append(optgroup);
+                                }
+                            }
+                            items.append(removeSelect);
                             items.append($('<a href="#">Remove</a>').attr({id: 'context-remove-item-button', class: 'button'}));
                             return items;
                         }
@@ -1241,9 +1282,7 @@ APP.StageManager = function() {
                         wrapper.append(content);
                         content.append($('<h1></h1>').html('Room manager'));
                         content.append(constructRoomsPanel());
-                        content.append(constructItemsPanel());
-                        
-                        console.log(room);
+                        content.append(constructItemsPanel(room[APP.API.STRUCT.ROOM.ITEMS]));
                         stage.contextMenu.getContext().append(wrapper);
                     });
                     stage.setConstruct(function() {

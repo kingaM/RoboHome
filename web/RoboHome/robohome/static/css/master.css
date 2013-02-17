@@ -197,6 +197,17 @@ body {
 }
 
 /* ----- context menus ----- */
+.context-menu-inner-wrapper {
+    margin-right: 1.5em;
+    background-image: url('../img/grid.png');
+}
+
+.context-menu-content {
+    border: 1px solid #666666;
+    background-color: rgba(0,200,200,0.1);
+    padding: 0.5em 1em;
+}
+
 #context-menu h1 {
     font-size: 0.9em;
     margin-top: 0;
@@ -212,6 +223,7 @@ body {
 
 #context-menu input {
             display: inline-block;
+            min-width: 60%;
             text-decoration: none;
             font-size: 0.8em;
             padding: 0.2em 0.4em;
@@ -226,9 +238,8 @@ body {
 }
 #context-menu input::-webkit-input-placeholder { color: rgba(50,184,191,1); }
 #context-menu input::-moz-placeholder { #color: rgba(50,184,191,1); }
-#context-menu input::-moz-placeholder { #color: rgba(50,184,191,1); }
+#context-menu input:-moz-placeholder { #color: rgba(50,184,191,1); }
 #context-menu input:ms-input-placeholder { #color: rgba(50,184,191,1); }
-
 
 #context-menu .button {
             display: inline-block;
@@ -246,21 +257,29 @@ body {
          -o-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
             box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
 }
+
 #context-menu input:hover,
 #context-menu .button:hover {
     border: 1px solid rgb(229,151,0);
     background: rgba(0,200,200,0.4);
 }
 
-.context-menu-inner-wrapper {
-    margin-right: 1.5em;
-    background-image: url('../img/grid.png');
+#context-menu select {
+    font-size: 0.8em;
+    min-width: 64%;
+    color: white;
+    border: 1px solid #666666;
+    padding: 0.2em;
+    background: transparent;
 }
 
-.context-menu-content {
-    border: 1px solid #666666;
-    background-color: rgba(0,200,200,0.1);
-    padding: 0.5em 1em;
+#context-menu optgroup,
+#context-menu option {
+    color: #000000;
+}
+
+#context-menu select:hover {
+    border: 1px solid rgb(299,151,0);
 }
 
 #context-bar {
