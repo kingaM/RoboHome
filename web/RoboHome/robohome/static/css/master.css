@@ -198,14 +198,14 @@ body {
 
 /* ----- context menus ----- */
 .context-menu-inner-wrapper {
-    margin-right: 1.5em;
+    margin-right: 0.5em;
     background-image: url('../img/grid.png');
 }
 
 .context-menu-content {
     border: 1px solid #666666;
     background-color: rgba(0,200,200,0.1);
-    padding: 0.5em 1em;
+    padding: 0.5em;
 }
 
 #context-menu h1 {
@@ -214,22 +214,43 @@ body {
     margin-bottom: 0.5em;
 }
 
-#context-menu h2,
-#context-menu h3 {
+#context-menu h2 {
     font-size: 0.9em;
     margin-top: 0.5em;
     margin-bottom: 0.5em;
 }
 
+#context-menu fieldset {
+            margin: 0.5em 0;
+            padding: 0.5em;
+            border: 1px solid #666666;
+    -webkit-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+       -moz-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+        -ms-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+         -o-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+            box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+}
+
+#context-menu fieldset > div {
+            margin: -1em -0.5em -0.5em -0.5em;
+            padding: 1em 0.5em 0.5em 0.5em;
+}
+
+#context-menu legend {
+    font-weight: bold;
+    font-size: 0.8em;
+}
+
 #context-menu input {
             display: inline-block;
             min-width: 60%;
+            padding: 0.2em 0.4em;
+            margin: 0.2em 0;
             text-decoration: none;
             font-size: 0.8em;
-            padding: 0.2em 0.4em;
             color: #FFFFFF;
             border: 1px solid #666666;
-            background: rgba(0,200,200,0.3);
+            background: rgba(0,200,200,0.2);
     -webkit-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
        -moz-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
         -ms-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
@@ -246,8 +267,9 @@ body {
             text-decoration: none;
             font-size: 0.8em;
             border: 1px solid #666666;
-            background: rgba(0,200,200,0.2);
+            background: rgba(0,200,200,0.3);
             padding: 0.2em;
+            margin-left: 0.5em;
             min-width: 6em;
             text-align: center;
             font-family: 'serene';
@@ -264,12 +286,24 @@ body {
     background: rgba(0,200,200,0.4);
 }
 
+#context-menu .select-wrapper {
+            margin: 2px;
+            display: inline-block;
+            background: rgba(0,200,200,0.2);
+    -webkit-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+       -moz-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+        -ms-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+         -o-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+            box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+}
+
 #context-menu select {
     font-size: 0.8em;
-    min-width: 64%;
     color: white;
-    border: 1px solid #666666;
+    min-width: 64%;
     padding: 0.2em;
+    margin: 0.2em 0;
+    border: 1px solid #666666;
     background: transparent;
 }
 
@@ -280,6 +314,11 @@ body {
 
 #context-menu select:hover {
     border: 1px solid rgb(299,151,0);
+}
+
+#context-menu .error-message-display {
+    font-size: 0.8em;
+    color: rgba(196,30,30,1);
 }
 
 #context-bar {
@@ -435,7 +474,7 @@ div.stage {
     to   { background-position: 2em 50%; }
 }
 
-.stage-content .entity-display.updating {
+.updating {
             background-color: transparent;
             background-repeat: repeat;
             background-size: 2em 2em;

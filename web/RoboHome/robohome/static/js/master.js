@@ -396,6 +396,24 @@ APP.ajax_get_state = function(callback, error) {
 }
 
 /**
+ * @method APP.ajax_delete_rooms_roomId_items_itemId
+ * @param {int} roomId Room ID
+ * @param {int} itemId Item ID
+ * @param {Function} callback Callback function to execute after response is received
+ * @param {Function} error      Function to execute if AJAX request fails
+ * Deletes specified item in room
+ */
+APP.ajax_delete_rooms_roomId_items_itemId = function(roomId, itemId, callback, error) {
+    APP.ajax('DELETE', APP.URL.ROOMS_ROOMID_ITEMS_ITEMID(roomId, itemId), '',
+        function(json) {
+            var obj = APP.unpackToPayload(json);
+            callback();
+        },
+        error
+    );
+}
+
+/**
  * @method APP.ajax_put_rooms_roomId_items_itemId
  * @param {int} roomId ID of room
  * @param {int} itemId ID of item
@@ -694,7 +712,6 @@ APP.Stage.prototype.setTearDown = function(func) {
         console.log(self.stageId + ' tearDown() called');
         // console.trace(this);
         self.getContext().html('');
-        self.data = {};
         self.contextMenu.tearDown();
         self.poller.stopPolling();
         func();
@@ -1198,21 +1215,36 @@ APP.StageManager = function() {
                             content = $('<div></div>').addClass('context-menu-content');
                         
                         function constructRoomsPanel() {
-                            var rooms = $('<div></div>');
-                            rooms.append($('<h3></h3>').html('Add new room'));
-                            rooms.append($('<input></input>').attr({
+                            var rooms = $('<div></div>'),
+                                addPanel,
+                                removePanel,
+                                container;
+                            
+                            // add
+                            addPanel = $('<fieldset></fieldset');
+                            addPanel.append($('<legend></legend>').html('Add new room'));
+                            container = $('<div></div>');
+                            container.append($('<input></input>').attr({
                                 id: 'context-add-room-name-input',
                                 type: 'text',
                                 placeholder: 'Room name'})
                             );
-                            rooms.append($('<a href="#">Add</a>').attr({id: 'context-add-room-button', class: 'button'}));
-                            rooms.append($('<h3></h3>').html('Remove this room ('+ roomName + ')'));
-                            rooms.append($('<input></input>').attr({
+                            container.append($('<a href="#">Add</a>').attr({id: 'context-add-room-button', class: 'button'}));
+                            addPanel.append(container);
+                            rooms.append(addPanel);
+                            
+                            // remove
+                            removePanel = $('<fieldset></fieldset>');
+                            removePanel.append($('<legend></legend>').html('Remove this room ('+ roomName + ')'));
+                            container = $('<div></div>');
+                            container.append($('<input></input>').attr({
                                 id: 'context-remove-room-name-input',
                                 type: 'text',
                                 placeholder: 'Confirm this room\'s name'})
                             );
-                            rooms.append($('<a href="#">Remove</a>').attr({id: 'context-remove-room-button', class: 'button'}));
+                            container.append($('<a href="#">Remove</a>').attr({id: 'context-remove-room-button', class: 'button'}));
+                            removePanel.append(container);
+                            rooms.append(removePanel);
                             return rooms;
                         }
                         
@@ -1220,26 +1252,38 @@ APP.StageManager = function() {
                             var supportedTypes = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES],
                                 supportedBrands,
                                 items = $('<div></div>'),
+                                addPanel,
+                                addSelectSelector = 'context-add-item-select',
                                 addSelect,
+                                addMessageArea,
                                 internalAddItemId, // value used to locate type + brand
+                                removePanel,
+                                removeSelectSelector = 'context-remove-item-select',
                                 removeSelect,
-                                internalRemoveItemId, // value used to locate type + brand
+                                removeInputSelector = 'context-remove-item-name-input',
+                                removeButton,
+                                removeMessageArea,
                                 itemTypes,
-                                optgroup;
+                                optgroup,
+                                container;
                                 
                             items.append($('<h2></h2>').html('Items'));
-                            items.append($('<h3></h3>').html('Add'));
-                            items.append($('<input></input>').attr({
+                            
+                            // add
+                            addPanel = $('<fieldset></fieldset>');
+                            addPanel.append($('<legend></legend>').html('Add'));
+                            container = $('<div></div>');
+                            container.append($('<input></input>').attr({
                                 id: 'context-add-item-name-input',
                                 type: 'text',
                                 placeholder: 'Item\'s name'})
                             );
-                            items.append($('<input></input>').attr({
+                            container.append($('<input></input>').attr({
                                 id: 'context-add-item-ip-input',
                                 type: 'text',
                                 placeholder: 'Item\'s static IP address'})
                             );
-                            addSelect = $('<select></select>').attr({id: 'context-add-item-select'});
+                            addSelect = $('<select></select>').attr({id: addSelectSelector});
                             internalAddItemId = 0;
                             for(var type in supportedTypes) {
                                 if(supportedTypes.hasOwnProperty(type)) {
@@ -1256,11 +1300,18 @@ APP.StageManager = function() {
                                     addSelect.append(optgroup);
                                 }
                             }
-                            items.append(addSelect);
-                            items.append($('<a href="#">Add</a>').attr({id: 'context-add-item-button', class: 'button'}));
-                            items.append($('<h3></h3>').html('Remove'));
-                            removeSelect = $('<select></select>').attr({id: 'context-remove-item-select'});
-                            internalRemoveItemId = 0;
+                            container.append($('<div class="select-wrapper"></div>').append(addSelect));
+                            container.append($('<a href="#">Add</a>').attr({id: 'context-add-item-button', class: 'button'}));
+                            addPanel.append(container);
+                            items.append(addPanel);
+                            
+                            // remove
+                            removePanel = $('<fieldset></fieldset>');
+                            removePanel.append($('<legend></legend>').html('Remove'));
+                            container = $('<div></div>');
+                            removeMessageArea = $('<div></div>').addClass('error-message-display');
+                            container.append(removeMessageArea);
+                            removeSelect = $('<select></select>').attr({id: removeSelectSelector});
                             itemTypes = stage.data.itemTypes;
                             for(var itemType in itemTypes) {
                                 console.log(itemType);
@@ -1268,14 +1319,74 @@ APP.StageManager = function() {
                                     optgroup = $('<optgroup></optgroup>').attr({label: supportedTypes[itemType][APP.API.VERSION.SUPPORTED_TYPE.STATE.NAME]});
                                     for(var j = 0; j < roomItems.length; j++) {
                                         if(roomItems[j][APP.API.STRUCT.ROOM.ITEM.ITEM_TYPE] === itemType) {
-                                            optgroup.append($('<option>' + roomItems[j][APP.API.STRUCT.ROOM.NAME] + ' (' + roomItems[j][APP.API.STRUCT.ROOM.ITEM.IP] + ' | ' + roomItems[j][APP.API.STRUCT.ROOM.ITEM.BRAND] + ')' + '</option>').attr({value: roomItems[j][APP.API.STRUCT.ROOM.ID]}));
+                                            optgroup.append($('<option>' + roomItems[j][APP.API.STRUCT.ROOM.ITEM.NAME] + ' (' + roomItems[j][APP.API.STRUCT.ROOM.ITEM.IP] + ')' + '</option>').attr({
+                                                value: roomItems[j][APP.API.STRUCT.ROOM.ITEM.ID],
+                                                'data-id': roomItems[j][APP.API.STRUCT.ROOM.ITEM.ID],
+                                                'data-type': roomItems[j][APP.API.STRUCT.ROOM.ITEM.ITEM_TYPE],
+                                                'data-name': roomItems[j][APP.API.STRUCT.ROOM.ITEM.NAME]
+                                                })
+                                            );
                                         }
                                     }
                                     removeSelect.append(optgroup);
                                 }
                             }
-                            items.append(removeSelect);
-                            items.append($('<a href="#">Remove</a>').attr({id: 'context-remove-item-button', class: 'button'}));
+                            container.append($('<div class="select-wrapper"></div>').append(removeSelect));
+                            container.append($('<input></input>').attr({
+                                id: removeInputSelector,
+                                type: 'text',
+                                placeholder: 'Confirm this item\'s name'})
+                            );
+                            
+                            removeButton = $('<a href="#">Remove</a>').attr({id: 'context-remove-item-button', class: 'button'});
+                            removeButton.click(function() {
+                                var self = $(this),
+                                    targetItemId = parseInt($('#' + removeSelectSelector).val()),
+                                    targetType = $('#' + removeSelectSelector).find('option[value="' + targetItemId + '"]').attr('data-type'),
+                                    targetName = $('#' + removeSelectSelector).find('option[value="' + targetItemId + '"]').attr('data-name'),
+                                    types = stage.data.itemTypes,
+                                    displays = stage.data.itemTypeDisplays;
+                                
+                                if($('#' + removeInputSelector).val() === targetName) {
+                                    self.parent().addClass('updating');
+                                    // AJAX call
+                                    APP.ajax_delete_rooms_roomId_items_itemId(room[APP.API.STRUCT.ROOM.ID], targetItemId,
+                                        function() {
+                                            // if only one item of type
+                                            if(types[targetType].length === 1) {
+                                                delete types[targetType];
+                                                delete displays[targetType];
+                                                
+                                            } else {
+                                            // if multiple items of type
+                                                for(var k = 0; k < types[targetType].length; k++) {
+                                                    if(types[targetType][k][APP.API.STRUCT.ROOM.ITEM.ID] === targetItemId) {
+                                                        types[targetType].splice(k, 1);
+                                                        break;
+                                                    }
+                                                }
+                                                for(var m = 0; m < displays[targetType][APP.API.STRUCT.ROOM.ITEMS].length; m++) {
+                                                    if(displays[targetType][APP.API.STRUCT.ROOM.ITEMS][m][APP.API.STRUCT.ROOM.ITEM.ID] === targetItemId) {
+                                                        displays[targetType][APP.API.STRUCT.ROOM.ITEMS].splice(m, 1);
+                                                        break;
+                                                        
+                                                    }
+                                                }
+                                            }
+                                            stage.tearDown();
+                                            stage.construct();
+                                        },
+                                        function() {
+                                            // Do nothing
+                                        }
+                                    );
+                                } else {
+                                    removeMessageArea.html('Names do not match. Please reconfirm.');
+                                }
+                            });
+                            container.append(removeButton);
+                            removePanel.append(container);
+                            items.append(removePanel);
                             return items;
                         }
                         
@@ -1286,23 +1397,28 @@ APP.StageManager = function() {
                         stage.contextMenu.getContext().append(wrapper);
                     });
                     stage.setConstruct(function() {
-                        stage.getContext().append($('<div></div>').attr({id: 'context-bar'}));
-                        
-                        stage.data.itemTypes = {};
-                        var itemTypes = stage.data.itemTypes,
+                        var itemTypes,
                             items = room[APP.API.STRUCT.ROOM.ITEMS],
                             item,
                             itemType;
-                        for(var j = 0; j < items.length; j++) {
-                            item = items[j];
-                            itemType = item[APP.API.STRUCT.ROOM.ITEM.ITEM_TYPE];
-                            if(itemTypes[itemType] === undefined) {
-                                itemTypes[itemType] = [];
+                        stage.getContext().append($('<div></div>').attr({id: 'context-bar'}));
+                        
+                        if(stage.data.itemTypes === undefined) {
+                            stage.data.itemTypes = {};
+                            itemTypes = stage.data.itemTypes;
+                            for(var j = 0; j < items.length; j++) {
+                                item = items[j];
+                                itemType = item[APP.API.STRUCT.ROOM.ITEM.ITEM_TYPE];
+                                if(itemTypes[itemType] === undefined) {
+                                    itemTypes[itemType] = [];
+                                }
+                                itemTypes[itemType].push(item);
                             }
-                            itemTypes[itemType].push(item);
+                            stage.data.roomId = room[APP.API.STRUCT.ROOM.ITEM.ID];
+                            stage.data.itemTypeDisplays = {};
+                        } else {
+                            itemTypes =  stage.data.itemTypes;
                         }
-                        stage.data.roomId = room[APP.API.STRUCT.ROOM.ITEM.ID];
-                        stage.data.itemTypeDisplays = {};
                         for(var itemType in itemTypes) {
                             if(itemTypes.hasOwnProperty(itemType)) {
                                 stage.data.itemTypeDisplays[itemType] = new APP.ItemTypeDisplay(stage, itemType, itemTypes[itemType]);
