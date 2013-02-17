@@ -129,6 +129,27 @@ class ActionsTable(DatabaseHelper):
     def getActionsForEvent(self, event):
         return super(ActionsTable, self).retriveData("SELECT actions.id, itemId, roomId, signature, types.name FROM actions, methods, types WHERE actions.methodId = methods.id AND methods.typeId = types.Id AND eventId=" + str(event.id))
 
+class UsersTable(DatabaseHelper):
+
+    def __init__(self):
+        self.tablename = "users"
+        super(UsersTable, self).__init__()
+
+    def addTable(self):
+        super(UsersTable, self).addTable(self.tablename, "id INT PRIMARY KEY AUTO_INCREMENT NOT NULL, name VARCHAR(25) NOT NULL, openid VARCHAR(200) NOT NULL")
+
+    def addEntry(self, name, openid):
+       return super(UsersTable, self).addEntry(self.tablename, "name, openid", "'" + name + "'," + "'" + openid + "'")
+
+    def getUserByOpenid(self, openid):
+        user =  super(UsersTable, self).retriveData("SELECT name FROM users WHERE openid=\'" + openid + "'")
+        if user:
+            return user[0][0]
+        else:
+            return None
+
+
+
 class Database(DatabaseHelper):
 
     def __init__(self):
@@ -139,6 +160,7 @@ class Database(DatabaseHelper):
         self.events = EventsTable()
         self.conditions = ConditionsTable()
         self.actions = ActionsTable()
+        self.users = UsersTable()
         super(Database, self).__init__()
 
     def addTables(self):

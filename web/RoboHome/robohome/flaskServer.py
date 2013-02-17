@@ -16,6 +16,7 @@
 from flask import *
 from houseSystem import House
 from databaseTables import Database
+from flask_openid import OpenID
 
 SETTINGS = {
     'LANGUAGE': 'en',
@@ -39,95 +40,18 @@ def pack(content={}, statusCode=200):
         SETTINGS['API']['CONTENT']: content
     }
 
-# Mock content ------------------------------------------------------------
-MOCK_CONTENT = {
-    'GET_VERSION': pack({
-        'supportedTypes': {
-            'door': {
-                'name': 'Doors',
-                'supportedBrands': [],
-                'methods': ['close', 'open'],
-                'states': [
-                    { 'id': 0, 'name': 'Closed', 'method': 'close'},
-                    { 'id': 1, 'name': 'Open', 'method': 'open'}
-                ]
-            },
-            'curtain': {
-                'name': 'Curtains',
-                'supportedBrands': [],
-                'methods': ['close', 'open'],
-                'states': [
-                    { 'id': 0, 'name': 'Closed', 'method': 'close'},
-                    { 'id': 1, 'name': 'Open', 'method': 'open'}
-                ]
-            },
-            'window': {
-                'name': 'Windows',
-                'supportedBrands': [],
-                'methods': ['close', 'open'],
-                'states': [
-                    { 'id': 0, 'name': 'Closed', 'method': 'close'},
-                    { 'id': 1, 'name': 'Open', 'method': 'open'}
-                ]
-            },
-            'motionSensor': {
-                'name': 'Motion sensors',
-                'supportedBrands': [],
-                'methods': ['off', 'on'],
-                'states': [
-                    { 'id': 0, 'name': 'Off', 'method': 'off' },
-                    { 'id': 1, 'name': 'On', 'method': 'on' }
-                ]
-            },
-            'plug': {
-                'name': 'Plugs',
-                'supportedBrands': [],
-                'methods': ['off', 'on'],
-                'states': [
-                    { 'id': 0, 'name': 'Off', 'method': 'off' },
-                    { 'id': 1, 'name': 'On', 'method': 'on' }
-                ]
-            },
-            'light': {
-                'name': 'Lights',
-                'supportedBrands': [],
-                'methods': ['off', 'on'],
-                'states': [
-                    { 'id': 0, 'name': 'Off', 'method': 'off' },
-                    { 'id': 1, 'name': 'On', 'method': 'on' }
-                ]
-            }
-        }
-    }),
-    'GET_STATE': pack({
-        'states': [
-            { 'id': 0, 'state': 0 },
-            { 'id': 1, 'state': 1 },
-            { 'id': 2, 'state': 0 },
-            { 'id': 3, 'state': 1 },
-            { 'id': 4, 'state': 0 },
-            { 'id': 5, 'state': 1 },
-            { 'id': 6, 'state': 0 },
-            { 'id': 7, 'state': 1 },
-            { 'id': 8, 'state': 0 },
-            { 'id': 9, 'state': 1 },
-            { 'id': 10, 'state': 0 },
-            { 'id': 11, 'state': 1 },
-            { 'id': 12, 'state': 0 },
-            { 'id': 13, 'state': 1 },
-            { 'id': 14, 'state': 0 },
-            { 'id': 15, 'state': 1 }
-        ]
-    })
-}
-
 # App config ---------------------------------------------------------------
 app = Flask(__name__)
 app.debug = True
+app.config.update(
+    SECRET_KEY = 'development key',
+    DEBUG = True
+)
 
 db = Database()
 house = House(db)
 house.initFromDatabase()
+oid = OpenID(app)
 
 # Routing ------------------------------------------------------------------
 # Remember to set paths with the trailing slash
@@ -185,7 +109,6 @@ def rooms_roomId(version, roomId):
         # Delete room
         house.deleteRoom(int(roomId))
         pass
-
 
 
 @app.route('/version/<string:version>/rooms/<int:roomId>/items/', methods=['POST'])
@@ -247,6 +170,79 @@ def events_eventId(version, eventId):
         # Remove event
         pass
 
+# OPENID ----------------------------------------------------------------
+@app.before_request
+def before_request():
+    db.users.addTable()
+    g.user = None
+    if 'openid' in session:
+        g.user = db.users.getUserByOpenid(session['openid'])
+
+
+@app.after_request
+def after_request(response):
+    return response
+
+
+@app.route('/login', methods=['GET', 'POST'])
+@oid.loginhandler
+def login():
+    """Does the login via OpenID.  Has to call into `oid.try_login`
+    to start the OpenID machinery.
+    """
+    # if we are already logged in, go back to were we came from
+    if g.user is not None:
+        app.logger.info('logged-in: '+oid.get_next_url())
+        return redirect(oid.get_next_url())
+    if request.method == 'POST':
+        openid = request.form.get('openid_identifier')
+        if openid:
+            app.logger.info(request.form)
+            app.logger.info('logging-in: '+oid.get_next_url())
+            return oid.try_login(openid, ask_for=['email', 'fullname',
+                                                  'nickname'])
+    app.logger.info('not-logged-in: '+oid.get_next_url())                                        
+    return render_template('html/login.html', next=oid.get_next_url(),
+                           error=oid.fetch_error())
+
+@oid.after_login
+def create_or_login(resp):
+    """This is called when login with OpenID succeeded and it's not
+    necessary to figure out if this is the users's first login or not.
+    This function has to redirect otherwise the user will be presented
+    with a terrible URL which we certainly don't want.
+    """
+    session['openid'] = resp.identity_url
+    user = db.users.getUserByOpenid(resp.identity_url)
+    if user is not None:
+        flash(u'Successfully signed in')
+        g.user = user
+        return redirect(oid.get_next_url())
+    return redirect(url_for('create_profile', next=oid.get_next_url(),
+                            name=resp.fullname or resp.nickname))
+
+@app.route('/create-profile', methods=['GET', 'POST'])
+def create_profile():
+    """If this is the user's first login, the create_or_login function
+    will redirect here so that the user can set up his profile.
+    """
+    if g.user is not None or 'openid' not in session:
+        return redirect(url_for('index'))
+    if request.method == 'POST':
+        name = request.form['name']
+        if not name:
+            flash(u'Error: you have to provide a name')
+        else:
+            flash(u'Profile successfully created')
+            db.users.addEntry(name, session['openid'])
+            return redirect(oid.get_next_url())
+    return render_template('html/create_profile.html', next_url=oid.get_next_url())    
+
+@app.route('/logout')
+def logout():
+    session.pop('openid', None)
+    flash(u'You have been signed out')
+    return redirect(oid.get_next_url())
 
 ##################################
 # For illustration purposes only #
