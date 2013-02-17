@@ -227,7 +227,7 @@ def create_profile():
     will redirect here so that the user can set up his profile.
     """
     if g.user is not None or 'openid' not in session:
-        return redirect(url_for('index'))
+        return redirect(url_for('login'))
     if request.method == 'POST':
         name = request.form['name']
         if not name:

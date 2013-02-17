@@ -1,4 +1,4 @@
-{% extends "layout.html" %}
+{% extends "html/layout.html" %}
 {% block title %}Create Profile{% endblock %}
 {% block body %}
   <h2>Create Profile</h2>
@@ -9,8 +9,6 @@
     <dl>
       <dt>Name:
       <dd><input type=text name=name size=30 value="{{ request.values.name }}">
-      <dt>E-Mail:
-      <dd><input type=text name=email size=30 value="{{ request.values.email }}">
     </dl>
     <p>
       <input type=submit value="Create profile">

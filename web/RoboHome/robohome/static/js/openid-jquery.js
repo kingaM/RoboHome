@@ -16,7 +16,7 @@ openid = {
 	cookie_name : 'openid_provider',
 	cookie_path : '/',
 
-	img_path : 'images/',
+	img_path : '../../satic/img/',
 	locale : null, // is set in openid-<locale>.js
 	sprite : null, // usually equals to locale, is set in
 	// openid-<locale>.js
@@ -68,7 +68,7 @@ openid = {
 		if (this.no_sprite) {
 			var image_ext = box_size == 'small' ? '.ico.gif' : '.gif';
 			return '<a title="' + this.image_title.replace('{provider}', provider.name) + '" href="javascript:openid.signin(\'' + box_id + '\');"'
-					+ ' style="background: #FFF url(' + this.img_path + '../images.' + box_size + '/' + box_id + image_ext + ') no-repeat center center" '
+					+ ' style="background: #FFF url(' + this.img_path + '/' + box_id + image_ext + ') no-repeat center center" '
 					+ 'class="' + box_id + ' openid_' + box_size + '_btn"></a>';
 		}
 		var x = box_size == 'small' ? -index * 24 : -index * 100;
