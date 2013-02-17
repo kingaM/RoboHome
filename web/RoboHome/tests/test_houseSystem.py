@@ -121,6 +121,9 @@ class MockRoomTable:
     def updateEntry(self, id, name):
         pass
 
+    def deleteRoom(self, id):
+        pass
+
 
 class MockTypesTable:
 
@@ -141,6 +144,8 @@ class MockItemsTable:
 
     def __init__(self):
         self.entries = []
+        self.updateEntryCalled = False
+        self.deleteEntryCalled = False
         pass
 
     def addEntry(self, name, brand, ip, roomId, typeId):
@@ -150,6 +155,13 @@ class MockItemsTable:
 
     def retrieveForRoomId(self, id):
         return ((1, "sensor", "rf", "0.0.0.0", id, 1),)
+
+    def updateEntry(self, id, name, brand, ip, roomId, typeId):
+        self.updateEntryCalled = True
+        pass
+
+    def deleteEntry(self, itemId):
+        self.deleteEntryCalled = True
 
 
 class MockEventsTable:
@@ -407,13 +419,106 @@ class TestHouse(unittest.TestCase):
         tupleDB = (('motionSensor', 'getState'), ('light', 'on'), ('light', 'off'), ('light', 'getState'))
         db = MockDatabase(tupleDB)
         h = House(db)
-        self.assertEqual(h.getVersion(), {'supportedTypes' : {'motionSensor': {'states': [{'id' : 1, 'name' : 'motion detected'}, {'id' : 0, 'name' : 'no motion'}], 'supportedBrands': [], 'name': 'Motion Sensor', 'isPassive' : True, 'methods': ['getState']}, 'light' : {'states': [{'method': 'on', 'id': 1, 'name': 'on'}, {'method': 'off', 'id': 0, 'name': 'off'}], 'supportedBrands': [], 'name': 'Light', 'isPassive' : False, 'methods':['on', 'off', 'getState']}}})
+        self.assertEqual(h.getVersion(), {'supportedTypes' : {'motionSensor': {'states': [{'id' : 1, 'name' : 'motion detected'}, {'id' : 0, 'name' : 'no motion'}], 'supportedBrands': ['arduino', 'wemo', 'lightwaveRF'], 'name': 'Motion Sensor', 'isPassive' : True, 'methods': ['getState']}, 'light' : {'states': [{'method': 'on', 'id': 1, 'name': 'on'}, {'method': 'off', 'id': 0, 'name': 'off'}], 'supportedBrands': ['arduino', 'wemo', 'lightwaveRF'], 'name': 'Light', 'isPassive' : False, 'methods':['on', 'off', 'getState']}}})
 
     def test_getVersionEmpty(self):
         tupleDB = ()
         db = MockDatabase(tupleDB)
         h = House(db)
         self.assertEqual(h.getVersion(), {'supportedTypes' : {}})
+
+    def test_deleteRoom(self):
+        db = MockDatabase()
+        h = House(db)
+        room = MockRoom(1, "lounge")
+        h.rooms = {1: room}
+        h.deleteRoom(1)
+        self.assertRaises(KeyError, lambda: h.rooms[1])
+
+    def test_deleteRoom_idNotInDict(self):
+        db = MockDatabase()
+        h = House(db)
+        room = MockRoom(1, "lounge")
+        h.rooms = {1: room}
+        self.assertRaises(KeyError, h.deleteRoom, 2)
+
+    def test_deleteRoom_emptyList(self):
+        db = MockDatabase()
+        h = House(db)
+        h.rooms = {}
+        self.assertRaises(KeyError, h.deleteRoom, 1)
+
+    def test_updateItem(self):
+        db = MockDatabase()
+        h = House(db)
+        item1 = MockItem(1, "mockName", "mockBrand", "motionSensor", "mockIP")
+        room = MockRoom(1, "lounge")
+        room.items = {1: item1}
+        h.rooms = {1: room}
+        h.updateItem(1, 1, "new name", "new brand", "lightSensor", "new ip")
+        self.assertEqual(room.items[1].name, "new name")
+        self.assertEqual(room.items[1].brand, "new brand")
+        self.assertEqual(room.items[1]._type, "lightSensor")
+        self.assertEqual(room.items[1].ip, "new ip")
+        self.assertTrue(db.items.updateEntryCalled)
+
+    def test_updateItem_wrongRoomId(self):
+        db = MockDatabase()
+        h = House(db)
+        item1 = MockItem(1, "mockName", "mockBrand", "motionSensor", "mockIP")
+        room = MockRoom(1, "lounge")
+        room.items = {1: item1}
+        h.rooms = {1: room}
+        self.assertRaises(KeyError, h.updateItem, 2, 1, "new name", "new brand", "lightSensor", "new ip")
+        self.assertFalse(db.items.updateEntryCalled)
+
+    def test_updateItem_wrongItemId(self):
+        db = MockDatabase()
+        h = House(db)
+        item1 = MockItem(1, "mockName", "mockBrand", "motionSensor", "mockIP")
+        room = MockRoom(1, "lounge")
+        room.items = {1: item1}
+        h.rooms = {1: room}
+        self.assertRaises(KeyError, h.updateItem, 1, 2, "new name", "new brand", "lightSensor", "new ip")
+        self.assertFalse(db.items.updateEntryCalled)
+
+    def test_deleteItem(self):
+        db = MockDatabase()
+        h = House(db)
+        item1 = MockItem(1, "mockName", "mockBrand", "motionSensor", "mockIP")
+        room = MockRoom(1, "lounge")
+        room.items = {1: item1}
+        h.rooms = {1: room}
+        h.deleteItem(1, 1)
+        self.assertRaises(KeyError, lambda: h.rooms[1].items[1])
+        self.assertTrue(db.items.deleteEntryCalled)
+
+    def test_deleteItem_invalidRoomId(self):
+        db = MockDatabase()
+        h = House(db)
+        item1 = MockItem(1, "mockName", "mockBrand", "motionSensor", "mockIP")
+        room = MockRoom(1, "lounge")
+        room.items = {1: item1}
+        h.rooms = {1: room}
+        self.assertRaises(KeyError, h.deleteItem, 2, 1)
+        self.assertFalse(db.items.deleteEntryCalled)
+
+    def test_deleteItem_invalidItemId(self):
+        db = MockDatabase()
+        h = House(db)
+        item1 = MockItem(1, "mockName", "mockBrand", "motionSensor", "mockIP")
+        room = MockRoom(1, "lounge")
+        room.items = {1: item1}
+        h.rooms = {1: room}
+        self.assertRaises(KeyError, h.deleteItem, 1, 2)
+        self.assertFalse(db.items.deleteEntryCalled)
+
+    def test_deleteItem_emptyList(self):
+        db = MockDatabase()
+        h = House(db)
+        h.rooms = {}
+        self.assertRaises(KeyError, h.deleteItem, 1, 1)
+        self.assertFalse(db.items.deleteEntryCalled)
 
 class TestRoom(unittest.TestCase):
 

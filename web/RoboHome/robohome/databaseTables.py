@@ -66,6 +66,9 @@ class ItemsTable(DatabaseHelper):
     def deleteEntry(self, id):
         super(ItemsTable, self).removeEntry(self.tablename, "id=" + str(id))
 
+    def updateEntry(self, id, name, brand, ip, roomId, typeId):
+        return super(RoomsTable, self).updateEntry(self.tablename, "id = '" + str(id) + "'", "name = '" + name + "', brand = '" + brand +"', ip = '" + ip +"', roomId = " + str(roomId) + ", typeId = " + str(typeId))
+
 class MethodsTable(DatabaseHelper):
 
     def __init__(self):

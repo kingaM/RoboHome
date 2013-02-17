@@ -183,6 +183,7 @@ def rooms_roomId(version, roomId):
 
     if request.method == 'DELETE':
         # Delete room
+        house.deleteRoom(int(roomId))
         pass
 
 
@@ -207,6 +208,7 @@ def rooms_roomId_items_itemId(version, roomId, itemId):
 
     if request.method == 'DELETE':
         # Remove specified item
+        house.deleteItem(int(roomId), int(itemId))
         pass
 
 

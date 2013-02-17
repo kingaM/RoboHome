@@ -1,3 +1,5 @@
+import middleLayers as Layers
+
 """
 A defualt class for any item in the house
 e.g. sensor, button
@@ -10,11 +12,11 @@ class Item(object):
         self.brand = brand
         self.ip = ip
         self._type = _type
-        self.state = 1
+        self.middleLayer = Layers.brands[brand]()
 
     def getState(self):
-        return self.state
-        
+        return self.middleLayer.send(self.ip, 'getState')
+
 """
 A class for all openable objects in the house, extends Item
 e.g. doors and windows
@@ -25,18 +27,13 @@ class Openable(Item):
         super(Openable, self).__init__(_id, name, brand, _type, ip)
 
     def open(self):
-        print "Open openable object"
-        self.state = 1
-        pass
+        return self.middleLayer.send(self.ip, 'open')
 
     def close(self):
-        print "Close openable object"
-        self.state = 0
-        pass
+        return self.middleLayer.send(self.ip, 'close')
 
     def setOpen(self, percentage):
-        self.state = percentage
-        pass
+        return self.middleLayer.send(self.ip, 'setOpen', percentage)
 
 """
 A class for any items that can be switched on and off, extends Item
@@ -48,14 +45,10 @@ class OnOff(Item):
         super(OnOff, self).__init__(_id, name, brand, _type, ip)
 
     def on(self):
-        print "OnOff object on"
-        self.state = 1
-        pass
+        return self.middleLayer.send(self.ip, 'on')
 
     def off(self):
-        print "OnOff object off"
-        self.state = 0
-        pass
+       return self.middleLayer.send(self.ip, 'off')
 
 """
 A class for any lighting components in the house, extends OnOff
@@ -66,9 +59,7 @@ class Lights(OnOff):
         super(Lights, self).__init__(_id, name, brand, _type, ip)
 
     def setBrightness(self, brightness):
-        print "Set brightness of lights to ", brightness
-        self.state = brightness
-        pass
+        return self.middleLayer.send(self.ip, 'setBrightness', brightness)
 """
 A class for radiator valves in the house, extends Item
 """
@@ -78,9 +69,4 @@ class RadiatorValve(Item):
         super(RadiatorValve, self).__init__(_id, name, brand, _type, ip)
 
     def setTemperature(self, degrees):
-        print "Set temperature of radiator valve to ", degrees
-        self.state = degrees
-        pass
-
-
-
+        return self.middleLayer.send(self.ip, 'setTemperature', degrees)
