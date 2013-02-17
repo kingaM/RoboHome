@@ -236,7 +236,7 @@ class House(object):
         methodsJSON = zip(namesList, methodList)
         dictVersion = {}
         for m in methodsJSON:
-            dictVersion[m[0]] = {'name' : data.typesNice[m[0]], 'isPassive' : data.passive[data.types[m[0]]], 'methods': m[1], 'supportedBrands' : [], 'states' : data.states[m[0]]}
+            dictVersion[m[0]] = {'name' : data.typesNice[m[0]], 'isPassive' : data.passive[data.types[m[0]]], 'methods': m[1], 'supportedBrands' : ['arduino', 'wemo', 'lightwaveRF'], 'states' : data.states[m[0]]}
         finalDict = {}
         finalDict['supportedTypes'] = dictVersion
         return finalDict
