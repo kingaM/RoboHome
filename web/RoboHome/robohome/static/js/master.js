@@ -242,7 +242,9 @@ APP.data = {
         lastSuccess: undefined,
         lastNoSuccess: undefined
     },
-    state: undefined
+    state: undefined,
+    menuManager: undefined,
+    stageManager: undefined
 };
 
 // ---------------------------------------------------------------------
@@ -673,9 +675,8 @@ APP.Stage.prototype.setConstruct = function(func) {
     this.construct = function() {
         console.log(self.stageId + ' construct() called');
         // console.trace(this);
+        self.contextMenu.construct();
         func();
-        self.contextMenu.construct(); // this is after func() so if the programmer needs to call
-                                      // tearDown() before construct(), tearDown does not delete the ContextMenu
     }
 };
 
@@ -1181,7 +1182,7 @@ APP.StageManager = function() {
                 (function() {
                     var room = rooms[i],
                         roomName = room[APP.API.STRUCT.ROOM.NAME],
-                        safeRoomName = roomName.replace(' ', '-'),
+                        safeRoomName = roomName.replace(/\s/, '-'),
                         stageId = addStage(new APP.Stage('menu-control',
                             'button-control-' + safeRoomName, roomName, 'stage-control-' + safeRoomName)),
                         stage = stages.get(stageId);
@@ -1193,8 +1194,57 @@ APP.StageManager = function() {
                         // default
                     });
                     stage.setMenuConstruct(function() {
-                        // TODO
-                        stage.contextMenu.getContext().append(room[APP.API.STRUCT.ROOM.NAME]);
+                        var wrapper = $('<div></div>').addClass('context-menu-inner-wrapper'),
+                            content = $('<div></div>').addClass('context-menu-content');
+                        
+                        function constructRoomsPanel() {
+                            var rooms = $('<div></div>');
+                            rooms.append($('<h3></h3>').html('Add new room'));
+                            rooms.append($('<input></input>').attr({
+                                id: 'context-add-room-name-input',
+                                type: 'text',
+                                placeholder: 'Room name'})
+                            );
+                            rooms.append($('<a href="#">Add</a>').attr({id: 'context-add-room-button', class: 'button'}));
+                            rooms.append($('<h3></h3>').html('Remove this room ('+ room[APP.API.STRUCT.ROOM.NAME] + ')'));
+                            rooms.append($('<input></input>').attr({
+                                id: 'context-remove-room-name-input',
+                                type: 'text',
+                                placeholder: 'Confirm this room\'s name'})
+                            );
+                            rooms.append($('<a href="#">Remove</a>').attr({id: 'context-remove-room-button', class: 'button'}));
+                            return rooms;
+                        }
+                        
+                        function constructItemsPanel() {
+                            var items = $('<div></div>');
+                            items.append($('<h2></h2>').html('Items'));
+                            items.append($('<h3></h3>').html('Add'));
+                            items.append($('<input></input>').attr({
+                                id: 'context-add-item-name-input',
+                                type: 'text',
+                                placeholder: 'Item\'s name'})
+                            );
+                            items.append($('<input></input>').attr({
+                                id: 'context-add-item-ip-input',
+                                type: 'text',
+                                placeholder: 'Item\'s static IP address'})
+                            );
+                            items.append($('<select></select>').attr({id: 'context-add-item-select'}));
+                            items.append($('<a href="#">Add</a>').attr({id: 'context-add-item-button', class: 'button'}));
+                            items.append($('<h3></h3>').html('Remove'));
+                            items.append($('<select></select>').attr({id: 'context-remove-item-select'}));
+                            items.append($('<a href="#">Remove</a>').attr({id: 'context-remove-item-button', class: 'button'}));
+                            return items;
+                        }
+                        
+                        wrapper.append(content);
+                        content.append($('<h1></h1>').html('Room manager'));
+                        content.append(constructRoomsPanel());
+                        content.append(constructItemsPanel());
+                        
+                        console.log(room);
+                        stage.contextMenu.getContext().append(wrapper);
                     });
                     stage.setConstruct(function() {
                         stage.getContext().append($('<div></div>').attr({id: 'context-bar'}));
@@ -1462,27 +1512,29 @@ APP.resizer = {
         stageHeight = (window.innerHeight - $('#wrapper-primary').height() - $('#wrapper-secondary').height()) + 'px';
         $('#wrapper-stage').css('height', stageHeight);
     },
-    /**
+    /*
      * @for APP.resizer
      * @method resizeLeftPanel
      */
+    /*
     resizeLeftPanel: function() {
         var panelHeight;
         panelHeight = (window.innerHeight - $('#chronograph').height()) + 'px';
         $('#left-panel').css('height', panelHeight);
     }
+    */
 };
 
 $(document).ready(function() {
     
     APP.ajax_get_version(function() {
         // Instantiate manager objects
-        var stageManager = new APP.StageManager(),
-            menuManager = new APP.MenuManager(stageManager);
+        APP.data.stageManager = new APP.StageManager(),
+        APP.data.menuManager = new APP.MenuManager(APP.data.stageManager);
         
         // Construct menus
-        menuManager.init();
-        stageManager.init();
+        APP.data.menuManager.init();
+        APP.data.stageManager.init();
         
         // Start clock
         APP.clock.startClock();

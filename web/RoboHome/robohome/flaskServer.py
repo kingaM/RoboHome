@@ -210,14 +210,12 @@ def rooms_roomId_items_itemId(version, roomId, itemId):
         pass
 
 
-        
 @app.route('/version/<string:version>/rooms/<int:roomId>/items/<int:itemId>/<string:cmd>/', methods=['PUT'])
 def rooms_roomId_items_itemId_cmd(version, roomId, itemId, cmd):
     if request.method == 'PUT':
         # Command item
-        strBuffer = str(roomId) + ' ' + str(itemId) + ' ' + cmd # TODO remove
         house.addToQueue(int(roomId), int(itemId), cmd)
-        return strBuffer # TODO remove
+        return jsonify(pack({}))
 
 
 @app.route('/version/<string:version>/events/', methods=['GET', 'POST'])

@@ -114,9 +114,19 @@ body {
 #bar-left .pretty-border.horizontal > .middle { width: 80%; }
 #bar-left .pretty-border.horizontal > .right { width: 10%; }
 
+/*
 #left-panel {
-    overflow-y: auto;
+            margin: 0 1.5em 0 0;
+            overflow: auto;
+    -webkit-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+       -moz-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+        -ms-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+         -o-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+            box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+            background-color: rgba(0,200,200,0.1);
+            background-image: url('../img/grid.png');
 }
+*/
 
 #time, #day, #date, #time, #am-pm, #day, #date {
     font-family: 'serene';
@@ -187,6 +197,72 @@ body {
 }
 
 /* ----- context menus ----- */
+#context-menu h1 {
+    font-size: 0.9em;
+    margin-top: 0;
+    margin-bottom: 0.5em;
+}
+
+#context-menu h2,
+#context-menu h3 {
+    font-size: 0.9em;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+}
+
+#context-menu input {
+            display: inline-block;
+            text-decoration: none;
+            font-size: 0.8em;
+            padding: 0.2em 0.4em;
+            color: #FFFFFF;
+            border: 1px solid #666666;
+            background: rgba(0,200,200,0.3);
+    -webkit-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+       -moz-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+        -ms-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+         -o-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+            box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+}
+#context-menu input::-webkit-input-placeholder { color: rgba(50,184,191,1); }
+#context-menu input::-moz-placeholder { #color: rgba(50,184,191,1); }
+#context-menu input::-moz-placeholder { #color: rgba(50,184,191,1); }
+#context-menu input:ms-input-placeholder { #color: rgba(50,184,191,1); }
+
+
+#context-menu .button {
+            display: inline-block;
+            text-decoration: none;
+            font-size: 0.8em;
+            border: 1px solid #666666;
+            background: rgba(0,200,200,0.2);
+            padding: 0.2em;
+            min-width: 6em;
+            text-align: center;
+            font-family: 'serene';
+    -webkit-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+       -moz-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+        -ms-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+         -o-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+            box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+}
+#context-menu input:hover,
+#context-menu .button:hover {
+    border: 1px solid rgb(229,151,0);
+    background: rgba(0,200,200,0.4);
+}
+
+.context-menu-inner-wrapper {
+    margin-right: 1.5em;
+    background-image: url('../img/grid.png');
+}
+
+.context-menu-content {
+    border: 1px solid #666666;
+    background-color: rgba(0,200,200,0.1);
+    padding: 0.5em 1em;
+}
+
 #context-bar {
     margin: 0 1em 1em 1em;
     font-size: 0.8em;
@@ -196,7 +272,6 @@ body {
 /* ----- stages ----- */
 .stage {
             z-index: 1;
-            padding: 1.5em;
             transition-timing-function: ease-out;
     -webkit-transition-property: left;
        -moz-transition-property: left;
@@ -234,7 +309,7 @@ div.stage {
 }
 
 .stage-content .entity-display {
-            padding: 1em;
+            padding: 0.5em 1em;
             margin: 0.5em 0;
             border: 1px solid #666666;
             overflow: auto;
@@ -244,10 +319,6 @@ div.stage {
          -o-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
             box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
             background-color: transparent;
-}
-
-.stage-content .entity-display:hover {
-    background-color: rgba(255,255,255,0.1);
 }
 
 .stage-content > .entity-display.item-type {
@@ -267,10 +338,6 @@ div.stage {
          -o-transition-duration: 0.5s;
 }
 
-.stage-content > .entity-display.item-type:hover {
-    background-color: rgba(0,200,200,0.2);
-}
-
 @media only screen and (max-width: 1200px) {
     .stage-content > .entity-display.item-type {
         width: 41.5%;
@@ -287,10 +354,12 @@ div.stage {
 
 .stage-content .entity-display .item {
     cursor: pointer;
+    background-color: rgba(0,200,200,0.1);
 }
 
-.stage-content .entity-display .item:hover {
-    border: 1px solid rgba(0,134,191,1);
+.stage-content .entity-display.item:hover {
+    background-color: rgba(0,200,200,0.2);
+    border: 1px solid rgb(229, 151, 0);
 }
 
 .stage-content .entity-display .info-bar {
@@ -314,7 +383,7 @@ div.stage {
 
 .stage-content .entity-display h1 {
     display: inline-block;
-    font-size: 1em;
+    font-size: 0.9em;
     margin: 0;
 }
 
