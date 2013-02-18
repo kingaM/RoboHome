@@ -221,7 +221,7 @@ def login():
         if openid:
             app.logger.info(request.form)
             app.logger.info('logging-in: '+oid.get_next_url())
-            return oid.try_login(openid, ask_for=['email', 'fullname', 'nickname'])
+            return oid.try_login(openid, ask_for=['email', 'fullname'])
     app.logger.info('not-logged-in: '+oid.get_next_url())                                        
     return render_template('html/login.html', next=oid.get_next_url(),
                            error=oid.fetch_error())
@@ -241,9 +241,9 @@ def create_or_login(resp):
         app.logger.info('Log in successfully: ')
         return redirect(oid.get_next_url())
     elif db.users.numOfRows() == 0:
-        name=resp.fullname or resp.nickname,
+        name=resp.fullname
         email=resp.email
-        db.users.addEntry(name[0][0], email, session['openid'])
+        db.users.addEntry(name, email, session['openid'])
         return redirect(oid.get_next_url())
     else:
         print "TOO MANY USERS"
