@@ -18,9 +18,11 @@ class Item(object):
     def getState(self):
         return self.middleLayer.send('getState')
 
-    def stateChanged(self):
-        #print "STATE CHANGED"
-        pass
+    def stateChanged(self, newState):
+        states = staticData.states[self._type]
+        for state in states:
+            if state["id"] == newState:
+                self.listener(self.ip, state["name"])
 
 
 """
@@ -76,3 +78,6 @@ class RadiatorValve(Item):
 
     def setTemperature(self, degrees):
         return self.middleLayer.send('setTemperature', degrees)
+
+#This import needs to be at the bottom
+import staticData

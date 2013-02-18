@@ -265,6 +265,7 @@ class House(object):
         ip -- the IP address of the item that sent the trigger
         trigger -- the name of the trigger
         """
+
         item = self.getItemByIP(ip)
 
         possibleEvents = self.getEventsForTrigger(item, trigger)

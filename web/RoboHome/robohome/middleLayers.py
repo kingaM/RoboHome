@@ -27,7 +27,7 @@ class MiddleLayer(object):
 
             if realState != cachedStates[self.ip]:
                 cachedStates[self.ip] = realState
-                t = threading.Thread(target=self.item.stateChanged)
+                t = threading.Thread(target=self.item.stateChanged, args=[realState])
                 t.daemon = True
                 t.start()
 

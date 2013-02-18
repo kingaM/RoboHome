@@ -11,7 +11,7 @@ class MethCallLogger(object):
      self.meth(*self.args)
      self.was_called = True
 
-def mockListener():
+def mockListener(*args):
     pass
 
 class TestItem(unittest.TestCase):
