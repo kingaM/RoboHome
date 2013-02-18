@@ -240,10 +240,13 @@ def create_or_login(resp):
         g.user = user
         app.logger.info('Log in successfully: ')
         return redirect(oid.get_next_url())
-    else:
+    elif db.users.numOfRows() == 0:
         name=resp.fullname or resp.nickname,
         email=resp.email
         db.users.addEntry(name[0][0], email, session['openid'])
+        return redirect(oid.get_next_url())
+    else:
+        print "TOO MANY USERS"
         return redirect(oid.get_next_url())
 
 @app.route('/logout')
