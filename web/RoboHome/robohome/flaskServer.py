@@ -199,20 +199,21 @@ def events_eventId(version, eventId):
 # License: https://github.com/mitsuhiko/flask-openid/blob/master/LICENSE
 
 @app.before_request
-def before_request():
-    
+def before_request():  
     g.user = None
     if 'openid' in session:
         g.user = db.users.getUserByOpenid(session['openid'])
 
+def getIp():
+    if not request.headers.getlist("X-Forwarded-For"):
+        return request.remote_addr
+    else:
+        return request.headers.getlist("X-Forwarded-For")[0]
 
 @app.route('/login', methods=['GET', 'POST'])
 @oid.loginhandler
 def login():
-    """Does the login via OpenID.  Has to call into `oid.try_login`
-    to start the OpenID machinery.
-    """
-    # if we are already logged in, go back to were we came from
+    """Does the login via OpenID."""
     if g.user is not None:
         app.logger.info('logged-in: '+oid.get_next_url())
         return redirect(oid.get_next_url())
@@ -222,21 +223,16 @@ def login():
             app.logger.info(request.form)
             app.logger.info('logging-in: '+oid.get_next_url())
             return oid.try_login(openid, ask_for=['email', 'fullname'])
-    app.logger.info('not-logged-in: '+oid.get_next_url())                                        
+    app.logger.info('not-logged-in: '+oid.get_next_url())
     return render_template('html/login.html', next=oid.get_next_url(),
-                           error=oid.fetch_error())
-
+                           error=oid.fetch_error())                                  
+    
 @oid.after_login
 def create_or_login(resp):
-    """This is called when login with OpenID succeeded and it's not
-    necessary to figure out if this is the users's first login or not.
-    This function has to redirect otherwise the user will be presented
-    with a terrible URL which we certainly don't want.
-    """
+    """Called when the login was successful"""
     session['openid'] = resp.identity_url
     user = db.users.getUserByOpenid(resp.identity_url)
     if user is not None:
-        flash(u'Successfully signed in')
         g.user = user
         app.logger.info('Log in successfully: ')
         return redirect(oid.get_next_url())
@@ -246,13 +242,13 @@ def create_or_login(resp):
         db.users.addEntry(name, email, session['openid'])
         return redirect(oid.get_next_url())
     else:
+        # For future development, now allows only one user to register
         print "TOO MANY USERS"
         return redirect(oid.get_next_url())
 
 @app.route('/logout')
 def logout():
     session.pop('openid', None)
-    flash(u'You have been signed out')
     return redirect(oid.get_next_url())
 
 ##################################
