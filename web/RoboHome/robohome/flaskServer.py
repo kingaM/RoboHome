@@ -51,6 +51,7 @@ app.config.update(
 db = Database()
 house = House(db)
 house.initFromDatabase()
+db.users.addTable()
 oid = OpenID(app)
 
 # Routing ------------------------------------------------------------------
@@ -59,6 +60,8 @@ oid = OpenID(app)
 
 @app.route('/', methods=['GET'])
 def home():
+    if g.user is None or 'openid' not in session:
+        return redirect(url_for('login'))
     if request.method == 'GET':
         # Fetch the base HTML page and scripts
         return render_template('html/home.html')
@@ -66,6 +69,8 @@ def home():
 
 @app.route('/version/', methods=['GET'])
 def rooms_version():
+    if g.user is None or 'openid' not in session:
+       return redirect(url_for('login'))
     if request.method == 'GET':
         # Return initial info when connecting to server for the first time
         # return jsonify(pack(house.getVersion()))
@@ -74,6 +79,8 @@ def rooms_version():
 
 @app.route('/version/<string:version>/structure/', methods=['GET'])
 def structure(version):
+    if g.user is None or 'openid' not in session:
+       return redirect(url_for('login'))
     if request.method == 'GET':
         # Return structure of house. This is used for passing hierarchial info
         return jsonify(pack(house.getStructure()))
@@ -81,6 +88,8 @@ def structure(version):
 
 @app.route('/version/<string:version>/state/', methods=['GET'])
 def state(version):
+    if g.user is None or 'openid' not in session:
+       return redirect(url_for('login'))
     if request.method == 'GET':
         # Return flat list of each component's id and its associated state
         # return jsonify(pack(house.getState()))
@@ -89,6 +98,8 @@ def state(version):
 
 @app.route('/version/<string:version>/rooms/', methods=['POST'])
 def rooms(version):
+    if g.user is None or 'openid' not in session:
+       return redirect(url_for('login'))
     if request.method == 'POST':
         # Create new room
         pass
@@ -96,6 +107,8 @@ def rooms(version):
 
 @app.route('/version/<string:version>/rooms/<int:roomId>/', methods=['GET', 'PUT', 'DELETE'])
 def rooms_roomId(version, roomId):
+    if g.user is None or 'openid' not in session:
+        return redirect(url_for('login'))
     if request.method == 'GET':
         # Return state of room
         return jsonify(pack(house.rooms[int(roomId)].getState()))
@@ -113,6 +126,8 @@ def rooms_roomId(version, roomId):
 
 @app.route('/version/<string:version>/rooms/<int:roomId>/items/', methods=['POST'])
 def rooms_roomId_items(version, roomId):
+    if g.user is None or 'openid' not in session:
+        return redirect(url_for('login'))
     if request.method == 'POST':
         # Create new item for specified room
         pass
@@ -120,6 +135,9 @@ def rooms_roomId_items(version, roomId):
 
 @app.route('/version/<string:version>/rooms/<int:roomId>/items/<int:itemId>/', methods=['GET', 'PUT', 'DELETE'])
 def rooms_roomId_items_itemId(version, roomId, itemId):
+    if g.user is None or 'openid' not in session:
+        print "REDIRECT"
+        return redirect(url_for('login'))
     if request.method == 'GET':
         # Return state of item
         return jsonify(pack(house.rooms[int(roomId)].items[itemId].getState()))
@@ -138,6 +156,9 @@ def rooms_roomId_items_itemId(version, roomId, itemId):
         
 @app.route('/version/<string:version>/rooms/<int:roomId>/items/<int:itemId>/<string:cmd>/', methods=['PUT'])
 def rooms_roomId_items_itemId_cmd(version, roomId, itemId, cmd):
+    if g.user is None or 'openid' not in session:
+        print "REDIRECT"
+        return redirect(url_for('login'))
     if request.method == 'PUT':
         # Command item
         strBuffer = str(roomId) + ' ' + str(itemId) + ' ' + cmd # TODO remove
@@ -147,6 +168,8 @@ def rooms_roomId_items_itemId_cmd(version, roomId, itemId, cmd):
 
 @app.route('/version/<string:version>/events/', methods=['GET', 'POST'])
 def events(version):
+    if g.user is None or 'openid' not in session:
+      return redirect(url_for('login'))
     if request.method == 'GET':
         # Return a list of all events
         pass
@@ -158,6 +181,8 @@ def events(version):
 
 @app.route('/version/<string:version>/events/<int:eventId>/', methods=['GET', 'PUT', 'DELETE'])
 def events_eventId(version, eventId):
+    if g.user is None or 'openid' not in session:
+        return redirect(url_for('login'))
     if request.method == 'GET':
         # Return event
         pass
@@ -171,17 +196,15 @@ def events_eventId(version, eventId):
         pass
 
 # OPENID ----------------------------------------------------------------
+# Based upon: https://github.com/mitsuhiko/flask-openid
+# License: https://github.com/mitsuhiko/flask-openid/blob/master/LICENSE
+
 @app.before_request
 def before_request():
-    db.users.addTable()
+    
     g.user = None
     if 'openid' in session:
         g.user = db.users.getUserByOpenid(session['openid'])
-
-
-@app.after_request
-def after_request(response):
-    return response
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -217,9 +240,11 @@ def create_or_login(resp):
     if user is not None:
         flash(u'Successfully signed in')
         g.user = user
+        app.logger.info('Log in successfully: ')
         return redirect(oid.get_next_url())
     return redirect(url_for('create_profile', next=oid.get_next_url(),
-                            name=resp.fullname or resp.nickname))
+                            name=resp.fullname or resp.nickname,
+                            email=resp.email))
 
 @app.route('/create-profile', methods=['GET', 'POST'])
 def create_profile():
@@ -227,7 +252,7 @@ def create_profile():
     will redirect here so that the user can set up his profile.
     """
     if g.user is not None or 'openid' not in session:
-        return redirect(url_for('login'))
+        return redirect(oid.get_next_url())
     if request.method == 'POST':
         name = request.form['name']
         if not name:
