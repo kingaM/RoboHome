@@ -42,7 +42,6 @@ def pack(content={}, statusCode=200):
 
 # App config ---------------------------------------------------------------
 app = Flask(__name__)
-app.debug = True
 app.config.update(
     SECRET_KEY = 'development key',
     DEBUG = True
@@ -222,8 +221,7 @@ def login():
         if openid:
             app.logger.info(request.form)
             app.logger.info('logging-in: '+oid.get_next_url())
-            return oid.try_login(openid, ask_for=['email', 'fullname',
-                                                  'nickname'])
+            return oid.try_login(openid, ask_for=['email', 'fullname', 'nickname'])
     app.logger.info('not-logged-in: '+oid.get_next_url())                                        
     return render_template('html/login.html', next=oid.get_next_url(),
                            error=oid.fetch_error())
@@ -242,26 +240,11 @@ def create_or_login(resp):
         g.user = user
         app.logger.info('Log in successfully: ')
         return redirect(oid.get_next_url())
-    return redirect(url_for('create_profile', next=oid.get_next_url(),
-                            name=resp.fullname or resp.nickname,
-                            email=resp.email))
-
-@app.route('/create-profile', methods=['GET', 'POST'])
-def create_profile():
-    """If this is the user's first login, the create_or_login function
-    will redirect here so that the user can set up his profile.
-    """
-    if g.user is not None or 'openid' not in session:
+    else:
+        name=resp.fullname or resp.nickname,
+        email=resp.email
+        db.users.addEntry(name[0][0], email, session['openid'])
         return redirect(oid.get_next_url())
-    if request.method == 'POST':
-        name = request.form['name']
-        if not name:
-            flash(u'Error: you have to provide a name')
-        else:
-            flash(u'Profile successfully created')
-            db.users.addEntry(name, session['openid'])
-            return redirect(oid.get_next_url())
-    return render_template('html/create_profile.html', next_url=oid.get_next_url())    
 
 @app.route('/logout')
 def logout():

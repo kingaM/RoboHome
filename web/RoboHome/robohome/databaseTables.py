@@ -136,19 +136,20 @@ class UsersTable(DatabaseHelper):
         super(UsersTable, self).__init__()
 
     def addTable(self):
-        super(UsersTable, self).addTable(self.tablename, "id INT PRIMARY KEY AUTO_INCREMENT NOT NULL, name VARCHAR(25) NOT NULL, openid VARCHAR(200) NOT NULL")
+        super(UsersTable, self).addTable(self.tablename, "id INT PRIMARY KEY AUTO_INCREMENT NOT NULL, name VARCHAR(200) NOT NULL, email VARCHAR(200) NOT NULL, openid VARCHAR(200) NOT NULL")
 
-    def addEntry(self, name, openid):
-       return super(UsersTable, self).addEntry(self.tablename, "name, openid", "'" + name + "'," + "'" + openid + "'")
+    def addEntry(self, name, email, openid):
+       return super(UsersTable, self).addEntry(self.tablename, "name, email, openid", "'" + name + "'," + "'" + email + "'," + "'" + openid + "'")
 
     def getUserByOpenid(self, openid):
-        user =  super(UsersTable, self).retriveData("SELECT name FROM users WHERE openid=\'" + openid + "'")
+        user =  super(UsersTable, self).retriveData("SELECT name, email, openid FROM users WHERE openid=\'" + openid + "'")
         if user:
-            return user[0][0]
+            return {'name' : user[0][0], 'email' : user[0][1], 'opnenid' : user[0][2]}
         else:
             return None
 
-
+    def numOfRows(self):
+        return super(UsersTable, self).retriveData("SELECT COUNT(*) FROM " + self.tablename)[0][0]
 
 class Database(DatabaseHelper):
 
