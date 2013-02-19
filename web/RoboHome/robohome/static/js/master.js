@@ -83,7 +83,6 @@ APP.API.ROOMS_ITEMS.ITEM_ID = 'itemId';
 // Remember to specify the trailing slash so Flask does not have to redirect
 APP.URL = {};
 APP.URL.VERSION = '/version/';
-APP.URL.STRUCTURE = '/version/' + APP.CONSTANTS.VERSION + '/structure/';
 APP.URL.STATE = '/version/' + APP.CONSTANTS.VERSION + '/state/';
 APP.URL.ROOMS = '/version/' + APP.CONSTANTS.VERSION + '/rooms/';
 APP.URL.ROOMS_ROOMID = function(roomId) {
@@ -355,8 +354,8 @@ APP.ajax = function(requestType, url, payload, callback, error) {
  * @param {Function} callback Callback function to execute after response is received
  * Retrieves the latest house structure from the server
  */
-APP.ajax_get_structure = function(callback, error) {
-    APP.ajax('GET', APP.URL.STRUCTURE, '',
+APP.ajax_get_state = function(callback, error) {
+    APP.ajax('GET', APP.URL.STATE, '',
         function(json) {
             var obj = APP.unpackToPayload(json);
             APP.data.houseStructure = obj;
@@ -384,23 +383,6 @@ APP.ajax_get_version = function(callback, error) {
 }
 
 /**
- * @method APP.ajax_get_status
- * @param {Function} callback Callback function to execute after response is received
- * @param {Function} error      Function to execute if AJAX request fails
- * Retrieves the latest available states of all sensors (items)
- */
-APP.ajax_get_state = function(callback, error) {
-    APP.ajax('GET', APP.URL.STATE, '',
-        function(json) {
-            var obj = APP.unpackToPayload(json);
-            APP.data.state = obj;
-            callback();
-        },
-        error
-    );
-}
-
-/**
  * @method APP.ajax_delete_rooms_roomId_items_itemId
  * @param {int} roomId Room ID
  * @param {int} itemId Item ID
@@ -408,8 +390,13 @@ APP.ajax_get_state = function(callback, error) {
  * @param {Function} error      Function to execute if AJAX request fails
  * Add new item to room
  */
-APP.ajax_post_rooms_roomId_items = function(roomId, payload, callback, error) {
-    APP.ajax('POST', APP.URL.ROOMS_ROOMID_ITEMS(roomId), payload,
+APP.ajax_post_rooms_roomId_items = function(roomId, payload, targetBrand, targetIP, targetName, targetType, callback, error) {
+    APP.ajax('POST', APP.URL.ROOMS_ROOMID_ITEMS(roomId) + '?' + 
+        APP.API.ROOMS_ITEMS.BRAND + '=' + targetBrand + '&' + 
+        APP.API.ROOMS_ITEMS.IP + '=' + targetIP + '&' + 
+        APP.API.ROOMS_ITEMS.NAME + '=' + targetName + '&' + 
+        APP.API.ROOMS_ITEMS.ITEM_TYPE + '=' + targetType
+        , payload,
         callback,
         error
     );
@@ -797,14 +784,10 @@ APP.Stage.prototype.setPollFunction = function(frequency, func) {
  * @param {Object} roomData Object with room data specified according to API
  * This class handles the controlling of all items contained within one room
  */
-APP.ItemTypeDisplay = function(stage, itemType, items) {
-    var __stage = stage,
-        __itemType = itemType,
-        __items = items;
-    
-    this.stage = __stage;
-    this.itemType = __itemType;
-    this.items = __items;
+APP.ItemTypeDisplay = function(stage, itemType, room) {
+    this.stage = stage;
+    this.itemType = itemType;
+    this.room = room;
 };
 
 /**
@@ -823,60 +806,60 @@ APP.ItemTypeDisplay.prototype.construct = function() {
             itemPanels = [];
         
         for(var i = 0; i < items.length; i++) {
-        
-            itemPanel = $('<div></div>').attr({
-                class: 'entity-display ' + APP.DOM_HOOK.ENTITY.ITEM,
-                'data-id': items[i][APP.API.STRUCT.ROOM.ITEM.ID], // currently used
-                'data-ip': items[i][APP.API.STRUCT.ROOM.ITEM.IP],
-                'data-name': items[i][APP.API.STRUCT.ROOM.ITEM.NAME],
-                'data-brand': items[i][APP.API.STRUCT.ROOM.ITEM.BRAND],
-                'data-itemtype': items[i][APP.API.STRUCT.ROOM.ITEM.ITEM_TYPE] // currently used
-            });
-            
-            itemPanel.click(function() {
-                if(items[0].state !== undefined) { // if state information has been retrieved
-                    var dis = $(this),
-                        itemId = $(this).attr('data-id'),
-                        itemType = $(this).attr('data-itemtype'),
-                        states = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][itemType][APP.API.VERSION.SUPPORTED_TYPE.STATES];
-                        
-                    $(this).addClass(APP.DOM_HOOK.UPDATING);
-                    function getNextState(itemId) {
-                        for(var j = 0; j < self.items.length; j++) {
-                            if(self.items[j][APP.API.STRUCT.ROOM.ITEM.ID] === parseInt(itemId)) {
-                                console.log(self.items[j]);
-                                for(var k = 0; k < states.length; k++) {
-                                    if(self.items[j][APP.API.STATE.STATE] === states[k][APP.API.VERSION.SUPPORTED_TYPE.STATE.ID]) {
-                                        return APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][itemType][APP.API.VERSION.SUPPORTED_TYPE.STATES][(k + 1) % states.length][APP.API.VERSION.SUPPORTED_TYPE.STATE.METHOD];
+            if(items[i][APP.API.STRUCT.ROOM.ITEM.ITEM_TYPE] === self.itemType) {
+                itemPanel = $('<div></div>').attr({
+                    class: 'entity-display ' + APP.DOM_HOOK.ENTITY.ITEM,
+                    'data-id': items[i][APP.API.STRUCT.ROOM.ITEM.ID], // currently used
+                    'data-ip': items[i][APP.API.STRUCT.ROOM.ITEM.IP],
+                    'data-name': items[i][APP.API.STRUCT.ROOM.ITEM.NAME],
+                    'data-brand': items[i][APP.API.STRUCT.ROOM.ITEM.BRAND],
+                    'data-itemtype': items[i][APP.API.STRUCT.ROOM.ITEM.ITEM_TYPE] // currently used
+                });
+                
+                itemPanel.click(function() {
+                    if(items[0].state !== undefined) { // if state information has been retrieved
+                        var dis = $(this),
+                            itemId = $(this).attr('data-id'),
+                            itemType = $(this).attr('data-itemtype'),
+                            states = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][itemType][APP.API.VERSION.SUPPORTED_TYPE.STATES];
+                            
+                        $(this).addClass(APP.DOM_HOOK.UPDATING);
+                        function getNextState(itemId) {
+                            for(var j = 0; j < self.room.items.length; j++) {
+                                if(self.room.items[j][APP.API.STRUCT.ROOM.ITEM.ID] === parseInt(itemId)) {
+                                    for(var k = 0; k < states.length; k++) {
+                                        if(self.room.items[j][APP.API.STATE.STATE] === states[k][APP.API.VERSION.SUPPORTED_TYPE.STATE.ID]) {
+                                            return APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][itemType][APP.API.VERSION.SUPPORTED_TYPE.STATES][(k + 1) % states.length][APP.API.VERSION.SUPPORTED_TYPE.STATE.METHOD];
+                                        }
                                     }
                                 }
                             }
                         }
+                        
+                        APP.ajax_put_rooms_roomId_items_itemId_cmd(
+                            self.stage.data.roomId,
+                            itemId,
+                            getNextState(itemId),
+                            '',
+                            function() {
+                                dis.addClass(APP.DOM_HOOK.UPDATED);
+                                self.update();
+                            }
+                        )
                     }
-                    
-                    APP.ajax_put_rooms_roomId_items_itemId_cmd(
-                        self.stage.data.roomId,
-                        itemId,
-                        getNextState(itemId),
-                        '',
-                        function() {
-                            dis.addClass(APP.DOM_HOOK.UPDATED);
-                            self.update();
-                        }
-                    )
-                }
-            });
-            
-            infoBar = $('<div></div>').addClass('info-bar');
-            infoBar.append($('<h1>' + items[i][APP.API.STRUCT.ROOM.ITEM.NAME] + '</h1>').addClass('entity-name'));
-            infoBar.append($('<span>' + items[i][APP.API.STRUCT.ROOM.ITEM.IP] + '</span>').addClass('entity-ip'));
-            itemPanel.append(infoBar);
-            
-            attachmentsSelf = $('<div></div>').addClass('attachments self');
-            attachmentsSelf.append($('<div><img src="../static/img/ajax-loader.gif"></img></div>').addClass('status'));
-            itemPanel.append(attachmentsSelf);
-            
-            itemPanels.push(itemPanel);
+                });
+                
+                infoBar = $('<div></div>').addClass('info-bar');
+                infoBar.append($('<h1>' + items[i][APP.API.STRUCT.ROOM.ITEM.NAME] + '</h1>').addClass('entity-name'));
+                infoBar.append($('<span>' + items[i][APP.API.STRUCT.ROOM.ITEM.IP] + '</span>').addClass('entity-ip'));
+                itemPanel.append(infoBar);
+                
+                attachmentsSelf = $('<div></div>').addClass('attachments self');
+                attachmentsSelf.append($('<div><img src="../static/img/ajax-loader.gif"></img></div>').addClass('status'));
+                itemPanel.append(attachmentsSelf);
+                
+                itemPanels.push(itemPanel);
+            }
         }
         return itemPanels;
     }
@@ -885,8 +868,8 @@ APP.ItemTypeDisplay.prototype.construct = function() {
         infoBar,
         itemPanels,
         displayedName;
-        
-    itemPanels = constructItemPanels(this.items);
+    
+    itemPanels = constructItemPanels(this.room.items);
     itemTypePanel = $('<div></div>').attr({
         class: 'entity-display ' + APP.DOM_HOOK.ENTITY.ITEM_TYPE,
         'data-name': this.itemType
@@ -913,35 +896,32 @@ APP.ItemTypeDisplay.prototype.construct = function() {
  * @method update
  * Updates the representation of this object on the stage
  */
-APP.ItemTypeDisplay.prototype.update = function() {
-    var states = APP.data.state[APP.API.STATE.STATES],
+APP.ItemTypeDisplay.prototype.update = function(room) {
+    var roomId = this.room[APP.API.STRUCT.ROOM.ID],
         stateList = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][this.itemType][APP.API.VERSION.SUPPORTED_TYPE.STATES],
-        id,
         itemPanel,
         statePanel;
     
+    for (var i = 0; i < APP.data.houseStructure[APP.API.STRUCT.ROOMS].length; i++) {
+        if(APP.data.houseStructure[APP.API.STRUCT.ROOMS][i][APP.API.STRUCT.ROOM.ID] === this.room[APP.API.STRUCT.ROOM.ID]) {
+            this.room = APP.data.houseStructure[APP.API.STRUCT.ROOMS][i];
+        }
+    }
+    
     // for every item of type
-    for(var i = 0; i < this.items.length; i++) {
-        id = this.items[i][APP.API.STRUCT.ROOM.ITEM.ID];
-        
-        // update info
-        for(var j = 0; j < states.length; j++) {
-            if(states[j][APP.API.STATE.ID] === id) {
-                this.items[i][APP.API.STATE.STATE] = states[j][APP.API.STATE.STATE];
-                break;
+    for(var i = 0; i < this.room.items.length; i++) {
+        if(this.room.items[i][APP.API.STRUCT.ROOM.ITEM.ITEM_TYPE] === this.itemType) {
+            // update UI
+            for(var k = 0; k < stateList.length; k++) {
+                if(stateList[k][APP.API.VERSION.SUPPORTED_TYPE.STATE.ID] === this.room.items[i].state) {
+                    itemPanel = $('.entity-display.item[data-id = ' + this.room.items[i][APP.API.STRUCT.ROOM.ITEM.ID] + ']');
+                    statePanel = $('.entity-display.item[data-id = ' + this.room.items[i][APP.API.STRUCT.ROOM.ITEM.ID] + '] .status');
+                    itemPanel.removeClass(APP.DOM_HOOK.CONNECTION_ERROR + ' ' + APP.DOM_HOOK.UPDATING + ' ' + APP.DOM_HOOK.UPDATING);
+                    statePanel.html(stateList[k][APP.API.VERSION.SUPPORTED_TYPE.STATE.NAME]);
+                    break;
+                }
             }
         }
-        // update UI
-        for(var k = 0; k < stateList.length; k++) {
-            if(stateList[k][APP.API.VERSION.SUPPORTED_TYPE.STATE.ID] === this.items[i].state) {
-                itemPanel = $('.entity-display.item[data-id = ' + this.items[i][APP.API.STRUCT.ROOM.ITEM.ID] + ']');
-                statePanel = $('.entity-display.item[data-id = ' + this.items[i][APP.API.STRUCT.ROOM.ITEM.ID] + '] .status');
-                itemPanel.removeClass(APP.DOM_HOOK.CONNECTION_ERROR + ' ' + APP.DOM_HOOK.UPDATING + ' ' + APP.DOM_HOOK.UPDATING);
-                statePanel.html(stateList[k][APP.API.VERSION.SUPPORTED_TYPE.STATE.NAME]);
-                break;
-            }
-        }
-        
     }
 };
 
@@ -951,21 +931,23 @@ APP.ItemTypeDisplay.prototype.update = function() {
  * Updates the representation to show that an error has occured in fetching the latest state data
  */
 APP.ItemTypeDisplay.prototype.updateError = function() {
-    var stateList = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][this.itemType][APP.API.VERSION.SUPPORTED_TYPE.STATES],
-        id,
+    var roomId = this.room[APP.API.STRUCT.ROOM.ID],
+        stateList = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][this.itemType][APP.API.VERSION.SUPPORTED_TYPE.STATES],
         itemPanel,
         statePanel;
     
-    for(var i = 0; i < this.items.length; i++) {
-        id = this.items[i][APP.API.STRUCT.ROOM.ITEM.ID];
-        
-        if(APP.data.state) { // if client has old state data
-            for(var k = 0; k < stateList.length; k++) {
-                itemPanel = $('.entity-display.item[data-id = ' + this.items[i][APP.API.STRUCT.ROOM.ITEM.ID] + ']');
-                statePanel = $('.entity-display.item[data-id = ' + this.items[i][APP.API.STRUCT.ROOM.ITEM.ID] + '] .status');
-                itemPanel.addClass(APP.DOM_HOOK.CONNECTION_ERROR);
-                statePanel.html(stateList[k][APP.API.VERSION.SUPPORTED_TYPE.STATE.NAME]);
-                break;
+    for(var i = 0; i < this.room.items.length; i++) {
+        if(this.room.items[i][APP.API.STRUCT.ROOM.ITEM.ITEM_TYPE] === this.itemType) {
+            if(APP.data.houseStructure) { // if client has old state data
+                for(var k = 0; k < stateList.length; k++) {
+                    if(stateList[k][APP.API.VERSION.SUPPORTED_TYPE.STATE.ID] === this.room.items[i].state) {
+                        itemPanel = $('.entity-display.item[data-id = ' + this.room.items[i][APP.API.STRUCT.ROOM.ITEM.ID] + ']');
+                        statePanel = $('.entity-display.item[data-id = ' + this.room.items[i][APP.API.STRUCT.ROOM.ITEM.ID] + '] .status');
+                        itemPanel.addClass(APP.DOM_HOOK.CONNECTION_ERROR);
+                        statePanel.html(stateList[k][APP.API.VERSION.SUPPORTED_TYPE.STATE.NAME]);
+                        break;
+                    }
+                }
             }
         }
     }
@@ -1209,7 +1191,7 @@ APP.StageManager = function() {
         })();
         
         // control stages
-        APP.ajax_get_structure(function() {
+        APP.ajax_get_state(function() {
             var rooms = APP.data.houseStructure[APP.API.STRUCT.ROOMS];
             for(var i = 0; i < rooms.length; i++) {
                 
@@ -1221,7 +1203,6 @@ APP.StageManager = function() {
                         stageId = addStage(new APP.Stage('menu-control',
                             'button-control-' + safeRoomName, roomName, 'stage-control-' + safeRoomName)),
                         stage = stages.get(stageId);
-                    
                     stage.setOnShow(function() {
                         // default
                     });
@@ -1233,7 +1214,7 @@ APP.StageManager = function() {
                             content = $('<div></div>').addClass('context-menu-content');
                         
                         function constructRoomsPanel() {
-                            var rooms = $('<div></div>'),
+                            var roomsPanel = $('<div></div>'),
                                 addPanel,
                                 removePanel,
                                 container;
@@ -1249,7 +1230,7 @@ APP.StageManager = function() {
                             );
                             container.append($('<a href="#">Add</a>').attr({id: 'context-add-room-button', class: 'button'}));
                             addPanel.append(container);
-                            rooms.append(addPanel);
+                            roomsPanel.append(addPanel);
                             
                             // remove
                             removePanel = $('<fieldset></fieldset>');
@@ -1262,14 +1243,14 @@ APP.StageManager = function() {
                             );
                             container.append($('<a href="#">Remove</a>').attr({id: 'context-remove-room-button', class: 'button'}));
                             removePanel.append(container);
-                            rooms.append(removePanel);
-                            return rooms;
+                            roomsPanel.append(removePanel);
+                            return roomsPanel;
                         }
                         
                         function constructItemsPanel(roomItems) {
                             var supportedTypes = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES],
                                 supportedBrands,
-                                items = $('<div></div>'),
+                                itemsPanel = $('<div></div>'),
                                 addPanel,
                                 addInputNameSelector = 'context-add-item-name-input',
                                 addInputIPSelector = 'context-add-item-ip-input',
@@ -1289,7 +1270,7 @@ APP.StageManager = function() {
                                 optgroup,
                                 container;
                                 
-                            items.append($('<h2></h2>').html('Items'));
+                            itemsPanel.append($('<h2></h2>').html('Items'));
                             
                             // add
                             addPanel = $('<fieldset></fieldset>');
@@ -1365,8 +1346,8 @@ APP.StageManager = function() {
                                     if(! duplicateIP) {
                                         addWarningName.html('');
                                         addWarningIP.html('');
-                                        targetItemId = $('#' + removeSelectSelector).val();
-                                        targetOption = $('#' + removeSelectSelector).find('option[value="' + targetItemId + '"]');
+                                        targetItemId = $('#' + addSelectSelector).val();
+                                        targetOption = $('#' + addSelectSelector).find('option[value=' + targetItemId + ']');
                                         targetBrand = targetOption.attr('data-brand');
                                         targetType = targetOption.attr('data-type');
                                         newItem[APP.API.ROOMS_ITEMS.BRAND] = targetBrand;
@@ -1377,33 +1358,40 @@ APP.StageManager = function() {
                                         self.parent().addClass(APP.DOM_HOOK.UPDATING);
                                         
                                         // AJAX call
-                                        APP.ajax_post_rooms_roomId_items(room[APP.API.STRUCT.ROOM.ID], newItem,
+                                        APP.ajax_post_rooms_roomId_items(room[APP.API.STRUCT.ROOM.ID], '', targetBrand, targetIP, targetName, targetType,
                                             function(json) {
                                                 var obj = APP.unpackToPayload(json),
                                                     newItemId = obj[APP.API.ROOMS_ITEMS.ITEM_ID],
-                                                    newItem = {},
                                                     hasSameType = false;
-                                                    
-                                                self.parent().removeClass(APP.DOM_HOOK.UPDATING);
-                                                $('#debug').append(newItemId);
-                                                for(type in stage.data.itemTypes) {
-                                                    if(stage.data.itemTypes.hasOwnProperty(type)) {
-                                                        if(targetType === type) {
-                                                            hasSameType = true;
-                                                            break;
-                                                        }
-                                                    }
-                                                }
-                                                console.log(stage.data);
-                                                if(hasSameType) {
-                                                    newItem[APP.API.ROOMS_ITEMS.ID] = newItemId;
-                                                } else {
-                                                    stage.data.itemTypes[targetType] = [];
-                                                }
-                                                stage.data.itemTypes[targetType].push(newItem);
                                                 
-                                                stage.tearDown();
-                                                stage.construct();
+                                                // AJAX call
+                                                APP.ajax_get_state(
+                                                    function() {
+                                                        rooms = APP.data.houseStructure;
+                                                        self.parent().removeClass(APP.DOM_HOOK.UPDATING);
+                                                        $('#debug').append(newItemId);
+                                                        for(type in stage.data.itemTypes) {
+                                                            if(stage.data.itemTypes.hasOwnProperty(type)) {
+                                                                if(targetType === type) {
+                                                                    hasSameType = true;
+                                                                    break;
+                                                                }
+                                                            }
+                                                        }
+                                                        if(hasSameType) {
+                                                            newItem[APP.API.ROOMS_ITEMS.ID] = newItemId;
+                                                        } else {
+                                                            stage.data.itemTypes[targetType] = [];
+                                                        }
+                                                        stage.data.itemTypes[targetType].push(newItem);
+                                                        
+                                                        stage.tearDown();
+                                                        stage.construct();
+                                                    },
+                                                    function() {
+                                                        // do nothing
+                                                    }
+                                                );
                                             },
                                             function() {
                                                 // do nothing
@@ -1421,7 +1409,7 @@ APP.StageManager = function() {
                             });
                             container.append(addButton);
                             addPanel.append(container);
-                            items.append(addPanel);
+                            itemsPanel.append(addPanel);
                             
                             // remove
                             removePanel = $('<fieldset></fieldset>');
@@ -1432,7 +1420,6 @@ APP.StageManager = function() {
                             removeSelect = $('<select></select>').attr({id: removeSelectSelector});
                             itemTypes = stage.data.itemTypes;
                             for(var itemType in itemTypes) {
-                                console.log(itemType);
                                 if(itemTypes.hasOwnProperty(itemType)) {
                                     optgroup = $('<optgroup></optgroup>').attr({label: supportedTypes[itemType][APP.API.VERSION.SUPPORTED_TYPE.STATE.NAME]});
                                     for(var j = 0; j < roomItems.length; j++) {
@@ -1472,21 +1459,29 @@ APP.StageManager = function() {
                                     // AJAX call
                                     APP.ajax_delete_rooms_roomId_items_itemId(room[APP.API.STRUCT.ROOM.ID], targetItemId, '',
                                         function() {
-                                            // if only one item of type
-                                            if(types[targetType].length === 1) {
-                                                delete types[targetType];
-                                                
-                                            } else {
-                                            // if multiple items of type
-                                                for(var k = 0; k < types[targetType].length; k++) {
-                                                    if(types[targetType][k][APP.API.STRUCT.ROOM.ITEM.ID] === targetItemId) {
-                                                        types[targetType].splice(k, 1);
-                                                        break;
+                                            // AJAX call
+                                            APP.ajax_get_state(
+                                                function() {
+                                                    rooms = APP.data.houseStructure;
+                                                    // if only one item of type
+                                                    if(types[targetType].length === 1) {
+                                                        delete types[targetType];
+                                                    } else {
+                                                    // if multiple items of type
+                                                        for(var k = 0; k < types[targetType].length; k++) {
+                                                            if(types[targetType][k][APP.API.STRUCT.ROOM.ITEM.ID] === targetItemId) {
+                                                                types[targetType].splice(k, 1);
+                                                                break;
+                                                            }
+                                                        }
                                                     }
+                                                    stage.tearDown();
+                                                    stage.construct();
+                                                },
+                                                function() {
+                                                    // do nothing
                                                 }
-                                            }
-                                            stage.tearDown();
-                                            stage.construct();
+                                            );
                                         },
                                         function() {
                                             // Do nothing
@@ -1498,8 +1493,8 @@ APP.StageManager = function() {
                             });
                             container.append(removeButton);
                             removePanel.append(container);
-                            items.append(removePanel);
-                            return items;
+                            itemsPanel.append(removePanel);
+                            return itemsPanel;
                         }
                         
                         wrapper.append(content);
@@ -1526,17 +1521,18 @@ APP.StageManager = function() {
                                 }
                                 itemTypes[itemType].push(item);
                             }
-                            stage.data.roomId = room[APP.API.STRUCT.ROOM.ITEM.ID];
-                            stage.data.itemTypeDisplays = {};
                         } else {
-                            itemTypes =  stage.data.itemTypes;
+                            itemTypes = stage.data.itemTypes;
                         }
-                        for(var itemType in itemTypes) {
-                            if(itemTypes.hasOwnProperty(itemType)) {
-                                stage.data.itemTypeDisplays[itemType] = new APP.ItemTypeDisplay(stage, itemType, itemTypes[itemType]);
-                                stage.data.itemTypeDisplays[itemType].construct();
+                        stage.data.roomId = room[APP.API.STRUCT.ROOM.ITEM.ID];
+                        stage.data.itemTypeDisplays = {};
+                        for(var type in itemTypes) {
+                            if(itemTypes.hasOwnProperty(type)) {
+                                stage.data.itemTypeDisplays[type] = new APP.ItemTypeDisplay(stage, type, room);
+                                stage.data.itemTypeDisplays[type].construct();
                             }
                         }
+                        console.log(stage.data.itemTypeDisplays);
                         stage.poller.startPolling();
                     });
                     stage.setTearDown(function() {
@@ -1546,7 +1542,7 @@ APP.StageManager = function() {
                         $('#context-bar').html('');
                         for(var display in stage.data.itemTypeDisplays) {
                             if(stage.data.itemTypeDisplays.hasOwnProperty(display)) {
-                                stage.data.itemTypeDisplays[display].update(APP.data.state);
+                                stage.data.itemTypeDisplays[display].update();
                             }
                         }
                     });

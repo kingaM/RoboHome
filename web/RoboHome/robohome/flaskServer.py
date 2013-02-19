@@ -153,19 +153,11 @@ def rooms_version():
         return jsonify(pack(house.getVersion()))
 
 
-@app.route('/version/<string:version>/structure/', methods=['GET'])
+@app.route('/version/<string:version>/state/', methods=['GET'])
 def structure(version):
     if request.method == 'GET':
         # Return structure of house. This is used for passing hierarchial info
         return jsonify(pack(house.getStructure()))
-
-
-@app.route('/version/<string:version>/state/', methods=['GET'])
-def state(version):
-    if request.method == 'GET':
-        # Return flat list of each component's id and its associated state
-        # return jsonify(pack(house.getState()))
-        return jsonify(pack(house.getState()))
 
 
 @app.route('/version/<string:version>/rooms/', methods=['POST'])
@@ -200,14 +192,9 @@ def rooms_roomId(version, roomId):
 def rooms_roomId_items(version, roomId):
     if request.method == 'POST':
         # Create new item for specified room
-<<<<<<< HEAD
-        MOCK_ITEM_ID['CURRENT'] = MOCK_ITEM_ID['CURRENT'] + 1
-        return jsonify(pack({'itemId': MOCK_ITEM_ID['CURRENT']}))
-=======
         args = request.args.to_dict()
-        house.addItem(roomId, args['name'], args['brand'], args['type'], args['ip'])
-        pass
->>>>>>> origin/master
+        itemId = house.addItem(roomId, args['name'], args['brand'], args['itemType'], args['ip'])
+        return jsonify(pack({'itemId': itemId}))
 
 
 @app.route('/version/<string:version>/rooms/<int:roomId>/items/<int:itemId>/', methods=['GET', 'PUT', 'DELETE'])
