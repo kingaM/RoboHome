@@ -34,7 +34,6 @@ APP.DOM_HOOK.ENTITY.ITEM_TYPE = 'item-type';
 APP.DOM_HOOK.ENTITY.ROOM = 'room';
 APP.DOM_HOOK.ENTITY.ITEM = 'item';
 APP.DOM_HOOK.UPDATING = 'updating';
-APP.DOM_HOOK.UPDATED = 'updated';
 APP.DOM_HOOK.CONNECTION_ERROR = 'connection-error';
 
 // These are property name bindings as specified by the API
@@ -814,8 +813,7 @@ APP.ItemTypeDisplay.prototype.construct = function() {
                 
                 itemPanel.click(function() {
                     if(items[0].state !== undefined) { // if state information has been retrieved
-                        var dis = $(this),
-                            itemId = $(this).attr('data-id'),
+                        var itemId = $(this).attr('data-id'),
                             itemType = $(this).attr('data-itemtype'),
                             states = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][itemType][APP.API.VERSION.SUPPORTED_TYPE.STATES];
                             
@@ -838,7 +836,6 @@ APP.ItemTypeDisplay.prototype.construct = function() {
                             getNextState(itemId),
                             '',
                             function() {
-                                dis.addClass(APP.DOM_HOOK.UPDATED);
                                 self.update();
                             }
                         )
@@ -1814,8 +1811,6 @@ $(document).ready(function() {
         APP.windowResizeListener.listen();
         APP.resizer.resizeAll();
         
-        // remove UI mask
-        // start polling    
     });
         
 });
