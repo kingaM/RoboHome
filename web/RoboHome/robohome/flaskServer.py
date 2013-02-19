@@ -172,6 +172,8 @@ def state(version):
 def rooms(version):
     if request.method == 'POST':
         # Create new room
+        args = request.args.to_dict()
+        house.addRoom(args['name'])
         pass
 
 
@@ -184,6 +186,8 @@ def rooms_roomId(version, roomId):
 
     if request.method == 'PUT':
         # Update room
+        args = request.args.to_dict()
+        house.updateRoom(roomId, args['name'])
         pass
 
     if request.method == 'DELETE':
@@ -196,8 +200,14 @@ def rooms_roomId(version, roomId):
 def rooms_roomId_items(version, roomId):
     if request.method == 'POST':
         # Create new item for specified room
+<<<<<<< HEAD
         MOCK_ITEM_ID['CURRENT'] = MOCK_ITEM_ID['CURRENT'] + 1
         return jsonify(pack({'itemId': MOCK_ITEM_ID['CURRENT']}))
+=======
+        args = request.args.to_dict()
+        house.addItem(roomId, args['name'], args['brand'], args['type'], args['ip'])
+        pass
+>>>>>>> origin/master
 
 
 @app.route('/version/<string:version>/rooms/<int:roomId>/items/<int:itemId>/', methods=['GET', 'PUT', 'DELETE'])
@@ -209,6 +219,8 @@ def rooms_roomId_items_itemId(version, roomId, itemId):
 
     if request.method == 'PUT':
         # Request update of state of item
+        args = request.args.to_dict()
+        house.updateItem(roomId, itemId, args['name'], args['brand'], args['type'], args['ip'])
         pass
 
     if request.method == 'DELETE':

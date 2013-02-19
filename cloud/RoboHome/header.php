@@ -138,7 +138,7 @@
                 <li><a href="index.php">Home</a></li>
                 <li><a href="home.php">My Account</a></li>
                 <li><a href="#">Documentation</a></li>
-                <li><a href="#">Downloads</a></li>
+                <li><a href="https://github.com/michboon/comp2014.git">Downloads</a></li>
                 <li><a href="#">About</a></li>
                 <li><a href="#">Help</a></li>
               </ul>
