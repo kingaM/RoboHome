@@ -353,7 +353,7 @@ class Room:
 
     def getStructure(self):
         """Returns a structure of the room as a dict"""
-        return {'id' : self.id, 'name' : self.name, 'items': [ {'id' : self.items[i]._id, 'name' : self.items[i].name, 'itemType' : self.items[i]._type, 'brand' : self.items[i].brand, 'ip' : self.items[i].ip} for i in self.items]}
+        return {'id' : self.id, 'name' : self.name, 'items': [ {'id' : self.items[i]._id, 'name' : self.items[i].name, 'itemType' : self.items[i]._type, 'brand' : self.items[i].brand, 'ip' : self.items[i].ip, 'state' : self.items[i].getState()} for i in self.items]}
 
     def getState(self):
         """Returns a list of states of all the items in the room as a dict"""

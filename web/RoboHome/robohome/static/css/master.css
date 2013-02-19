@@ -114,9 +114,19 @@ body {
 #bar-left .pretty-border.horizontal > .middle { width: 80%; }
 #bar-left .pretty-border.horizontal > .right { width: 10%; }
 
+/*
 #left-panel {
-    overflow-y: auto;
+            margin: 0 1.5em 0 0;
+            overflow: auto;
+    -webkit-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+       -moz-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+        -ms-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+         -o-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+            box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+            background-color: rgba(0,200,200,0.1);
+            background-image: url('../img/grid.png');
 }
+*/
 
 #time, #day, #date, #time, #am-pm, #day, #date {
     font-family: 'serene';
@@ -186,10 +196,140 @@ body {
     font-size: 1.2em;
 }
 
+/* ----- context menus ----- */
+.context-menu-inner-wrapper {
+    margin-right: 0.5em;
+    background-image: url('../img/grid.png');
+}
+
+.context-menu-content {
+    border: 1px solid #666666;
+    background-color: rgba(0,200,200,0.1);
+    padding: 0.5em;
+}
+
+#context-menu h1 {
+    font-size: 0.9em;
+    margin-top: 0;
+    margin-bottom: 0.5em;
+}
+
+#context-menu h2 {
+    font-size: 0.9em;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+}
+
+#context-menu fieldset {
+            margin: 0.5em 0;
+            padding: 0.5em;
+            border: 1px solid #666666;
+    -webkit-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+       -moz-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+        -ms-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+         -o-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+            box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+}
+
+#context-menu fieldset > div {
+            margin: -1em -0.5em -0.5em -0.5em;
+            padding: 1em 0.5em 0.5em 0.5em;
+}
+
+#context-menu legend {
+    font-weight: bold;
+    font-size: 0.8em;
+}
+
+#context-menu input {
+            display: inline-block;
+            min-width: 60%;
+            padding: 0.2em 0.4em;
+            margin: 0.2em 0;
+            text-decoration: none;
+            font-size: 0.8em;
+            color: #FFFFFF;
+            border: 1px solid #666666;
+            background: rgba(0,200,200,0.2);
+    -webkit-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+       -moz-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+        -ms-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+         -o-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+            box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+}
+#context-menu input::-webkit-input-placeholder { color: rgba(50,184,191,1); }
+#context-menu input::-moz-placeholder { #color: rgba(50,184,191,1); }
+#context-menu input:-moz-placeholder { #color: rgba(50,184,191,1); }
+#context-menu input:ms-input-placeholder { #color: rgba(50,184,191,1); }
+
+#context-menu .button {
+            display: inline-block;
+            text-decoration: none;
+            font-size: 0.8em;
+            border: 1px solid #666666;
+            background: rgba(0,200,200,0.3);
+            padding: 0.2em;
+            margin: 0.2em 0 0.2em 0.5em;
+            min-width: 6em;
+            text-align: center;
+            font-family: 'serene';
+    -webkit-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+       -moz-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+        -ms-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+         -o-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+            box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+}
+
+#context-menu input:hover,
+#context-menu .button:hover {
+    border: 1px solid rgb(229,151,0);
+    background: rgba(0,200,200,0.4);
+}
+
+#context-menu .select-wrapper {
+            margin: 2px;
+            display: inline-block;
+            background: rgba(0,200,200,0.2);
+    -webkit-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+       -moz-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+        -ms-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+         -o-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+            box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+}
+
+#context-menu select {
+    font-size: 0.8em;
+    color: white;
+    min-width: 64%;
+    padding: 0.2em;
+    margin: 0.2em 0;
+    border: 1px solid #666666;
+    background: transparent;
+}
+
+#context-menu optgroup,
+#context-menu option {
+    color: #000000;
+}
+
+#context-menu select:hover {
+    border: 1px solid rgb(299,151,0);
+}
+
+#context-menu .error-message-display {
+    font-size: 0.8em;
+    color: rgba(196,30,30,1);
+}
+
+#context-bar {
+    margin: 0 1em 1em 1em;
+    font-size: 0.8em;
+    color: rgba(196,30,30,1);
+}
+
 /* ----- stages ----- */
 .stage {
             z-index: 1;
-            padding: 1.5em;
             transition-timing-function: ease-out;
     -webkit-transition-property: left;
        -moz-transition-property: left;
@@ -227,7 +367,7 @@ div.stage {
 }
 
 .stage-content .entity-display {
-            padding: 1em;
+            padding: 0.5em 1em;
             margin: 0.5em 0;
             border: 1px solid #666666;
             overflow: auto;
@@ -237,10 +377,6 @@ div.stage {
          -o-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
             box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
             background-color: transparent;
-}
-
-.stage-content .entity-display:hover {
-    background-color: rgba(255,255,255,0.1);
 }
 
 .stage-content > .entity-display.item-type {
@@ -260,10 +396,6 @@ div.stage {
          -o-transition-duration: 0.5s;
 }
 
-.stage-content > .entity-display.item-type:hover {
-    background-color: rgba(0,200,200,0.2);
-}
-
 @media only screen and (max-width: 1200px) {
     .stage-content > .entity-display.item-type {
         width: 41.5%;
@@ -280,10 +412,12 @@ div.stage {
 
 .stage-content .entity-display .item {
     cursor: pointer;
+    background-color: rgba(0,200,200,0.1);
 }
 
-.stage-content .entity-display .item:hover {
-    border: 1px solid rgba(0,134,191,1);
+.stage-content .entity-display.item:hover {
+    background-color: rgba(0,200,200,0.2);
+    border: 1px solid rgb(229, 151, 0);
 }
 
 .stage-content .entity-display .info-bar {
@@ -307,7 +441,7 @@ div.stage {
 
 .stage-content .entity-display h1 {
     display: inline-block;
-    font-size: 1em;
+    font-size: 0.9em;
     margin: 0;
 }
 
@@ -340,7 +474,7 @@ div.stage {
     to   { background-position: 2em 50%; }
 }
 
-.stage-content .entity-display.updating {
+.updating {
             background-color: transparent;
             background-repeat: repeat;
             background-size: 2em 2em;
@@ -378,6 +512,7 @@ div.stage {
 }
 
 .stage-content .entity-display.item.connection-error .status:before {
+    margin-right: 0.3em;
     content: url('../img/ajax-loader.gif');
 }
 

@@ -17,6 +17,7 @@ from flask import *
 from houseSystem import House
 from databaseTables import Database
 
+
 SETTINGS = {
     'LANGUAGE': 'en',
     'VERSION_NUMBER': '0.1',
@@ -40,6 +41,10 @@ def pack(content={}, statusCode=200):
     }
 
 # Mock content ------------------------------------------------------------
+MOCK_ITEM_ID = {
+    'CURRENT': 999
+}
+
 MOCK_CONTENT = {
     'GET_VERSION': pack({
         'supportedTypes': {
@@ -148,19 +153,11 @@ def rooms_version():
         return jsonify(pack(house.getVersion()))
 
 
-@app.route('/version/<string:version>/structure/', methods=['GET'])
+@app.route('/version/<string:version>/state/', methods=['GET'])
 def structure(version):
     if request.method == 'GET':
         # Return structure of house. This is used for passing hierarchial info
         return jsonify(pack(house.getStructure()))
-
-
-@app.route('/version/<string:version>/state/', methods=['GET'])
-def state(version):
-    if request.method == 'GET':
-        # Return flat list of each component's id and its associated state
-        # return jsonify(pack(house.getState()))
-        return jsonify(pack(house.getState()))
 
 
 @app.route('/version/<string:version>/rooms/', methods=['POST'])
@@ -191,14 +188,13 @@ def rooms_roomId(version, roomId):
         pass
 
 
-
 @app.route('/version/<string:version>/rooms/<int:roomId>/items/', methods=['POST'])
 def rooms_roomId_items(version, roomId):
     if request.method == 'POST':
         # Create new item for specified room
         args = request.args.to_dict()
-        house.addItem(roomId, args['name'], args['brand'], args['type'], args['ip'])
-        pass
+        itemId = house.addItem(roomId, args['name'], args['brand'], args['itemType'], args['ip'])
+        return jsonify(pack({'itemId': itemId}))
 
 
 @app.route('/version/<string:version>/rooms/<int:roomId>/items/<int:itemId>/', methods=['GET', 'PUT', 'DELETE'])
@@ -217,17 +213,15 @@ def rooms_roomId_items_itemId(version, roomId, itemId):
     if request.method == 'DELETE':
         # Remove specified item
         house.deleteItem(int(roomId), int(itemId))
-        pass
+        return jsonify(pack('success'))
 
 
-        
 @app.route('/version/<string:version>/rooms/<int:roomId>/items/<int:itemId>/<string:cmd>/', methods=['PUT'])
 def rooms_roomId_items_itemId_cmd(version, roomId, itemId, cmd):
     if request.method == 'PUT':
         # Command item
-        strBuffer = str(roomId) + ' ' + str(itemId) + ' ' + cmd # TODO remove
         house.addToQueue(int(roomId), int(itemId), cmd)
-        return strBuffer # TODO remove
+        return jsonify(pack('success'))
 
 
 @app.route('/version/<string:version>/events/', methods=['GET', 'POST'])
