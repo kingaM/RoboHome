@@ -167,6 +167,8 @@ def state(version):
 def rooms(version):
     if request.method == 'POST':
         # Create new room
+        args = request.args.to_dict()
+        house.addRoom(args['name'])
         pass
 
 
@@ -179,6 +181,8 @@ def rooms_roomId(version, roomId):
 
     if request.method == 'PUT':
         # Update room
+        args = request.args.to_dict()
+        house.updateRoom(roomId, args['name'])
         pass
 
     if request.method == 'DELETE':
@@ -192,6 +196,8 @@ def rooms_roomId(version, roomId):
 def rooms_roomId_items(version, roomId):
     if request.method == 'POST':
         # Create new item for specified room
+        args = request.args.to_dict()
+        house.addItem(roomId, args['name'], args['brand'], args['type'], args['ip'])
         pass
 
 
@@ -204,6 +210,8 @@ def rooms_roomId_items_itemId(version, roomId, itemId):
 
     if request.method == 'PUT':
         # Request update of state of item
+        args = request.args.to_dict()
+        house.updateItem(roomId, itemId, args['name'], args['brand'], args['type'], args['ip'])
         pass
 
     if request.method == 'DELETE':
