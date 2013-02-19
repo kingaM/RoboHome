@@ -656,7 +656,7 @@ APP.Stage.prototype.setOnShow = function(func) {
     var self = this;
     this.onShow = function() {
         console.log(self.stageId + ' onShow() called');
-        // console.trace(this);
+        console.trace(this);
         self.construct(); // default behavior
         func();
     }
@@ -674,7 +674,7 @@ APP.Stage.prototype.setOnHide = function(func) {
     var self = this;
     this.onHide = function() {
         console.log(self.stageId + ' onHide() called');
-        // console.trace(this);
+        console.trace(this);
         self.tearDown(); // default behavior
         func();
     }
@@ -692,7 +692,7 @@ APP.Stage.prototype.setConstruct = function(func) {
     var self = this;
     this.construct = function() {
         console.log(self.stageId + ' construct() called');
-        // console.trace(this);
+        console.trace(this);
         func();
         self.contextMenu.construct();
     }
@@ -710,7 +710,7 @@ APP.Stage.prototype.setTearDown = function(func) {
     var self = this;
     this.tearDown = function() {
         console.log(self.stageId + ' tearDown() called');
-        // console.trace(this);
+        console.trace(this);
         self.getContext().html('');
         self.contextMenu.tearDown();
         self.poller.stopPolling();
@@ -730,7 +730,7 @@ APP.Stage.prototype.setUpdate = function(func) {
     var self = this;
     this.update = function() {
         console.log(self.stageId + ' update() called');
-        // console.trace(this);
+        console.trace(this);
         func();
     }
 };
@@ -747,7 +747,7 @@ APP.Stage.prototype.setUpdateError = function(func) {
     var self = this;
     this.updateError = function() {
         console.log(self.stageId + ' updateError() called');
-        // console.trace(this);
+        console.trace(this);
         func();
     }
 }
