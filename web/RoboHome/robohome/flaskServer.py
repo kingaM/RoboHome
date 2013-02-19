@@ -17,6 +17,7 @@ from flask import *
 from houseSystem import House
 from databaseTables import Database
 
+
 SETTINGS = {
     'LANGUAGE': 'en',
     'VERSION_NUMBER': '0.1',
@@ -40,6 +41,10 @@ def pack(content={}, statusCode=200):
     }
 
 # Mock content ------------------------------------------------------------
+MOCK_ITEM_ID = {
+    'CURRENT': 999
+}
+
 MOCK_CONTENT = {
     'GET_VERSION': pack({
         'supportedTypes': {
@@ -187,12 +192,12 @@ def rooms_roomId(version, roomId):
         pass
 
 
-
 @app.route('/version/<string:version>/rooms/<int:roomId>/items/', methods=['POST'])
 def rooms_roomId_items(version, roomId):
     if request.method == 'POST':
         # Create new item for specified room
-        pass
+        MOCK_ITEM_ID['CURRENT'] = MOCK_ITEM_ID['CURRENT'] + 1
+        return jsonify(pack({'itemId': MOCK_ITEM_ID['CURRENT']}))
 
 
 @app.route('/version/<string:version>/rooms/<int:roomId>/items/<int:itemId>/', methods=['GET', 'PUT', 'DELETE'])

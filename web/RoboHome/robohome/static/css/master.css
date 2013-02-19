@@ -269,7 +269,7 @@ body {
             border: 1px solid #666666;
             background: rgba(0,200,200,0.3);
             padding: 0.2em;
-            margin-left: 0.5em;
+            margin: 0.2em 0 0.2em 0.5em;
             min-width: 6em;
             text-align: center;
             font-family: 'serene';

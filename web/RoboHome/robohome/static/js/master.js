@@ -72,6 +72,12 @@ APP.API.STATE = {};
 APP.API.STATE.STATES = 'states';
 APP.API.STATE.STATE = 'state';
 APP.API.STATE.ID = 'id';
+APP.API.ROOMS_ITEMS = {};
+APP.API.ROOMS_ITEMS.BRAND = 'brand';
+APP.API.ROOMS_ITEMS.IP = 'ip';
+APP.API.ROOMS_ITEMS.NAME = 'name';
+APP.API.ROOMS_ITEMS.ITEM_TYPE = 'itemType';
+APP.API.ROOMS_ITEMS.ITEM_ID = 'itemId';
 
 // RESTful API URL specification
 // Remember to specify the trailing slash so Flask does not have to redirect
@@ -305,7 +311,7 @@ APP.unpackToPayload = function(json) {
  * @method APP.ajax
  * @param {String} requestType  HTTP request type e.g. 'GET', 'POST', etc.
  * @param {String} url          URL string to send request to
- * @param {Object} payload      Object to pack
+ * @param {Object} payload      Object to feed into the data property
  * @param {Function} callback   Callback function
  * @param {Function} error      Function to execute if AJAX request fails
  */
@@ -314,7 +320,6 @@ APP.ajax = function(requestType, url, payload, callback, error) {
         internalCallback,
         internalError;
     
-    message = APP.packToJSON(payload);
     internalCallback = function(args) {
         APP.data.connection.lastSuccess = new Date();
         APP.data.connection.lastSuccess.setTime(APP.data.connection.lastAttempt);
@@ -335,7 +340,7 @@ APP.ajax = function(requestType, url, payload, callback, error) {
     $.ajax({
         type: requestType,
         url: url,
-        data: message,
+        data: payload,
         processData: false,
         cache: false,
         contentType: 'application/json',
@@ -401,20 +406,32 @@ APP.ajax_get_state = function(callback, error) {
  * @param {int} itemId Item ID
  * @param {Function} callback Callback function to execute after response is received
  * @param {Function} error      Function to execute if AJAX request fails
- * Deletes specified item in room
+ * Add new item to room
  */
-APP.ajax_delete_rooms_roomId_items_itemId = function(roomId, itemId, callback, error) {
-    APP.ajax('DELETE', APP.URL.ROOMS_ROOMID_ITEMS_ITEMID(roomId, itemId), '',
-        function(json) {
-            var obj = APP.unpackToPayload(json);
-            callback();
-        },
+APP.ajax_post_rooms_roomId_items = function(roomId, payload, callback, error) {
+    APP.ajax('POST', APP.URL.ROOMS_ROOMID_ITEMS(roomId), payload,
+        callback,
         error
     );
 }
 
 /**
- * @method APP.ajax_put_rooms_roomId_items_itemId
+ * @method APP.ajax_delete_rooms_roomId_items_itemId
+ * @param {int} roomId Room ID
+ * @param {int} itemId Item ID
+ * @param {Function} callback Callback function to execute after response is received
+ * @param {Function} error      Function to execute if AJAX request fails
+ * Deletes specified item in room
+ */
+APP.ajax_delete_rooms_roomId_items_itemId = function(roomId, itemId, payload, callback, error) {
+    APP.ajax('DELETE', APP.URL.ROOMS_ROOMID_ITEMS_ITEMID(roomId, itemId), payload,
+        callback,
+        error
+    );
+}
+
+/**
+ * @method APP.ajax_put_rooms_roomId_items_itemId_cmd
  * @param {int} roomId ID of room
  * @param {int} itemId ID of item
  * @param {String} cmd Command to send to the item
@@ -422,8 +439,8 @@ APP.ajax_delete_rooms_roomId_items_itemId = function(roomId, itemId, callback, e
  * @param {Function} error      Function to execute if AJAX request fails
  * Updates the specified item in the room with the new state
  */
-APP.ajax_put_rooms_roomId_items_itemId_cmd = function(roomId, itemId, cmd, callback, error) {
-    APP.ajax('PUT', APP.URL.ROOMS_ROOMID_ITEMS_ITEMID_CMD(roomId, itemId, cmd), '',
+APP.ajax_put_rooms_roomId_items_itemId_cmd = function(roomId, itemId, cmd, payload, callback, error) {
+    APP.ajax('PUT', APP.URL.ROOMS_ROOMID_ITEMS_ITEMID_CMD(roomId, itemId, cmd), payload,
         function(json) {
             callback();
         },
@@ -841,6 +858,7 @@ APP.ItemTypeDisplay.prototype.construct = function() {
                         self.stage.data.roomId,
                         itemId,
                         getNextState(itemId),
+                        '',
                         function() {
                             dis.addClass(APP.DOM_HOOK.UPDATED);
                             self.update();
@@ -1253,16 +1271,20 @@ APP.StageManager = function() {
                                 supportedBrands,
                                 items = $('<div></div>'),
                                 addPanel,
+                                addInputNameSelector = 'context-add-item-name-input',
+                                addInputIPSelector = 'context-add-item-ip-input',
                                 addSelectSelector = 'context-add-item-select',
                                 addSelect,
-                                addMessageArea,
+                                addButton,
+                                addWarningName,
+                                addWarningIP,
                                 internalAddItemId, // value used to locate type + brand
                                 removePanel,
                                 removeSelectSelector = 'context-remove-item-select',
                                 removeSelect,
                                 removeInputSelector = 'context-remove-item-name-input',
                                 removeButton,
-                                removeMessageArea,
+                                removeWarning,
                                 itemTypes,
                                 optgroup,
                                 container;
@@ -1273,15 +1295,19 @@ APP.StageManager = function() {
                             addPanel = $('<fieldset></fieldset>');
                             addPanel.append($('<legend></legend>').html('Add'));
                             container = $('<div></div>');
+                            addWarningName = $('<div></div>').addClass('error-message-display');
+                            container.append(addWarningName);
+                            addWarningIP = $('<div></div>').addClass('error-message-display');
+                            container.append(addWarningIP);
                             container.append($('<input></input>').attr({
-                                id: 'context-add-item-name-input',
+                                id: addInputNameSelector,
                                 type: 'text',
                                 placeholder: 'Item\'s name'})
                             );
                             container.append($('<input></input>').attr({
-                                id: 'context-add-item-ip-input',
+                                id: addInputIPSelector,
                                 type: 'text',
-                                placeholder: 'Item\'s static IP address'})
+                                placeholder: 'Item\'s static IPv4 address'})
                             );
                             addSelect = $('<select></select>').attr({id: addSelectSelector});
                             internalAddItemId = 0;
@@ -1301,7 +1327,99 @@ APP.StageManager = function() {
                                 }
                             }
                             container.append($('<div class="select-wrapper"></div>').append(addSelect));
-                            container.append($('<a href="#">Add</a>').attr({id: 'context-add-item-button', class: 'button'}));
+                            addButton = $('<a href="#">Add</a>').attr({id: 'context-add-item-button', class: 'button'});
+                            addButton.click(function() {
+                                var self = $(this),
+                                    roomIndex,
+                                    itemIndex,
+                                    targetBrand,
+                                    targetIP,
+                                    targetOption,
+                                    targetName,
+                                    targetType,
+                                    newItem = {},
+                                    validIP = true,
+                                    duplicateIP = false;
+                                
+                                targetName = $('#' + addInputNameSelector).val();
+                                if(targetName === '') {
+                                    addWarningName.html('Name is undefined.');
+                                } else {
+                                    addWarningName.html('');
+                                }
+                                
+                                // perform IP check
+                                targetIP = $('#' + addInputIPSelector).val();
+                                // regex from http://stackoverflow.com/questions/10006459/regular-expression-for-ip-address-validation
+                                if(/^(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))$/.test(targetIP) === true) {
+                                    for(var j = 0; j < rooms.length; j++) {
+                                        for(var k = 0; k < rooms[j][APP.API.STRUCT.ROOM.ITEMS].length; k++) {
+                                            if(targetIP === rooms[j][APP.API.STRUCT.ROOM.ITEMS][k][APP.API.STRUCT.ROOM.ITEM.IP]) {
+                                                duplicateIP = true;
+                                                roomIndex = j;
+                                                itemIndex = k;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    if(! duplicateIP) {
+                                        addWarningName.html('');
+                                        addWarningIP.html('');
+                                        targetItemId = $('#' + removeSelectSelector).val();
+                                        targetOption = $('#' + removeSelectSelector).find('option[value="' + targetItemId + '"]');
+                                        targetBrand = targetOption.attr('data-brand');
+                                        targetType = targetOption.attr('data-type');
+                                        newItem[APP.API.ROOMS_ITEMS.BRAND] = targetBrand;
+                                        newItem[APP.API.ROOMS_ITEMS.IP] = targetIP;
+                                        newItem[APP.API.ROOMS_ITEMS.NAME] = targetName;
+                                        newItem[APP.API.ROOMS_ITEMS.ITEM_TYPE] = targetType;
+                                        
+                                        self.parent().addClass(APP.DOM_HOOK.UPDATING);
+                                        
+                                        // AJAX call
+                                        APP.ajax_post_rooms_roomId_items(room[APP.API.STRUCT.ROOM.ID], newItem,
+                                            function(json) {
+                                                var obj = APP.unpackToPayload(json),
+                                                    newItemId = obj[APP.API.ROOMS_ITEMS.ITEM_ID],
+                                                    newItem = {},
+                                                    hasSameType = false;
+                                                    
+                                                self.parent().removeClass(APP.DOM_HOOK.UPDATING);
+                                                $('#debug').append(newItemId);
+                                                for(type in stage.data.itemTypes) {
+                                                    if(stage.data.itemTypes.hasOwnProperty(type)) {
+                                                        if(targetType === type) {
+                                                            hasSameType = true;
+                                                            break;
+                                                        }
+                                                    }
+                                                }
+                                                console.log(stage.data);
+                                                if(hasSameType) {
+                                                    newItem[APP.API.ROOMS_ITEMS.ID] = newItemId;
+                                                } else {
+                                                    stage.data.itemTypes[targetType] = [];
+                                                }
+                                                stage.data.itemTypes[targetType].push(newItem);
+                                                
+                                                stage.tearDown();
+                                                stage.construct();
+                                            },
+                                            function() {
+                                                // do nothing
+                                            }
+                                        );
+                                    } else {
+                                        console.log(rooms[roomIndex][APP.API.STRUCT.ROOM.ITEMS][itemIndex][APP.API.STRUCT.ROOM.ITEM.NAME]);
+                                        console.log(rooms[roomIndex][APP.API.STRUCT.ROOM.NAME]);
+                                        addWarningIP.html('IP specified is already in use by existing item (' + rooms[roomIndex][APP.API.STRUCT.ROOM.ITEMS][itemIndex][APP.API.STRUCT.ROOM.ITEM.NAME] + ') in the room ' + rooms[roomIndex][APP.API.STRUCT.ROOM.NAME] + '.');
+                                    }
+                                } else {
+                                    addWarningIP.html('Invalid IPv4 address.');
+                                }
+
+                            });
+                            container.append(addButton);
                             addPanel.append(container);
                             items.append(addPanel);
                             
@@ -1309,8 +1427,8 @@ APP.StageManager = function() {
                             removePanel = $('<fieldset></fieldset>');
                             removePanel.append($('<legend></legend>').html('Remove'));
                             container = $('<div></div>');
-                            removeMessageArea = $('<div></div>').addClass('error-message-display');
-                            container.append(removeMessageArea);
+                            removeWarning = $('<div></div>').addClass('error-message-display');
+                            container.append(removeWarning);
                             removeSelect = $('<select></select>').attr({id: removeSelectSelector});
                             itemTypes = stage.data.itemTypes;
                             for(var itemType in itemTypes) {
@@ -1342,20 +1460,21 @@ APP.StageManager = function() {
                             removeButton.click(function() {
                                 var self = $(this),
                                     targetItemId = parseInt($('#' + removeSelectSelector).val()),
-                                    targetType = $('#' + removeSelectSelector).find('option[value="' + targetItemId + '"]').attr('data-type'),
-                                    targetName = $('#' + removeSelectSelector).find('option[value="' + targetItemId + '"]').attr('data-name'),
+                                    targetOption = $('#' + removeSelectSelector).find('option[value="' + targetItemId + '"]'),
+                                    targetType = targetOption.attr('data-type'),
+                                    targetName = targetOption.attr('data-name'),
                                     types = stage.data.itemTypes,
                                     displays = stage.data.itemTypeDisplays;
                                 
                                 if($('#' + removeInputSelector).val() === targetName) {
-                                    self.parent().addClass('updating');
+                                    removeWarning.html('');
+                                    self.parent().addClass(APP.DOM_HOOK.UPDATING);
                                     // AJAX call
-                                    APP.ajax_delete_rooms_roomId_items_itemId(room[APP.API.STRUCT.ROOM.ID], targetItemId,
+                                    APP.ajax_delete_rooms_roomId_items_itemId(room[APP.API.STRUCT.ROOM.ID], targetItemId, '',
                                         function() {
                                             // if only one item of type
                                             if(types[targetType].length === 1) {
                                                 delete types[targetType];
-                                                delete displays[targetType];
                                                 
                                             } else {
                                             // if multiple items of type
@@ -1363,13 +1482,6 @@ APP.StageManager = function() {
                                                     if(types[targetType][k][APP.API.STRUCT.ROOM.ITEM.ID] === targetItemId) {
                                                         types[targetType].splice(k, 1);
                                                         break;
-                                                    }
-                                                }
-                                                for(var m = 0; m < displays[targetType][APP.API.STRUCT.ROOM.ITEMS].length; m++) {
-                                                    if(displays[targetType][APP.API.STRUCT.ROOM.ITEMS][m][APP.API.STRUCT.ROOM.ITEM.ID] === targetItemId) {
-                                                        displays[targetType][APP.API.STRUCT.ROOM.ITEMS].splice(m, 1);
-                                                        break;
-                                                        
                                                     }
                                                 }
                                             }
@@ -1381,7 +1493,7 @@ APP.StageManager = function() {
                                         }
                                     );
                                 } else {
-                                    removeMessageArea.html('Names do not match. Please reconfirm.');
+                                    removeWarning.html('Names do not match. Please reconfirm.');
                                 }
                             });
                             container.append(removeButton);
