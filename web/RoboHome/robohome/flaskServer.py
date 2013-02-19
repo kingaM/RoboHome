@@ -165,8 +165,8 @@ def rooms(version):
     if request.method == 'POST':
         # Create new room
         args = request.args.to_dict()
-        house.addRoom(args['name'])
-        pass
+        roomId = house.addRoom(args['name'])
+        return jsonify(pack({'id': roomId}))
 
 
 @app.route('/version/<string:version>/rooms/<int:roomId>/', methods=['GET', 'PUT', 'DELETE'])
@@ -174,18 +174,15 @@ def rooms_roomId(version, roomId):
     if request.method == 'GET':
         # Return state of room
         return jsonify(pack(house.rooms[int(roomId)].getState()))
-        pass
 
     if request.method == 'PUT':
         # Update room
         args = request.args.to_dict()
         house.updateRoom(roomId, args['name'])
-        pass
 
     if request.method == 'DELETE':
         # Delete room
         house.deleteRoom(int(roomId))
-        pass
 
 
 @app.route('/version/<string:version>/rooms/<int:roomId>/items/', methods=['POST'])
@@ -202,13 +199,11 @@ def rooms_roomId_items_itemId(version, roomId, itemId):
     if request.method == 'GET':
         # Return state of item
         return jsonify(pack(house.rooms[int(roomId)].items[itemId].getState()))
-        pass
 
     if request.method == 'PUT':
         # Request update of state of item
         args = request.args.to_dict()
         house.updateItem(roomId, itemId, args['name'], args['brand'], args['type'], args['ip'])
-        pass
 
     if request.method == 'DELETE':
         # Remove specified item
