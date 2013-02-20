@@ -1,4 +1,4 @@
-class SubscriptionManager:
+class ListenerManager:
 
     def __init__(self):
         self.listeners = []
