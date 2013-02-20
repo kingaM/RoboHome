@@ -545,7 +545,7 @@ class TestRoom(unittest.TestCase):
         name = "test"
         r = Room(_id, name)
         r.addItem(1, item)
-        self.assertEqual(r.getStructure(), {'id': 1, 'name': "test", 'items': [{'id': 1, 'name': 'a', 'itemType': 'a', 'brand': 'a', 'ip': '1'}]})
+        self.assertEqual(r.getStructure(), {'id': 1, 'name': "test", 'items': [{'id': 1, 'name': 'a', 'itemType': 'a', 'brand': 'a', 'ip': '1', 'state' : 1}]})
 
     def test_getStrucutre_noItems(self):
         _id = 1
