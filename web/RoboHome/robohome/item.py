@@ -1,4 +1,5 @@
 import middleLayers as Layers
+from subscriptions import SubscriptionManager
 
 """
 A defualt class for any item in the house
@@ -6,14 +7,14 @@ e.g. sensor, button
 """
 class Item(object):
 
-    def __init__(self, _id, name, brand, _type, ip, listener):
+    def __init__(self, _id, name, brand, _type, ip):
         self._id = _id
         self.name = name
         self.brand = brand
         self.ip = ip
         self._type = _type
         self.middleLayer = Layers.brands[brand](self.ip, self)
-        self.listener = listener
+        self.subscriptionManager = SubscriptionManager()
 
     def getState(self):
         return self.middleLayer.send('getState')
@@ -22,7 +23,7 @@ class Item(object):
         states = staticData.states[self._type]
         for state in states:
             if state["id"] == newState:
-                self.listener(self.ip, state["name"])
+                self.subscriptionManager.notify(self.ip, state["name"])
 
 
 """
@@ -31,8 +32,8 @@ e.g. doors and windows
 """
 class Openable(Item):
 
-    def __init__(self, _id, name, brand, _type, ip, listener):
-        super(Openable, self).__init__(_id, name, brand, _type, ip, listener)
+    def __init__(self, _id, name, brand, _type, ip):
+        super(Openable, self).__init__(_id, name, brand, _type, ip)
 
     def open(self):
         return self.middleLayer.send('open')
@@ -49,8 +50,8 @@ e.g. plugs
 """
 class OnOff(Item):
 
-    def __init__(self, _id, name, brand, _type, ip, listener):
-        super(OnOff, self).__init__(_id, name, brand, _type, ip, listener)
+    def __init__(self, _id, name, brand, _type, ip):
+        super(OnOff, self).__init__(_id, name, brand, _type, ip)
 
     def on(self):
         return self.middleLayer.send('on')
@@ -63,8 +64,8 @@ A class for any lighting components in the house, extends OnOff
 """
 class Lights(OnOff):
 
-    def __init__(self, _id, name, brand, _type, ip, listener):
-        super(Lights, self).__init__(_id, name, brand, _type, ip, listener)
+    def __init__(self, _id, name, brand, _type, ip):
+        super(Lights, self).__init__(_id, name, brand, _type, ip)
 
     def setBrightness(self, brightness):
         return self.middleLayer.send('setBrightness', brightness)
@@ -73,8 +74,8 @@ A class for radiator valves in the house, extends Item
 """
 class RadiatorValve(Item):
 
-    def __init__(self, _id, name, brand, _type, ip, listener):
-        super(RadiatorValve, self).__init__(_id, name, brand, _type, ip, listener)
+    def __init__(self, _id, name, brand, _type, ip):
+        super(RadiatorValve, self).__init__(_id, name, brand, _type, ip)
 
     def setTemperature(self, degrees):
         return self.middleLayer.send('setTemperature', degrees)
