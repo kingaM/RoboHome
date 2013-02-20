@@ -250,6 +250,7 @@ def create_or_login(resp):
 @app.route('/logout')
 def logout():
     session.pop('openid', None)
+    g.user = None
     return render_template('html/logout.html')   
 
 ##################################

@@ -10,20 +10,6 @@ var openid;
 (function ($) {
 openid = {
 	version : '1.3', // version constant
-	demo : false,
-	demo_text : null,
-	cookie_expires : 6 * 30, // 6 months.
-	cookie_name : 'openid_provider',
-	cookie_path : '/',
-
-	img_path : '../../satic/img/',
-	locale : null, // is set in openid-<locale>.js
-	sprite : null, // usually equals to locale, is set in
-	// openid-<locale>.js
-	signin_text : null, // text on submit button on the form
-	all_small : false, // output large providers w/ small icons
-	no_sprite : false, // don't use sprite image
-	image_title : '{provider}', // for image title
 
 	input_id : null,
 	provider_url : null,
