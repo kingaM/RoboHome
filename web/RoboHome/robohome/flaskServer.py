@@ -17,6 +17,7 @@ from flask import *
 from houseSystem import House
 from databaseTables import Database
 from flask_openid import OpenID
+import socket, struct
 
 SETTINGS = {
     'LANGUAGE': 'en',
@@ -59,7 +60,7 @@ oid = OpenID(app)
 
 @app.route('/', methods=['GET'])
 def home():
-    if g.user is None or 'openid' not in session:
+    if g.user is None and not isIpOnLocalNetwork():
         return redirect(url_for('login'))
     if request.method == 'GET':
         # Fetch the base HTML page and scripts
@@ -68,7 +69,7 @@ def home():
 
 @app.route('/version/', methods=['GET'])
 def rooms_version():
-    if g.user is None or 'openid' not in session:
+    if g.user is None and not isIpOnLocalNetwork():
        return redirect(url_for('login'))
     if request.method == 'GET':
         # Return initial info when connecting to server for the first time
@@ -78,7 +79,7 @@ def rooms_version():
 
 @app.route('/version/<string:version>/structure/', methods=['GET'])
 def structure(version):
-    if g.user is None or 'openid' not in session:
+    if g.user is None and not isIpOnLocalNetwork():
        return redirect(url_for('login'))
     if request.method == 'GET':
         # Return structure of house. This is used for passing hierarchial info
@@ -87,7 +88,7 @@ def structure(version):
 
 @app.route('/version/<string:version>/state/', methods=['GET'])
 def state(version):
-    if g.user is None or 'openid' not in session:
+    if g.user is None and not isIpOnLocalNetwork():
        return redirect(url_for('login'))
     if request.method == 'GET':
         # Return flat list of each component's id and its associated state
@@ -97,7 +98,7 @@ def state(version):
 
 @app.route('/version/<string:version>/rooms/', methods=['POST'])
 def rooms(version):
-    if g.user is None or 'openid' not in session:
+    if g.user is None and not isIpOnLocalNetwork():
        return redirect(url_for('login'))
     if request.method == 'POST':
         # Create new room
@@ -106,7 +107,7 @@ def rooms(version):
 
 @app.route('/version/<string:version>/rooms/<int:roomId>/', methods=['GET', 'PUT', 'DELETE'])
 def rooms_roomId(version, roomId):
-    if g.user is None or 'openid' not in session:
+    if g.user is None and not isIpOnLocalNetwork():
         return redirect(url_for('login'))
     if request.method == 'GET':
         # Return state of room
@@ -125,7 +126,7 @@ def rooms_roomId(version, roomId):
 
 @app.route('/version/<string:version>/rooms/<int:roomId>/items/', methods=['POST'])
 def rooms_roomId_items(version, roomId):
-    if g.user is None or 'openid' not in session:
+    if g.user is None and not isIpOnLocalNetwork():
         return redirect(url_for('login'))
     if request.method == 'POST':
         # Create new item for specified room
@@ -134,7 +135,7 @@ def rooms_roomId_items(version, roomId):
 
 @app.route('/version/<string:version>/rooms/<int:roomId>/items/<int:itemId>/', methods=['GET', 'PUT', 'DELETE'])
 def rooms_roomId_items_itemId(version, roomId, itemId):
-    if g.user is None or 'openid' not in session:
+    if g.user is None and not isIpOnLocalNetwork():
         print "REDIRECT"
         return redirect(url_for('login'))
     if request.method == 'GET':
@@ -155,7 +156,7 @@ def rooms_roomId_items_itemId(version, roomId, itemId):
         
 @app.route('/version/<string:version>/rooms/<int:roomId>/items/<int:itemId>/<string:cmd>/', methods=['PUT'])
 def rooms_roomId_items_itemId_cmd(version, roomId, itemId, cmd):
-    if g.user is None or 'openid' not in session:
+    if g.user is None and not isIpOnLocalNetwork():
         print "REDIRECT"
         return redirect(url_for('login'))
     if request.method == 'PUT':
@@ -167,7 +168,7 @@ def rooms_roomId_items_itemId_cmd(version, roomId, itemId, cmd):
 
 @app.route('/version/<string:version>/events/', methods=['GET', 'POST'])
 def events(version):
-    if g.user is None or 'openid' not in session:
+    if g.user is None and not isIpOnLocalNetwork():
       return redirect(url_for('login'))
     if request.method == 'GET':
         # Return a list of all events
@@ -180,7 +181,7 @@ def events(version):
 
 @app.route('/version/<string:version>/events/<int:eventId>/', methods=['GET', 'PUT', 'DELETE'])
 def events_eventId(version, eventId):
-    if g.user is None or 'openid' not in session:
+    if g.user is None and not isIpOnLocalNetwork():
         return redirect(url_for('login'))
     if request.method == 'GET':
         # Return event
@@ -198,6 +199,15 @@ def events_eventId(version, eventId):
 # Based upon: https://github.com/mitsuhiko/flask-openid
 # License: https://github.com/mitsuhiko/flask-openid/blob/master/LICENSE
 
+def dottedQuadToNum(ip):
+    return struct.unpack('L',socket.inet_aton(ip))[0]
+
+def networkMask(ip,bits):
+    return dottedQuadToNum(ip) and ((2L<<bits-1) - 1)
+
+def addressInNetwork(ip,net):
+   return dottedQuadToNum(ip) & net == net
+
 @app.before_request
 def before_request():  
     g.user = None
@@ -209,6 +219,12 @@ def getIp():
         return request.remote_addr
     else:
         return request.headers.getlist("X-Forwarded-For")[0]
+
+def isIpOnLocalNetwork():
+    network10 = networkMask("10.0.0.0",24)
+    network192 = networkMask("192.168.0.0",24)
+    return addressInNetwork(getIp(), network10) or addressInNetwork(getIp(), network192) or getIp() == '127.0.0.1'
+
 
 @app.route('/login', methods=['GET', 'POST'])
 @oid.loginhandler
@@ -225,7 +241,7 @@ def login():
             return oid.try_login(openid, ask_for=['email', 'fullname'])
     app.logger.info('not-logged-in: '+oid.get_next_url())
     return render_template('html/login.html', next=oid.get_next_url(),
-                           error=oid.fetch_error(), username='TEST')                                  
+                           error=oid.fetch_error())                                  
     
 @oid.after_login
 def create_or_login(resp):
