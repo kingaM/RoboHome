@@ -655,7 +655,7 @@ APP.Stage.prototype.setOnShow = function(func) {
     var self = this;
     this.onShow = function() {
         console.log(self.stageId + ' onShow() called');
-        console.trace(this);
+        // console.trace(this);
         self.construct(); // default behavior
         func();
     }
@@ -673,7 +673,7 @@ APP.Stage.prototype.setOnHide = function(func) {
     var self = this;
     this.onHide = function() {
         console.log(self.stageId + ' onHide() called');
-        console.trace(this);
+        // console.trace(this);
         self.tearDown(); // default behavior
         func();
     }
@@ -691,7 +691,7 @@ APP.Stage.prototype.setConstruct = function(func) {
     var self = this;
     this.construct = function() {
         console.log(self.stageId + ' construct() called');
-        console.trace(this);
+        // console.trace(this);
         func();
         self.contextMenu.construct();
     }
@@ -709,7 +709,7 @@ APP.Stage.prototype.setTearDown = function(func) {
     var self = this;
     this.tearDown = function() {
         console.log(self.stageId + ' tearDown() called');
-        console.trace(this);
+        // console.trace(this);
         self.getContext().html('');
         self.contextMenu.tearDown();
         self.poller.stopPolling();
@@ -729,7 +729,7 @@ APP.Stage.prototype.setUpdate = function(func) {
     var self = this;
     this.update = function() {
         console.log(self.stageId + ' update() called');
-        console.trace(this);
+        // console.trace(this);
         func();
     }
 };
@@ -746,7 +746,7 @@ APP.Stage.prototype.setUpdateError = function(func) {
     var self = this;
     this.updateError = function() {
         console.log(self.stageId + ' updateError() called');
-        console.trace(this);
+        // console.trace(this);
         func();
     }
 }
@@ -1189,23 +1189,31 @@ APP.StageManager = function() {
         
         // control stages
         APP.ajax_get_state(function() {
-            var rooms = APP.data.houseStructure[APP.API.STRUCT.ROOMS];
+            
+            // fetch the latest list of rooms
+            var rooms = APP.data.houseStructure[APP.API.STRUCT.ROOMS],
+                __roomNames = [],
+                __roomIds = [];
+            
+            // save a static copy of ids and names from that list
             for(var i = 0; i < rooms.length; i++) {
+                __roomIds.push(rooms[i][APP.API.STRUCT.ROOM.ID]);
+                __roomNames.push(rooms[i][APP.API.STRUCT.ROOM.NAME]);
                 __room = rooms[i];
-                
-                function getRoom(roomId) {
-                    for(var j = 0; j < APP.data.houseStructure[APP.API.STRUCT.ROOMS].length; j++) {
-                        if(APP.data.houseStructure[APP.API.STRUCT.ROOMS][j][[APP.API.STRUCT.ROOM.ID]] === roomId) {
-                            return APP.data.houseStructure[APP.API.STRUCT.ROOMS][j];
-                        }
+            }
+            
+            // this function fetches the latest data of the given room
+            function getRoom(roomId) {
+                for(var j = 0; j < APP.data.houseStructure[APP.API.STRUCT.ROOMS].length; j++) {
+                    if(APP.data.houseStructure[APP.API.STRUCT.ROOMS][j][[APP.API.STRUCT.ROOM.ID]] === roomId) {
+                        return APP.data.houseStructure[APP.API.STRUCT.ROOMS][j];
                     }
                 }
-                
-                // for each room...
-                (function() {
-                    var roomId = __room[APP.API.STRUCT.ROOM.ID],
-                        roomName = __room[APP.API.STRUCT.ROOM.NAME],
-                        safeRoomName = roomName.replace(/\s/, '-'),
+            }
+            
+            // set room stage behavior
+            function setRoomStage(roomId, roomName) {
+                    var safeRoomName = roomName.replace(/\s/, '-'),
                         stageId = addStage(new APP.Stage('menu-control',
                             'button-control-' + safeRoomName, roomName, 'stage-control-' + safeRoomName)),
                         stage = stages.get(stageId);
@@ -1222,7 +1230,9 @@ APP.StageManager = function() {
                         function constructRoomsPanel() {
                             var roomsPanel = $('<div></div>'),
                                 addPanel,
+                                addButton,
                                 removePanel,
+                                removeButton,
                                 container;
                             
                             // add
@@ -1234,7 +1244,11 @@ APP.StageManager = function() {
                                 type: 'text',
                                 placeholder: 'Room name'})
                             );
-                            container.append($('<a href="#">Add</a>').attr({id: 'context-add-room-button', class: 'button'}));
+                            addButton = $('<a href="#">Add</a>').attr({id: 'context-add-room-button', class: 'button'});
+                            addButton.click(function() {
+                                
+                            });
+                            container.append(addButton);
                             addPanel.append(container);
                             roomsPanel.append(addPanel);
                             
@@ -1247,7 +1261,11 @@ APP.StageManager = function() {
                                 type: 'text',
                                 placeholder: 'Confirm this room\'s name'})
                             );
-                            container.append($('<a href="#">Remove</a>').attr({id: 'context-remove-room-button', class: 'button'}));
+                            removeButton = $('<a href="#">Remove</a>').attr({id: 'context-remove-room-button', class: 'button'});
+                            removeButton.click(function() {
+                                
+                            });
+                            container.append(removeButton);
                             removePanel.append(container);
                             roomsPanel.append(removePanel);
                             return roomsPanel;
@@ -1563,9 +1581,13 @@ APP.StageManager = function() {
                         APP.ajax_get_state(stage.update, stage.updateError);
                     });
                     
-                })();
-                
+                }
+            
+            // for each room... use static data to initialize
+            for(var i = 0; i < __roomIds.length; i++) {
+                setRoomStage(__roomIds[i], __roomNames[i]);
             }
+            
         });
         
         // eca stage
