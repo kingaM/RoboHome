@@ -1,8 +1,7 @@
 /*
-	Simple OpenID Plugin
-	http://code.google.com/p/openid-selector/
-	
-	This code is licensed under the New BSD License.
+    Based upon: https://github.com/mitsuhiko/flask-openid
+    
+    This code is licensed under the New BSD License: https://github.com/mitsuhiko/flask-openid/blob/master/LICENSE
 */
 
 var providers_large = {

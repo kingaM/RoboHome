@@ -134,9 +134,6 @@ class UsersTable(DatabaseHelper):
         self.tablename = "users"
         super(UsersTable, self).__init__()
 
-    def addTable(self):
-        super(UsersTable, self).addTable(self.tablename, "id INT PRIMARY KEY AUTO_INCREMENT NOT NULL, name VARCHAR(200) NOT NULL, email VARCHAR(200) NOT NULL, openid VARCHAR(200) NOT NULL")
-
     def addEntry(self, name, email, openid):
        return super(UsersTable, self).addEntry(self.tablename, "name, email, openid", "'" + name + "'," + "'" + email + "'," + "'" + openid + "'")
 
@@ -156,7 +153,7 @@ class WhitelistTable(DatabaseHelper):
         self.tablename = "whitelist"
         super(WhitelistTable, self).__init__()
 
-    def addToWhiteList(self, email):
+    def addEntry(self, email):
         return super(WhitelistTable, self).addEntry(self.tablename, "email", "'" + email + "'")
 
     def getEmails(self):

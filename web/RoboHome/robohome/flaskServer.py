@@ -51,7 +51,6 @@ app.config.update(
 db = Database()
 house = House(db)
 house.initFromDatabase()
-db.users.addTable()
 oid = OpenID(app)
 
 # Routing ------------------------------------------------------------------
@@ -73,7 +72,6 @@ def rooms_version():
        return redirect(url_for('login'))
     if request.method == 'GET':
         # Return initial info when connecting to server for the first time
-        # return jsonify(pack(house.getVersion()))
         return jsonify(pack(house.getVersion()))
 
 
@@ -92,7 +90,6 @@ def state(version):
        return redirect(url_for('login'))
     if request.method == 'GET':
         # Return flat list of each component's id and its associated state
-        # return jsonify(pack(house.getState()))
         return jsonify(pack(house.getState()))
 
 
@@ -230,13 +227,12 @@ def isIpOnLocalNetwork():
 @oid.loginhandler
 def login():
     """Does the login via OpenID."""
-    if g.user is not None:
+    if g.user is not None or isIpOnLocalNetwork():
         app.logger.info('logged-in: '+oid.get_next_url())
         return redirect(oid.get_next_url())
     if request.method == 'POST':
         openid = request.form.get('openid_identifier')
         if openid:
-            app.logger.info(request.form)
             app.logger.info('logging-in: '+oid.get_next_url())
             return oid.try_login(openid, ask_for=['email', 'fullname'])
     app.logger.info('not-logged-in: '+oid.get_next_url())
@@ -250,24 +246,19 @@ def create_or_login(resp):
     user = db.users.getUserByOpenid(resp.identity_url)
     if user is not None:
         g.user = user
-        app.logger.info('Log in successfully: ')
         return redirect(oid.get_next_url())
     name=resp.fullname
     email=resp.email
     if db.users.numOfRows() == 0:
         db.users.addEntry(name, email, session['openid'])
         db.whitelist.addEntry(email)
+        return redirect(oid.get_next_url())
     elif db.whitelist.isInWhitelist(email):
         db.users.addEntry(name, email, session['openid'])
+        return redirect(oid.get_next_url())
     else:
-        print "USER NOT IN WHITELIST"
-    return redirect(oid.get_next_url())
+        return render_template('html/loginerror.html')
 
-@app.route('/logout')
-def logout():
-    session.pop('openid', None)
-    g.user = None
-    return render_template('html/logout.html')   
 
 ##################################
 # For illustration purposes only #

@@ -1,15 +1,14 @@
 /*
-	Simple OpenID Plugin
-	http://code.google.com/p/openid-selector/
+	Based upon: https://github.com/mitsuhiko/flask-openid
 	
-	This code is licensed under the New BSD License.
+	This code is licensed under the New BSD License: https://github.com/mitsuhiko/flask-openid/blob/master/LICENSE
 */
 
 var providers;
 var openid;
 (function ($) {
 openid = {
-	version : '1.3', // version constant
+	version : '0.1',
 
 	input_id : null,
 	provider_url : null,
@@ -33,7 +32,7 @@ openid = {
 		$('#openid_choice').show();
 		$('#openid_input_area').empty();
 		$('#openid_form').submit(this.submit);
-		this.signin('google', false)
+		this.signin('google')
 	},
 
 	/**
@@ -41,22 +40,15 @@ openid = {
 	 * 
 	 * @return {Void}
 	 */
-	signin : function(box_id, onload) {
+	signin : function(box_id) {
 		var provider = providers[box_id];
 		if (!provider) {
 			return;
 		}
 		this.provider_id = box_id;
 		this.provider_url = provider.url;
-		// prompt user for input?
-		if (provider.label) {
-			this.useInputBox(provider);
-		} else {
-			$('#openid_input_area').empty();
-			if (!onload) {
-				$('#openid_form').submit();
-			}
-		}
+		$('#openid_input_area').empty();
+		$('#openid_form').submit();
 	},
 
 	/**
@@ -72,10 +64,6 @@ openid = {
 			url = url.replace('{username}', $('#openid_username').val());
 			openid.setOpenIdUrl(url);			
 		}
-		if (openid.demo) {
-			alert(openid.demo_text + "\r\n" + document.getElementById(openid.input_id).value);
-			return false;
-		}
 		if (url && url.indexOf("javascript:") == 0) {
 			url = url.substr("javascript:".length);
 			eval(url);
@@ -84,9 +72,6 @@ openid = {
 		return true;
 	},
 
-	/**
-	 * @return {Void}
-	 */
 	setOpenIdUrl : function(url) {
 		var hidden = document.getElementById(this.input_id);
 		if (hidden != null) {
