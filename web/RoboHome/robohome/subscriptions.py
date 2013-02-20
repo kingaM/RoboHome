@@ -10,6 +10,6 @@ class SubscriptionManager:
         if listener in self.listeners:
             self.listeners.remove(listener)
 
-    def notify(self, *args):
+    def notify(self, ip, event):
         for listener in self.listeners:
-            listener(*args)
+            listener(ip, event)

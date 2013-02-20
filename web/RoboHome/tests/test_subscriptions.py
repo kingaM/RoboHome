@@ -31,6 +31,6 @@ class TestSubscriptionManager(unittest.TestCase):
         mcl2 = MethCallLogger()
         sm.addListener(mcl1)
         sm.addListener(mcl2)
-        sm.notify()
+        sm.notify("mockIP", "mockEvent")
         self.assertTrue(mcl1.was_called)
         self.assertTrue(mcl2.was_called)

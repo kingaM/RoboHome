@@ -3,6 +3,7 @@ import eca
 from priorityQueue import MyPriorityQueue
 from threading import Thread
 import staticData as data
+from subscriptions import SubscriptionManager
 
 class House(object):
     """
@@ -14,6 +15,8 @@ class House(object):
         self.rooms = {}
         self.events = []
         self.queue = MyPriorityQueue()
+        self.subscriptionManager = SubscriptionManager()
+        self.subscriptionManager.addListener(self.reactToEvent)
         self.methodThread = Thread(name="Method Thread", target=self.executeFromQueue)
         self.methodThread.daemon = True
         self.methodThread.start()
@@ -28,8 +31,7 @@ class House(object):
             if len(items) > 0:
                 for item in items:
                     type = self.database.types.getNameForId(item[5])
-                    self.rooms[room[0]].items[item[0]] = (data.types[type](item[0], item[1], item[2],  type, item[3]))
-                    self.rooms[room[0]].items[item[0]].subscriptionManager.addListener(self.reactToEvent)
+                    self.rooms[room[0]].items[item[0]] = (data.types[type](item[0], item[1], item[2],  type, item[3], self.subscriptionManager))
 
         events = self.database.events.getEvents()
 
@@ -108,8 +110,7 @@ class House(object):
         if roomId in self.rooms:
             typeId = self.database.types.getIdForName(type)
             itemId = self.database.items.addEntry(name, brand, ip, roomId, typeId)
-            item = data.types[type](itemId, name, brand, type, ip)
-            item.subscriptionManager.addListener(self.reactToEvent)
+            item = data.types[type](itemId, name, brand, type, ip, self.subscriptionManager)
             self.rooms[roomId].addItem(itemId, item)
         else:
             raise KeyError("Invalid roomId")
