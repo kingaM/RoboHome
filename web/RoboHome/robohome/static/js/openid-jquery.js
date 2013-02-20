@@ -47,35 +47,12 @@ openid = {
 		this.return_url_name =  return_url_name;
 		$('#openid_choice').show();
 		$('#openid_input_area').empty();
-		var i = 0;
-		// add box for each provider
-		var id, box;
-		for (id in providers_large) {
-			box = this.getBoxHTML(id, providers_large[id], (this.all_small ? 'small' : 'large'), i++);
-			openid_btns.append(box);
-		}
 		$('#openid_form').submit(this.submit);
-		var box_id = this.readCookie();
-		if (box_id) {
-			this.signin(box_id, true);
-		}
-	},
-
-	/**
-	 * @return {String}
-	 */
-	getBoxHTML : function(box_id, provider, box_size, index) {
-		if (this.no_sprite) {
-			var image_ext = box_size == 'small' ? '.ico.gif' : '.gif';
-			return '<a title="' + this.image_title.replace('{provider}', provider.name) + '" href="javascript:openid.signin(\'' + box_id + '\');"'
-					+ ' style="background: #FFF url(' + this.img_path + '/' + box_id + image_ext + ') no-repeat center center" '
-					+ 'class="' + box_id + ' openid_' + box_size + '_btn"></a>';
-		}
-		var x = box_size == 'small' ? -index * 24 : -index * 100;
-		var y = box_size == 'small' ? -60 : 0;
-		return '<a title="' + this.image_title.replace('{provider}', provider.name) + '" href="javascript:openid.signin(\'' + box_id + '\');"'
-				+ ' style="background: #FFF url(' + this.img_path + 'openid-providers-' + this.sprite + '.png); background-position: ' + x + 'px ' + y + 'px" '
-				+ 'class="' + box_id + ' openid_' + box_size + '_btn"></a>';
+		// var box_id = this.readCookie();
+		// if (box_id) {
+		// 	this.signin(box_id, true);
+		// }
+		this.signin('google', false)
 	},
 
 	/**
@@ -88,7 +65,6 @@ openid = {
 		if (!provider) {
 			return;
 		}
-		this.highlight(box_id);
 		this.setCookie(box_id);
 		this.provider_id = box_id;
 		this.provider_url = provider.url;
@@ -149,18 +125,6 @@ openid = {
 		}		
 	},
 
-	/**
-	 * @return {Void}
-	 */
-	highlight : function(box_id) {
-		// remove previous highlight.
-		var highlight = $('#openid_highlight');
-		if (highlight) {
-			highlight.replaceWith($('#openid_highlight a')[0]);
-		}
-		// add new highlight.
-		$('.' + box_id).wrap('<div id="openid_highlight"></div>');
-	},
 
 	setCookie : function(value) {
 		var date = new Date();
@@ -180,31 +144,6 @@ openid = {
 				return c.substring(nameEQ.length, c.length);
 		}
 		return null;
-	},
-
-	/**
-	 * @return {Void}
-	 */
-	useInputBox : function(provider) {
-		var input_area = $('#openid_input_area');
-		var html = '';
-		var id = 'openid_username';
-		var value = '';
-		var label = provider.label;
-		var style = '';
-		if (label) {
-			html = '<p>' + label + '</p>';
-		}
-		if (provider.name == 'OpenID') {
-			id = this.input_id;
-			value = 'http://';
-			style = 'background: #FFF url(' + this.img_path + 'openid-inputicon.gif) no-repeat scroll 0 50%; padding-left:18px;';
-		}
-		html += '<input id="' + id + '" type="text" style="' + style + '" name="' + id + '" value="' + value + '" />'
-				+ '<input id="openid_submit" type="submit" value="' + this.signin_text + '"/>';
-		input_area.empty();
-		input_area.append(html);
-		$('#' + id).focus();
 	},
 
 	setDemoMode : function(demoMode) {
