@@ -16,6 +16,8 @@
 from flask import *
 from houseSystem import House
 from databaseTables import Database
+from flask_openid import OpenID
+import socket, struct
 
 
 SETTINGS = {
@@ -40,99 +42,17 @@ def pack(content={}, statusCode=200):
         SETTINGS['API']['CONTENT']: content
     }
 
-# Mock content ------------------------------------------------------------
-MOCK_ITEM_ID = {
-    'CURRENT': 999
-}
-
-MOCK_CONTENT = {
-    'GET_VERSION': pack({
-        'supportedTypes': {
-            'door': {
-                'name': 'Doors',
-                'supportedBrands': [],
-                'methods': ['close', 'open'],
-                'states': [
-                    { 'id': 0, 'name': 'Closed', 'method': 'close'},
-                    { 'id': 1, 'name': 'Open', 'method': 'open'}
-                ]
-            },
-            'curtain': {
-                'name': 'Curtains',
-                'supportedBrands': [],
-                'methods': ['close', 'open'],
-                'states': [
-                    { 'id': 0, 'name': 'Closed', 'method': 'close'},
-                    { 'id': 1, 'name': 'Open', 'method': 'open'}
-                ]
-            },
-            'window': {
-                'name': 'Windows',
-                'supportedBrands': [],
-                'methods': ['close', 'open'],
-                'states': [
-                    { 'id': 0, 'name': 'Closed', 'method': 'close'},
-                    { 'id': 1, 'name': 'Open', 'method': 'open'}
-                ]
-            },
-            'motionSensor': {
-                'name': 'Motion sensors',
-                'supportedBrands': [],
-                'methods': ['off', 'on'],
-                'states': [
-                    { 'id': 0, 'name': 'Off', 'method': 'off' },
-                    { 'id': 1, 'name': 'On', 'method': 'on' }
-                ]
-            },
-            'plug': {
-                'name': 'Plugs',
-                'supportedBrands': [],
-                'methods': ['off', 'on'],
-                'states': [
-                    { 'id': 0, 'name': 'Off', 'method': 'off' },
-                    { 'id': 1, 'name': 'On', 'method': 'on' }
-                ]
-            },
-            'light': {
-                'name': 'Lights',
-                'supportedBrands': [],
-                'methods': ['off', 'on'],
-                'states': [
-                    { 'id': 0, 'name': 'Off', 'method': 'off' },
-                    { 'id': 1, 'name': 'On', 'method': 'on' }
-                ]
-            }
-        }
-    }),
-    'GET_STATE': pack({
-        'states': [
-            { 'id': 0, 'state': 0 },
-            { 'id': 1, 'state': 1 },
-            { 'id': 2, 'state': 0 },
-            { 'id': 3, 'state': 1 },
-            { 'id': 4, 'state': 0 },
-            { 'id': 5, 'state': 1 },
-            { 'id': 6, 'state': 0 },
-            { 'id': 7, 'state': 1 },
-            { 'id': 8, 'state': 0 },
-            { 'id': 9, 'state': 1 },
-            { 'id': 10, 'state': 0 },
-            { 'id': 11, 'state': 1 },
-            { 'id': 12, 'state': 0 },
-            { 'id': 13, 'state': 1 },
-            { 'id': 14, 'state': 0 },
-            { 'id': 15, 'state': 1 }
-        ]
-    })
-}
-
 # App config ---------------------------------------------------------------
 app = Flask(__name__)
-app.debug = True
+app.config.update(
+    SECRET_KEY = 'development key',
+    DEBUG = True
+)
 
 db = Database()
 house = House(db)
 house.initFromDatabase()
+oid = OpenID(app)
 
 # Routing ------------------------------------------------------------------
 # Remember to set paths with the trailing slash
@@ -140,6 +60,8 @@ house.initFromDatabase()
 
 @app.route('/', methods=['GET'])
 def home():
+    if g.user is None and not isIpOnLocalNetwork():
+        return redirect(url_for('login'))
     if request.method == 'GET':
         # Fetch the base HTML page and scripts
         return render_template('html/home.html')
@@ -147,14 +69,17 @@ def home():
 
 @app.route('/version/', methods=['GET'])
 def rooms_version():
+    if g.user is None and not isIpOnLocalNetwork():
+       return redirect(url_for('login'))
     if request.method == 'GET':
         # Return initial info when connecting to server for the first time
-        # return jsonify(pack(house.getVersion()))
         return jsonify(pack(house.getVersion()))
 
 
 @app.route('/version/<string:version>/state/', methods=['GET'])
 def structure(version):
+    if g.user is None and not isIpOnLocalNetwork():
+       return redirect(url_for('login'))
     if request.method == 'GET':
         # Return structure of house. This is used for passing hierarchial info
         return jsonify(pack(house.getStructure()))
@@ -162,6 +87,8 @@ def structure(version):
 
 @app.route('/version/<string:version>/rooms/', methods=['POST'])
 def rooms(version):
+    if g.user is None and not isIpOnLocalNetwork():
+       return redirect(url_for('login'))
     if request.method == 'POST':
         # Create new room
         args = request.args.to_dict()
@@ -171,6 +98,8 @@ def rooms(version):
 
 @app.route('/version/<string:version>/rooms/<int:roomId>/', methods=['GET', 'PUT', 'DELETE'])
 def rooms_roomId(version, roomId):
+    if g.user is None and not isIpOnLocalNetwork():
+        return redirect(url_for('login'))
     if request.method == 'GET':
         # Return state of room
         return jsonify(pack(house.rooms[int(roomId)].getState()))
@@ -184,9 +113,10 @@ def rooms_roomId(version, roomId):
         # Delete room
         house.deleteRoom(int(roomId))
 
-
 @app.route('/version/<string:version>/rooms/<int:roomId>/items/', methods=['POST'])
 def rooms_roomId_items(version, roomId):
+    if g.user is None and not isIpOnLocalNetwork():
+        return redirect(url_for('login'))
     if request.method == 'POST':
         # Create new item for specified room
         args = request.args.to_dict()
@@ -196,6 +126,8 @@ def rooms_roomId_items(version, roomId):
 
 @app.route('/version/<string:version>/rooms/<int:roomId>/items/<int:itemId>/', methods=['GET', 'PUT', 'DELETE'])
 def rooms_roomId_items_itemId(version, roomId, itemId):
+    if g.user is None and not isIpOnLocalNetwork():
+        return redirect(url_for('login'))
     if request.method == 'GET':
         # Return state of item
         return jsonify(pack(house.rooms[int(roomId)].items[itemId].getState()))
@@ -213,6 +145,8 @@ def rooms_roomId_items_itemId(version, roomId, itemId):
 
 @app.route('/version/<string:version>/rooms/<int:roomId>/items/<int:itemId>/<string:cmd>/', methods=['PUT'])
 def rooms_roomId_items_itemId_cmd(version, roomId, itemId, cmd):
+    if g.user is None and not isIpOnLocalNetwork():
+        return redirect(url_for('login'))
     if request.method == 'PUT':
         # Command item
         house.addToQueue(int(roomId), int(itemId), cmd)
@@ -221,6 +155,8 @@ def rooms_roomId_items_itemId_cmd(version, roomId, itemId, cmd):
 
 @app.route('/version/<string:version>/events/', methods=['GET', 'POST'])
 def events(version):
+    if g.user is None and not isIpOnLocalNetwork():
+      return redirect(url_for('login'))
     if request.method == 'GET':
         # Return a list of all events
         pass
@@ -232,6 +168,8 @@ def events(version):
 
 @app.route('/version/<string:version>/events/<int:eventId>/', methods=['GET', 'PUT', 'DELETE'])
 def events_eventId(version, eventId):
+    if g.user is None and not isIpOnLocalNetwork():
+        return redirect(url_for('login'))
     if request.method == 'GET':
         # Return event
         pass
@@ -243,6 +181,73 @@ def events_eventId(version, eventId):
     if request.method == 'DELETE':
         # Remove event
         pass
+
+# OPENID ----------------------------------------------------------------
+# Based upon: https://github.com/mitsuhiko/flask-openid
+# License: https://github.com/mitsuhiko/flask-openid/blob/master/LICENSE
+
+def dottedQuadToNum(ip):
+    return struct.unpack('L',socket.inet_aton(ip))[0]
+
+def networkMask(ip,bits):
+    return dottedQuadToNum(ip) and ((2L<<bits-1) - 1)
+
+def addressInNetwork(ip,net):
+   return dottedQuadToNum(ip) & net == net
+
+@app.before_request
+def before_request():  
+    g.user = None
+    if 'openid' in session:
+        g.user = db.users.getUserByOpenid(session['openid'])
+
+def getIp():
+    if not request.headers.getlist("X-Forwarded-For"):
+        return request.remote_addr
+    else:
+        return request.headers.getlist("X-Forwarded-For")[0]
+
+def isIpOnLocalNetwork():
+    network10 = networkMask("10.0.0.0",24)
+    network192 = networkMask("192.168.0.0",24)
+    return addressInNetwork(getIp(), network10) or addressInNetwork(getIp(), network192) or getIp() == '127.0.0.1'
+
+
+@app.route('/login', methods=['GET', 'POST'])
+@oid.loginhandler
+def login():
+    """Does the login via OpenID."""
+    if g.user is not None or isIpOnLocalNetwork():
+        app.logger.info('logged-in: '+oid.get_next_url())
+        return redirect(oid.get_next_url())
+    if request.method == 'POST':
+        openid = request.form.get('openid_identifier')
+        if openid:
+            app.logger.info('logging-in: '+oid.get_next_url())
+            return oid.try_login(openid, ask_for=['email', 'fullname'])
+    app.logger.info('not-logged-in: '+oid.get_next_url())
+    return render_template('html/login.html', next=oid.get_next_url(),
+                           error=oid.fetch_error())                                  
+    
+@oid.after_login
+def create_or_login(resp):
+    """Called when the login was successful"""
+    session['openid'] = resp.identity_url
+    user = db.users.getUserByOpenid(resp.identity_url)
+    if user is not None:
+        g.user = user
+        return redirect(oid.get_next_url())
+    name=resp.fullname
+    email=resp.email
+    if db.users.numOfRows() == 0:
+        db.users.addEntry(name, email, session['openid'])
+        db.whitelist.addEntry(email)
+        return redirect(oid.get_next_url())
+    elif db.whitelist.isInWhitelist(email):
+        db.users.addEntry(name, email, session['openid'])
+        return redirect(oid.get_next_url())
+    else:
+        return render_template('html/loginerror.html')
 
 
 ##################################

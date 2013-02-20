@@ -44,7 +44,6 @@ class TypesTable(DatabaseHelper):
         query = "SELECT * FROM " + self.database + ".`" + self.tablename + "` WHERE id=" + str(id)
         return super(TypesTable, self).retriveData(query)[0][1]
 
-
 class ItemsTable(DatabaseHelper):
 
     def __init__(self):
@@ -129,6 +128,44 @@ class ActionsTable(DatabaseHelper):
     def getActionsForEvent(self, event):
         return super(ActionsTable, self).retriveData("SELECT actions.id, itemId, roomId, signature, types.name FROM actions, methods, types WHERE actions.methodId = methods.id AND methods.typeId = types.Id AND eventId=" + str(event.id))
 
+class UsersTable(DatabaseHelper):
+
+    def __init__(self):
+        self.tablename = "users"
+        super(UsersTable, self).__init__()
+
+    def addEntry(self, name, email, openid):
+       return super(UsersTable, self).addEntry(self.tablename, "name, email, openid", "'" + name + "'," + "'" + email + "'," + "'" + openid + "'")
+
+    def getUserByOpenid(self, openid):
+        user =  super(UsersTable, self).retriveData("SELECT name, email, openid FROM users WHERE openid=\'" + openid + "'")
+        if user:
+            return {'name' : user[0][0], 'email' : user[0][1], 'opnenid' : user[0][2]}
+        else:
+            return None
+
+    def numOfRows(self):
+        return super(UsersTable, self).retriveData("SELECT COUNT(*) FROM " + self.tablename)[0][0]
+
+class WhitelistTable(DatabaseHelper):
+
+    def __init__(self):
+        self.tablename = "whitelist"
+        super(WhitelistTable, self).__init__()
+
+    def addEntry(self, email):
+        return super(WhitelistTable, self).addEntry(self.tablename, "email", "'" + email + "'")
+
+    def getEmails(self):
+        return super(WhitelistTable, self).retriveData("SELECT email FROM " + self.tablename )
+
+    def isInWhitelist(self, email):
+        emails = super(WhitelistTable, self).retriveData("SELECT email FROM " + self.tablename + " WHERE email='" + email + "'" )
+        if len(emails) == 0:
+            return False
+        else:
+            return True
+
 class Database(DatabaseHelper):
 
     def __init__(self):
@@ -139,6 +176,8 @@ class Database(DatabaseHelper):
         self.events = EventsTable()
         self.conditions = ConditionsTable()
         self.actions = ActionsTable()
+        self.users = UsersTable()
+        self.whitelist = WhitelistTable()
         super(Database, self).__init__()
 
     def addTables(self):
