@@ -419,7 +419,7 @@ class TestHouse(unittest.TestCase):
         tupleDB = (('motionSensor', 'getState'), ('light', 'on'), ('light', 'off'), ('light', 'getState'))
         db = MockDatabase(tupleDB)
         h = House(db)
-        self.assertEqual(h.getVersion(), {'supportedTypes' : {'motionSensor': {'states': [{'id' : 1, 'name' : 'motion detected'}, {'id' : 0, 'name' : 'no motion'}], 'supportedBrands': ['arduino', 'wemo', 'lightwaveRF'], 'name': 'Motion Sensor', 'isPassive' : True, 'methods': ['getState']}, 'light' : {'states': [{'method': 'on', 'id': 1, 'name': 'on'}, {'method': 'off', 'id': 0, 'name': 'off'}], 'supportedBrands': ['arduino', 'wemo', 'lightwaveRF'], 'name': 'Light', 'isPassive' : False, 'methods':['on', 'off', 'getState']}}})
+        self.assertEqual(h.getVersion(), {'supportedTypes' : {'motionSensor': {'states': [{'id' : 1, 'name' : 'motion detected'}, {'id' : 0, 'name' : 'no motion'}], 'supportedBrands': ['arduino'], 'name': 'Motion Sensor', 'isPassive' : True, 'methods': ['getState']}, 'light' : {'states': [{'method': 'on', 'id': 1, 'name': 'on'}, {'method': 'off', 'id': 0, 'name': 'off'}], 'supportedBrands': ['arduino'], 'name': 'Light', 'isPassive' : False, 'methods':['on', 'off', 'getState']}}})
 
     def test_getVersionEmpty(self):
         tupleDB = ()
@@ -545,7 +545,7 @@ class TestRoom(unittest.TestCase):
         name = "test"
         r = Room(_id, name)
         r.addItem(1, item)
-        self.assertEqual(r.getStructure(), {'id': 1, 'name': "test", 'items': [{'id': 1, 'name': 'a', 'itemType': 'a', 'brand': 'a', 'ip': '1'}]})
+        self.assertEqual(r.getStructure(), {'id': 1, 'name': "test", 'items': [{'id': 1, 'name': 'a', 'itemType': 'a', 'brand': 'a', 'ip': '1', 'state' : 1}]})
 
     def test_getStrucutre_noItems(self):
         _id = 1
