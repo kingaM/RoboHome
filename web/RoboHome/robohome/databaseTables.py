@@ -44,7 +44,6 @@ class TypesTable(DatabaseHelper):
         query = "SELECT * FROM " + self.database + ".`" + self.tablename + "` WHERE id=" + str(id)
         return super(TypesTable, self).retriveData(query)[0][1]
 
-
 class ItemsTable(DatabaseHelper):
 
     def __init__(self):
@@ -151,6 +150,25 @@ class UsersTable(DatabaseHelper):
     def numOfRows(self):
         return super(UsersTable, self).retriveData("SELECT COUNT(*) FROM " + self.tablename)[0][0]
 
+class WhitelistTable(DatabaseHelper):
+
+    def __init__(self):
+        self.tablename = "whitelist"
+        super(WhitelistTable, self).__init__()
+
+    def addToWhiteList(self, email):
+        return super(WhitelistTable, self).addEntry(self.tablename, "email", "'" + email + "'")
+
+    def getEmails(self):
+        return super(WhitelistTable, self).retriveData("SELECT email FROM " + self.tablename )
+
+    def isInWhitelist(self, email):
+        emails = super(WhitelistTable, self).retriveData("SELECT email FROM " + self.tablename + " WHERE email='" + email + "'" )
+        if len(emails) == 0:
+            return False
+        else:
+            return True
+
 class Database(DatabaseHelper):
 
     def __init__(self):
@@ -162,6 +180,7 @@ class Database(DatabaseHelper):
         self.conditions = ConditionsTable()
         self.actions = ActionsTable()
         self.users = UsersTable()
+        self.whitelist = WhitelistTable()
         super(Database, self).__init__()
 
     def addTables(self):

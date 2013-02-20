@@ -225,7 +225,7 @@ def login():
             return oid.try_login(openid, ask_for=['email', 'fullname'])
     app.logger.info('not-logged-in: '+oid.get_next_url())
     return render_template('html/login.html', next=oid.get_next_url(),
-                           error=oid.fetch_error())                                  
+                           error=oid.fetch_error(), username='TEST')                                  
     
 @oid.after_login
 def create_or_login(resp):
@@ -236,20 +236,21 @@ def create_or_login(resp):
         g.user = user
         app.logger.info('Log in successfully: ')
         return redirect(oid.get_next_url())
-    elif db.users.numOfRows() == 0:
-        name=resp.fullname
-        email=resp.email
+    name=resp.fullname
+    email=resp.email
+    if db.users.numOfRows() == 0:
         db.users.addEntry(name, email, session['openid'])
-        return redirect(oid.get_next_url())
+        db.whitelist.addEntry(email)
+    elif db.whitelist.isInWhitelist(email):
+        db.users.addEntry(name, email, session['openid'])
     else:
-        # For future development, now allows only one user to register
-        print "TOO MANY USERS"
-        return redirect(oid.get_next_url())
+        print "USER NOT IN WHITELIST"
+    return redirect(oid.get_next_url())
 
 @app.route('/logout')
 def logout():
     session.pop('openid', None)
-    return redirect(oid.get_next_url())
+    return render_template('html/logout.html')   
 
 ##################################
 # For illustration purposes only #
