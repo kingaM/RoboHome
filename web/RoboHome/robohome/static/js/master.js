@@ -41,6 +41,8 @@ APP.API = {};
 APP.API.WRAPPER = {};
 APP.API.WRAPPER.STATUS_CODE = 'statusCode';
 APP.API.WRAPPER.CONTENT = 'content';
+
+// /version
 APP.API.VERSION = {};
 APP.API.VERSION.SUPPORTED_TYPES = 'supportedTypes';
 APP.API.VERSION.SUPPORTED_TYPE = {};
@@ -52,28 +54,40 @@ APP.API.VERSION.SUPPORTED_TYPE.STATE = {};
 APP.API.VERSION.SUPPORTED_TYPE.STATE.ID = 'id';
 APP.API.VERSION.SUPPORTED_TYPE.STATE.NAME = 'name';
 APP.API.VERSION.SUPPORTED_TYPE.STATE.METHOD = 'method';
-APP.API.STRUCT = {};
-APP.API.STRUCT.ROOMS = 'rooms';
-APP.API.STRUCT.ROOM = {};
-APP.API.STRUCT.ROOM.ID = 'id';
-APP.API.STRUCT.ROOM.NAME = 'name';
-APP.API.STRUCT.ROOM.ITEMS = 'items';
-APP.API.STRUCT.ROOM.ITEM = {};
-APP.API.STRUCT.ROOM.ITEM.ITEM_TYPE = 'itemType';
-APP.API.STRUCT.ROOM.ITEM.ID = 'id';
-APP.API.STRUCT.ROOM.ITEM.BRAND = 'brand';
-APP.API.STRUCT.ROOM.ITEM.IP = 'ip';
-APP.API.STRUCT.ROOM.ITEM.NAME = 'name';
+
+// /state
 APP.API.STATE = {};
+APP.API.STATE.ROOMS = 'rooms';
+APP.API.STATE.ROOM = {};
+APP.API.STATE.ROOM.ID = 'id';
+APP.API.STATE.ROOM.NAME = 'name';
+APP.API.STATE.ROOM.ITEMS = 'items';
+APP.API.STATE.ROOM.ITEM = {};
+APP.API.STATE.ROOM.ITEM.ITEM_TYPE = 'itemType';
+APP.API.STATE.ROOM.ITEM.ID = 'id';
+APP.API.STATE.ROOM.ITEM.BRAND = 'brand';
+APP.API.STATE.ROOM.ITEM.IP = 'ip';
+APP.API.STATE.ROOM.ITEM.NAME = 'name';
 APP.API.STATE.STATES = 'states';
 APP.API.STATE.STATE = 'state';
 APP.API.STATE.ID = 'id';
-APP.API.ROOMS_ITEMS = {};
-APP.API.ROOMS_ITEMS.BRAND = 'brand';
-APP.API.ROOMS_ITEMS.IP = 'ip';
-APP.API.ROOMS_ITEMS.NAME = 'name';
-APP.API.ROOMS_ITEMS.ITEM_TYPE = 'itemType';
-APP.API.ROOMS_ITEMS.ITEM_ID = 'itemId';
+
+// /rooms
+APP.API.ROOMS = {};
+APP.API.ROOMS.NAME = 'name';
+APP.API.ROOMS.ID = 'id';
+
+// /rooms/roomId
+APP.API.ROOMID = {};
+APP.API.ROOMID.ID = 'id';
+
+// /rooms/roomId/itemId
+APP.API.ITEMS = {};
+APP.API.ITEMS.BRAND = 'brand';
+APP.API.ITEMS.IP = 'ip';
+APP.API.ITEMS.NAME = 'name';
+APP.API.ITEMS.ITEM_TYPE = 'itemType';
+APP.API.ITEMS.ITEM_ID = 'itemId';
 
 // RESTful API URL specification
 // Remember to specify the trailing slash so Flask does not have to redirect
@@ -347,7 +361,8 @@ APP.ajax = function(requestType, url, payload, callback, error) {
 
 /**
  * @method APP.ajax_get_structure
- * @param {Function} callback Callback function to execute after response is received
+ * @param {Function} callback   Callback function to execute after response is received
+ * @param {Function} error      Function to execute if AJAX request fails
  * Retrieves the latest house structure from the server
  */
 APP.ajax_get_state = function(callback, error) {
@@ -363,7 +378,7 @@ APP.ajax_get_state = function(callback, error) {
 
 /**
  * @method APP.ajax_get_version
- * @param {Function} callback Callback function to execute after response is received
+ * @param {Function} callback   Callback function to execute after response is received
  * @param {Function} error      Function to execute if AJAX request fails
  * Retrieves version information and all information that's supposed to be cached
  */
@@ -379,19 +394,53 @@ APP.ajax_get_version = function(callback, error) {
 }
 
 /**
- * @method APP.ajax_delete_rooms_roomId_items_itemId
+ * @method APP.ajax_post_rooms
+ * @param {String} roomName     Name of room
+ * @param {Function} callback   Callback function to execute after response is received
+ * @param {Function} error      Function to execute if AJAX request fails
+ * Adds a new room
+ */
+APP.ajax_post_rooms = function(roomName, callback, error) {
+    APP.ajax('POST', APP.URL.ROOMS + '?' + 
+    APP.API.ROOMS.NAME + '=' + roomName,
+    '',
+    callback,
+    error
+    );
+};
+
+/**
+ * @method APP.ajax_delete_rooms_roomId
+ * @param {int} roomId RoomId
+ * @param {Function} callback Callback function to execute after response is received
+ * @param {Function} error    Function to execute if AJAX request fails
+ */
+APP.ajax_delete_rooms_roomId = function(roomId, callback, error) {
+    APP.ajax('DELETE', APP.URL.ROOMS_ROOMID(roomId),
+    '',
+    callback,
+    error
+    );
+};
+
+/**
+ * @method APP.ajax_delete_rooms_roomId_items
  * @param {int} roomId Room ID
+ * @param {String} targetBrand Brand of item
+ * @param {String} Static IPv4 address of item
+ * @param {String} targetName Name of item
+ * @param {String} targetType Type of item
  * @param {Function} callback Callback function to execute after response is received
  * @param {Function} error      Function to execute if AJAX request fails
  * Add new item to room
  */
-APP.ajax_post_rooms_roomId_items = function(roomId, payload, targetBrand, targetIP, targetName, targetType, callback, error) {
+APP.ajax_post_rooms_roomId_items = function(roomId, itemBrand, itemIP, itemName, itemType, callback, error) {
     APP.ajax('POST', APP.URL.ROOMS_ROOMID_ITEMS(roomId) + '?' + 
-        APP.API.ROOMS_ITEMS.BRAND + '=' + targetBrand + '&' + 
-        APP.API.ROOMS_ITEMS.IP + '=' + targetIP + '&' + 
-        APP.API.ROOMS_ITEMS.NAME + '=' + targetName + '&' + 
-        APP.API.ROOMS_ITEMS.ITEM_TYPE + '=' + targetType
-        , payload,
+        APP.API.ITEMS.BRAND + '=' + itemBrand + '&' + 
+        APP.API.ITEMS.IP + '=' + itemIP + '&' + 
+        APP.API.ITEMS.NAME + '=' + itemName + '&' + 
+        APP.API.ITEMS.ITEM_TYPE + '=' + itemType,
+        '',
         callback,
         error
     );
@@ -405,8 +454,8 @@ APP.ajax_post_rooms_roomId_items = function(roomId, payload, targetBrand, target
  * @param {Function} error      Function to execute if AJAX request fails
  * Deletes specified item in room
  */
-APP.ajax_delete_rooms_roomId_items_itemId = function(roomId, itemId, payload, callback, error) {
-    APP.ajax('DELETE', APP.URL.ROOMS_ROOMID_ITEMS_ITEMID(roomId, itemId), payload,
+APP.ajax_delete_rooms_roomId_items_itemId = function(roomId, itemId, callback, error) {
+    APP.ajax('DELETE', APP.URL.ROOMS_ROOMID_ITEMS_ITEMID(roomId, itemId), '',
         callback,
         error
     );
@@ -421,8 +470,8 @@ APP.ajax_delete_rooms_roomId_items_itemId = function(roomId, itemId, payload, ca
  * @param {Function} error      Function to execute if AJAX request fails
  * Updates the specified item in the room with the new state
  */
-APP.ajax_put_rooms_roomId_items_itemId_cmd = function(roomId, itemId, cmd, payload, callback, error) {
-    APP.ajax('PUT', APP.URL.ROOMS_ROOMID_ITEMS_ITEMID_CMD(roomId, itemId, cmd), payload,
+APP.ajax_put_rooms_roomId_items_itemId_cmd = function(roomId, itemId, cmd, callback, error) {
+    APP.ajax('PUT', APP.URL.ROOMS_ROOMID_ITEMS_ITEMID_CMD(roomId, itemId, cmd), '',
         function(json) {
             callback();
         },
@@ -655,7 +704,7 @@ APP.Stage.prototype.setOnShow = function(func) {
     var self = this;
     this.onShow = function() {
         console.log(self.stageId + ' onShow() called');
-        console.trace(this);
+        // console.trace(this);
         self.construct(); // default behavior
         func();
     }
@@ -673,7 +722,7 @@ APP.Stage.prototype.setOnHide = function(func) {
     var self = this;
     this.onHide = function() {
         console.log(self.stageId + ' onHide() called');
-        console.trace(this);
+        // console.trace(this);
         self.tearDown(); // default behavior
         func();
     }
@@ -691,7 +740,7 @@ APP.Stage.prototype.setConstruct = function(func) {
     var self = this;
     this.construct = function() {
         console.log(self.stageId + ' construct() called');
-        console.trace(this);
+        // console.trace(this);
         func();
         self.contextMenu.construct();
     }
@@ -709,7 +758,7 @@ APP.Stage.prototype.setTearDown = function(func) {
     var self = this;
     this.tearDown = function() {
         console.log(self.stageId + ' tearDown() called');
-        console.trace(this);
+        // console.trace(this);
         self.getContext().html('');
         self.contextMenu.tearDown();
         self.poller.stopPolling();
@@ -729,7 +778,7 @@ APP.Stage.prototype.setUpdate = function(func) {
     var self = this;
     this.update = function() {
         console.log(self.stageId + ' update() called');
-        console.trace(this);
+        // console.trace(this);
         func();
     }
 };
@@ -746,7 +795,7 @@ APP.Stage.prototype.setUpdateError = function(func) {
     var self = this;
     this.updateError = function() {
         console.log(self.stageId + ' updateError() called');
-        console.trace(this);
+        // console.trace(this);
         func();
     }
 }
@@ -801,14 +850,14 @@ APP.ItemTypeDisplay.prototype.construct = function() {
             itemPanels = [];
         
         for(var i = 0; i < items.length; i++) {
-            if(items[i][APP.API.STRUCT.ROOM.ITEM.ITEM_TYPE] === self.itemType) {
+            if(items[i][APP.API.STATE.ROOM.ITEM.ITEM_TYPE] === self.itemType) {
                 itemPanel = $('<div></div>').attr({
                     class: 'entity-display ' + APP.DOM_HOOK.ENTITY.ITEM,
-                    'data-id': items[i][APP.API.STRUCT.ROOM.ITEM.ID], // currently used
-                    'data-ip': items[i][APP.API.STRUCT.ROOM.ITEM.IP],
-                    'data-name': items[i][APP.API.STRUCT.ROOM.ITEM.NAME],
-                    'data-brand': items[i][APP.API.STRUCT.ROOM.ITEM.BRAND],
-                    'data-itemtype': items[i][APP.API.STRUCT.ROOM.ITEM.ITEM_TYPE] // currently used
+                    'data-id': items[i][APP.API.STATE.ROOM.ITEM.ID], // currently used
+                    'data-ip': items[i][APP.API.STATE.ROOM.ITEM.IP],
+                    'data-name': items[i][APP.API.STATE.ROOM.ITEM.NAME],
+                    'data-brand': items[i][APP.API.STATE.ROOM.ITEM.BRAND],
+                    'data-itemtype': items[i][APP.API.STATE.ROOM.ITEM.ITEM_TYPE] // currently used
                 });
                 
                 itemPanel.click(function() {
@@ -820,7 +869,7 @@ APP.ItemTypeDisplay.prototype.construct = function() {
                         $(this).addClass(APP.DOM_HOOK.UPDATING);
                         function getNextState(itemId) {
                             for(var j = 0; j < self.room.items.length; j++) {
-                                if(self.room.items[j][APP.API.STRUCT.ROOM.ITEM.ID] === parseInt(itemId)) {
+                                if(self.room.items[j][APP.API.STATE.ROOM.ITEM.ID] === parseInt(itemId)) {
                                     for(var k = 0; k < states.length; k++) {
                                         if(self.room.items[j][APP.API.STATE.STATE] === states[k][APP.API.VERSION.SUPPORTED_TYPE.STATE.ID]) {
                                             return APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][itemType][APP.API.VERSION.SUPPORTED_TYPE.STATES][(k + 1) % states.length][APP.API.VERSION.SUPPORTED_TYPE.STATE.METHOD];
@@ -834,7 +883,6 @@ APP.ItemTypeDisplay.prototype.construct = function() {
                             self.stage.data.roomId,
                             itemId,
                             getNextState(itemId),
-                            '',
                             function() {
                                 self.update();
                             }
@@ -843,8 +891,8 @@ APP.ItemTypeDisplay.prototype.construct = function() {
                 });
                 
                 infoBar = $('<div></div>').addClass('info-bar');
-                infoBar.append($('<h1>' + items[i][APP.API.STRUCT.ROOM.ITEM.NAME] + '</h1>').addClass('entity-name'));
-                infoBar.append($('<span>' + items[i][APP.API.STRUCT.ROOM.ITEM.IP] + '</span>').addClass('entity-ip'));
+                infoBar.append($('<h1>' + items[i][APP.API.STATE.ROOM.ITEM.NAME] + '</h1>').addClass('entity-name'));
+                infoBar.append($('<span>' + items[i][APP.API.STATE.ROOM.ITEM.IP] + '</span>').addClass('entity-ip'));
                 itemPanel.append(infoBar);
                 
                 attachmentsSelf = $('<div></div>').addClass('attachments self');
@@ -861,10 +909,6 @@ APP.ItemTypeDisplay.prototype.construct = function() {
         infoBar,
         itemPanels,
         displayedName;
-    
-    console.log('itemtypedisplay this.room');
-    console.log(this.room);
-    console.log(this.itemType);
     
     itemPanels = constructItemPanels(this.room.items);
     itemTypePanel = $('<div></div>').attr({
@@ -894,25 +938,25 @@ APP.ItemTypeDisplay.prototype.construct = function() {
  * Updates the representation of this object on the stage
  */
 APP.ItemTypeDisplay.prototype.update = function(room) {
-    var roomId = this.room[APP.API.STRUCT.ROOM.ID],
+    var roomId = this.room[APP.API.STATE.ROOM.ID],
         stateList = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][this.itemType][APP.API.VERSION.SUPPORTED_TYPE.STATES],
         itemPanel,
         statePanel;
     
-    for (var i = 0; i < APP.data.houseStructure[APP.API.STRUCT.ROOMS].length; i++) {
-        if(APP.data.houseStructure[APP.API.STRUCT.ROOMS][i][APP.API.STRUCT.ROOM.ID] === this.room[APP.API.STRUCT.ROOM.ID]) {
-            this.room = APP.data.houseStructure[APP.API.STRUCT.ROOMS][i];
+    for (var i = 0; i < APP.data.houseStructure[APP.API.STATE.ROOMS].length; i++) {
+        if(APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ID] === this.room[APP.API.STATE.ROOM.ID]) {
+            this.room = APP.data.houseStructure[APP.API.STATE.ROOMS][i];
         }
     }
     
     // for every item of type
     for(var i = 0; i < this.room.items.length; i++) {
-        if(this.room.items[i][APP.API.STRUCT.ROOM.ITEM.ITEM_TYPE] === this.itemType) {
+        if(this.room.items[i][APP.API.STATE.ROOM.ITEM.ITEM_TYPE] === this.itemType) {
             // update UI
             for(var k = 0; k < stateList.length; k++) {
                 if(stateList[k][APP.API.VERSION.SUPPORTED_TYPE.STATE.ID] === this.room.items[i].state) {
-                    itemPanel = $('.entity-display.item[data-id = ' + this.room.items[i][APP.API.STRUCT.ROOM.ITEM.ID] + ']');
-                    statePanel = $('.entity-display.item[data-id = ' + this.room.items[i][APP.API.STRUCT.ROOM.ITEM.ID] + '] .status');
+                    itemPanel = $('.entity-display.item[data-id = ' + this.room.items[i][APP.API.STATE.ROOM.ITEM.ID] + ']');
+                    statePanel = $('.entity-display.item[data-id = ' + this.room.items[i][APP.API.STATE.ROOM.ITEM.ID] + '] .status');
                     itemPanel.removeClass(APP.DOM_HOOK.CONNECTION_ERROR + ' ' + APP.DOM_HOOK.UPDATING + ' ' + APP.DOM_HOOK.UPDATING);
                     statePanel.html(stateList[k][APP.API.VERSION.SUPPORTED_TYPE.STATE.NAME]);
                     break;
@@ -928,18 +972,18 @@ APP.ItemTypeDisplay.prototype.update = function(room) {
  * Updates the representation to show that an error has occured in fetching the latest state data
  */
 APP.ItemTypeDisplay.prototype.updateError = function() {
-    var roomId = this.room[APP.API.STRUCT.ROOM.ID],
+    var roomId = this.room[APP.API.STATE.ROOM.ID],
         stateList = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][this.itemType][APP.API.VERSION.SUPPORTED_TYPE.STATES],
         itemPanel,
         statePanel;
     
     for(var i = 0; i < this.room.items.length; i++) {
-        if(this.room.items[i][APP.API.STRUCT.ROOM.ITEM.ITEM_TYPE] === this.itemType) {
+        if(this.room.items[i][APP.API.STATE.ROOM.ITEM.ITEM_TYPE] === this.itemType) {
             if(APP.data.houseStructure) { // if client has old state data
                 for(var k = 0; k < stateList.length; k++) {
                     if(stateList[k][APP.API.VERSION.SUPPORTED_TYPE.STATE.ID] === this.room.items[i].state) {
-                        itemPanel = $('.entity-display.item[data-id = ' + this.room.items[i][APP.API.STRUCT.ROOM.ITEM.ID] + ']');
-                        statePanel = $('.entity-display.item[data-id = ' + this.room.items[i][APP.API.STRUCT.ROOM.ITEM.ID] + '] .status');
+                        itemPanel = $('.entity-display.item[data-id = ' + this.room.items[i][APP.API.STATE.ROOM.ITEM.ID] + ']');
+                        statePanel = $('.entity-display.item[data-id = ' + this.room.items[i][APP.API.STATE.ROOM.ITEM.ID] + '] .status');
                         itemPanel.addClass(APP.DOM_HOOK.CONNECTION_ERROR);
                         statePanel.html(stateList[k][APP.API.VERSION.SUPPORTED_TYPE.STATE.NAME]);
                         break;
@@ -1191,22 +1235,22 @@ APP.StageManager = function() {
         APP.ajax_get_state(function() {
             
             // fetch the latest list of rooms
-            var rooms = APP.data.houseStructure[APP.API.STRUCT.ROOMS],
+            var rooms = APP.data.houseStructure[APP.API.STATE.ROOMS],
                 __roomNames = [],
                 __roomIds = [];
             
             // save a static copy of ids and names from that list
             for(var i = 0; i < rooms.length; i++) {
-                __roomIds.push(rooms[i][APP.API.STRUCT.ROOM.ID]);
-                __roomNames.push(rooms[i][APP.API.STRUCT.ROOM.NAME]);
+                __roomIds.push(rooms[i][APP.API.STATE.ROOM.ID]);
+                __roomNames.push(rooms[i][APP.API.STATE.ROOM.NAME]);
                 __room = rooms[i];
             }
             
             // this function fetches the latest data of the given room
             function getRoom(roomId) {
-                for(var j = 0; j < APP.data.houseStructure[APP.API.STRUCT.ROOMS].length; j++) {
-                    if(APP.data.houseStructure[APP.API.STRUCT.ROOMS][j][[APP.API.STRUCT.ROOM.ID]] === roomId) {
-                        return APP.data.houseStructure[APP.API.STRUCT.ROOMS][j];
+                for(var j = 0; j < APP.data.houseStructure[APP.API.STATE.ROOMS].length; j++) {
+                    if(APP.data.houseStructure[APP.API.STATE.ROOMS][j][[APP.API.STATE.ROOM.ID]] === roomId) {
+                        return APP.data.houseStructure[APP.API.STATE.ROOMS][j];
                     }
                 }
             }
@@ -1358,8 +1402,8 @@ APP.StageManager = function() {
                                 // regex from http://stackoverflow.com/questions/10006459/regular-expression-for-ip-address-validation
                                 if(/^(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))$/.test(targetIP) === true) {
                                     for(var j = 0; j < rooms.length; j++) {
-                                        for(var k = 0; k < rooms[j][APP.API.STRUCT.ROOM.ITEMS].length; k++) {
-                                            if(targetIP === rooms[j][APP.API.STRUCT.ROOM.ITEMS][k][APP.API.STRUCT.ROOM.ITEM.IP]) {
+                                        for(var k = 0; k < rooms[j][APP.API.STATE.ROOM.ITEMS].length; k++) {
+                                            if(targetIP === rooms[j][APP.API.STATE.ROOM.ITEMS][k][APP.API.STATE.ROOM.ITEM.IP]) {
                                                 duplicateIP = true;
                                                 roomIndex = j;
                                                 itemIndex = k;
@@ -1374,37 +1418,24 @@ APP.StageManager = function() {
                                         targetOption = $('#' + addSelectSelector).find('option[value=' + targetItemId + ']');
                                         targetBrand = targetOption.attr('data-brand');
                                         targetType = targetOption.attr('data-type');
-                                        newItem[APP.API.ROOMS_ITEMS.BRAND] = targetBrand;
-                                        newItem[APP.API.ROOMS_ITEMS.IP] = targetIP;
-                                        newItem[APP.API.ROOMS_ITEMS.NAME] = targetName;
-                                        newItem[APP.API.ROOMS_ITEMS.ITEM_TYPE] = targetType;
+                                        newItem[APP.API.ITEMS.BRAND] = targetBrand;
+                                        newItem[APP.API.ITEMS.IP] = targetIP;
+                                        newItem[APP.API.ITEMS.NAME] = targetName;
+                                        newItem[APP.API.ITEMS.ITEM_TYPE] = targetType;
                                         
                                         self.parent().addClass(APP.DOM_HOOK.UPDATING);
                                         
                                         // AJAX call
-                                        APP.ajax_post_rooms_roomId_items(roomId, '', targetBrand, targetIP, targetName, targetType,
+                                        APP.ajax_post_rooms_roomId_items(roomId, targetBrand, targetIP, targetName, targetType,
                                             function(json) {
                                                 var obj = APP.unpackToPayload(json),
-                                                    newItemId = obj[APP.API.ROOMS_ITEMS.ITEM_ID],
+                                                    newItemId = obj[APP.API.ITEMS.ITEM_ID],
                                                     hasSameType = false;
                                                 
                                                 // AJAX call
                                                 APP.ajax_get_state(
                                                     function() {
-                                                        self.parent().removeClass(APP.DOM_HOOK.UPDATING);
-                                                        for(type in stage.data.itemTypes) {
-                                                            if(stage.data.itemTypes.hasOwnProperty(type) && targetType === type) {
-                                                                hasSameType = true;
-                                                                break;
-                                                            }
-                                                        }
-                                                        if(hasSameType) {
-                                                            newItem[APP.API.ROOMS_ITEMS.ID] = newItemId;
-                                                        } else {
-                                                            stage.data.itemTypes[targetType] = [];
-                                                        }
-                                                        stage.data.itemTypes[targetType].push(newItem);
-                                                        
+                                                        self.parent().removeClass(APP.DOM_HOOK.UPDATING);                                                        
                                                         stage.tearDown();
                                                         stage.construct();
                                                     },
@@ -1418,9 +1449,9 @@ APP.StageManager = function() {
                                             }
                                         );
                                     } else {
-                                        console.log(rooms[roomIndex][APP.API.STRUCT.ROOM.ITEMS][itemIndex][APP.API.STRUCT.ROOM.ITEM.NAME]);
-                                        console.log(rooms[roomIndex][APP.API.STRUCT.ROOM.NAME]);
-                                        addWarningIP.html('IP specified is already in use by existing item (' + rooms[roomIndex][APP.API.STRUCT.ROOM.ITEMS][itemIndex][APP.API.STRUCT.ROOM.ITEM.NAME] + ') in the room ' + rooms[roomIndex][APP.API.STRUCT.ROOM.NAME] + '.');
+                                        console.log(rooms[roomIndex][APP.API.STATE.ROOM.ITEMS][itemIndex][APP.API.STATE.ROOM.ITEM.NAME]);
+                                        console.log(rooms[roomIndex][APP.API.STATE.ROOM.NAME]);
+                                        addWarningIP.html('IP specified is already in use by existing item (' + rooms[roomIndex][APP.API.STATE.ROOM.ITEMS][itemIndex][APP.API.STATE.ROOM.ITEM.NAME] + ') in the room ' + rooms[roomIndex][APP.API.STATE.ROOM.NAME] + '.');
                                     }
                                 } else {
                                     addWarningIP.html('Invalid IPv4 address.');
@@ -1443,12 +1474,12 @@ APP.StageManager = function() {
                                 if(itemTypes.hasOwnProperty(itemType)) {
                                     optgroup = $('<optgroup></optgroup>').attr({label: supportedTypes[itemType][APP.API.VERSION.SUPPORTED_TYPE.STATE.NAME]});
                                     for(var j = 0; j < roomItems.length; j++) {
-                                        if(roomItems[j][APP.API.STRUCT.ROOM.ITEM.ITEM_TYPE] === itemType) {
-                                            optgroup.append($('<option>' + roomItems[j][APP.API.STRUCT.ROOM.ITEM.NAME] + ' (' + roomItems[j][APP.API.STRUCT.ROOM.ITEM.IP] + ')' + '</option>').attr({
-                                                value: roomItems[j][APP.API.STRUCT.ROOM.ITEM.ID],
-                                                'data-id': roomItems[j][APP.API.STRUCT.ROOM.ITEM.ID],
-                                                'data-type': roomItems[j][APP.API.STRUCT.ROOM.ITEM.ITEM_TYPE],
-                                                'data-name': roomItems[j][APP.API.STRUCT.ROOM.ITEM.NAME]
+                                        if(roomItems[j][APP.API.STATE.ROOM.ITEM.ITEM_TYPE] === itemType) {
+                                            optgroup.append($('<option>' + roomItems[j][APP.API.STATE.ROOM.ITEM.NAME] + ' (' + roomItems[j][APP.API.STATE.ROOM.ITEM.IP] + ')' + '</option>').attr({
+                                                value: roomItems[j][APP.API.STATE.ROOM.ITEM.ID],
+                                                'data-id': roomItems[j][APP.API.STATE.ROOM.ITEM.ID],
+                                                'data-type': roomItems[j][APP.API.STATE.ROOM.ITEM.ITEM_TYPE],
+                                                'data-name': roomItems[j][APP.API.STATE.ROOM.ITEM.NAME]
                                                 })
                                             );
                                         }
@@ -1477,24 +1508,11 @@ APP.StageManager = function() {
                                     removeWarning.html('');
                                     self.parent().addClass(APP.DOM_HOOK.UPDATING);
                                     // AJAX call
-                                    APP.ajax_delete_rooms_roomId_items_itemId(roomId, targetItemId, '',
+                                    APP.ajax_delete_rooms_roomId_items_itemId(roomId, targetItemId,
                                         function() {
                                             // AJAX call
                                             APP.ajax_get_state(
                                                 function() {
-                                                    // if only one item of type
-                                                    if(types[targetType].length === 1) {
-                                                        delete types[targetType];
-                                                    } else {
-                                                    // if multiple items of type
-                                                        for(var k = 0; k < types[targetType].length; k++) {
-                                                            if(types[targetType][k][APP.API.STRUCT.ROOM.ITEM.ID] === targetItemId) {
-                                                                types[targetType].splice(k, 1);
-                                                                break;
-                                                            }
-                                                        }
-                                                    }
-                                                    console.log(stage.data.itemTypes);
                                                     stage.tearDown();
                                                     stage.construct();
                                                 },
@@ -1520,31 +1538,26 @@ APP.StageManager = function() {
                         wrapper.append(content);
                         content.append($('<h1></h1>').html('Room manager'));
                         content.append(constructRoomsPanel());
-                        content.append(constructItemsPanel(getRoom(roomId)[APP.API.STRUCT.ROOM.ITEMS]));
+                        content.append(constructItemsPanel(getRoom(roomId)[APP.API.STATE.ROOM.ITEMS]));
                         stage.contextMenu.getContext().append(wrapper);
                     });
                     stage.setConstruct(function() {
                         var itemTypes,
-                            items = getRoom(roomId)[APP.API.STRUCT.ROOM.ITEMS],
+                            items = getRoom(roomId)[APP.API.STATE.ROOM.ITEMS],
                             item,
                             itemType;
                         stage.getContext().append($('<div></div>').attr({id: 'context-bar'}));
-                        
-                        if(stage.data.itemTypes === undefined) {
-                            stage.data.itemTypes = {};
-                            itemTypes = stage.data.itemTypes;
-                            for(var j = 0; j < items.length; j++) {
-                                item = items[j];
-                                itemType = item[APP.API.STRUCT.ROOM.ITEM.ITEM_TYPE];
-                                if(itemTypes[itemType] === undefined) {
-                                    itemTypes[itemType] = [];
-                                }
-                                itemTypes[itemType].push(item);
+
+                        stage.data.itemTypes = {};
+                        itemTypes = stage.data.itemTypes;
+                        for(var j = 0; j < items.length; j++) {
+                            item = items[j];
+                            itemType = item[APP.API.STATE.ROOM.ITEM.ITEM_TYPE];
+                            if(itemTypes[itemType] === undefined) {
+                                itemTypes[itemType] = [];
                             }
-                        } else {
-                            itemTypes = stage.data.itemTypes;
-                        }
-                        
+                            itemTypes[itemType].push(item);
+                        }                        
                         stage.data.roomId = roomId;
                         stage.data.itemTypeDisplays = {};
                         
@@ -1554,7 +1567,6 @@ APP.StageManager = function() {
                                 stage.data.itemTypeDisplays[type].construct();
                             }
                         }
-                        console.log(stage.data.itemTypeDisplays);
                         stage.poller.startPolling();
                     });
                     stage.setTearDown(function() {
