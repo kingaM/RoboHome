@@ -1123,113 +1123,538 @@ APP.StageManager = function() {
         activeStageId = null,
         stages = new APP.Map(),
         
-        // private methods
-        setActiveStage = function(stageId) {
-            activeStageId = stageId;
-        },
+    // private methods
+    setActiveStage = function(stageId) {
+        activeStageId = stageId;
+    };
+    
+    // public methods
+    /**
+     * @for APP.StageManager
+     * @method addStage
+     * @param {APP.Stage} stage Stage object to be managed by this manager
+     * @return {String}         Input stage element id, for convenience
+     * If the new stage shares an existing stageId, it will replace the old stage
+     */
+    this.addStage = function(stage) {
+        var self = this;
+        // construct menu buttons
+        if(document.getElementById(stage.buttonId) === null) {
+            button = $('<li></li>').append($('<a>' + stage.buttonText + '</a>').attr({id: stage.buttonId, href: '#'}));
+            $('#' + stage.menuId).append(button);
+        }
         
-        // public methods
-        addStage = function(stage) {
-            // construct menu buttons
-            if(document.getElementById(stage.buttonId) === null) {
-                button = $('<li></li>').append($('<a>' + stage.buttonText + '</a>').attr({id: stage.buttonId, href: '#'}));
-                $('#' + stage.menuId).append(button);
-            }
-            
-            // construct stage template
-            if(document.getElementById(stage.stageId) === null) {
-                var stageElement = $('<div></div>').attr({id: stage.stageId, class: 'stage'});
-                stageElement.append($('<div></div>').addClass('stage-content ' + stage.colorClass));
-                $(stageContainerSelector).append(stageElement);
-            }
-            
-            // link
-            $('#' + stage.buttonId).click(function() {
-                var targetButton = $(this);
-                // toggle clicked button
-                targetButton.toggleClass('selected');
-                // toggle sibling buttons
-                $(primaryButtonSelector).not(targetButton).removeClass('selected');
-                $(secondaryButtonSelector).not(targetButton).removeClass('selected');
-                // toggle stages
-                toggleStage(stage.stageId);
-            });
-            
-            // register stage
-            stages.put(stage.stageId, stage);
-            return stage.stageId;
-        },
+        // construct stage template
+        if(document.getElementById(stage.stageId) === null) {
+            var stageElement = $('<div></div>').attr({id: stage.stageId, class: 'stage'});
+            stageElement.append($('<div></div>').addClass('stage-content ' + stage.colorClass));
+            $(stageContainerSelector).append(stageElement);
+        }
         
-        toggleStage = function(stageId) {
-            
-            var targetStage,
-                activeStage;
-            
-            function hideActiveStage() {
-                var activeStage = stages.get(activeStageId);
-                activeStageId = null;
-                $('#' + activeStage.stageId).removeClass('active');
-                activeStage.onHide();
+        // link
+        $('#' + stage.buttonId).click(function() {
+            var targetButton = $(this);
+            // toggle clicked button
+            targetButton.toggleClass('selected');
+            // toggle sibling buttons
+            $(primaryButtonSelector).not(targetButton).removeClass('selected');
+            $(secondaryButtonSelector).not(targetButton).removeClass('selected');
+            // toggle stages
+            self.toggleStage(stage.stageId);
+        });
+        
+        // register stage
+        stages.put(stage.stageId, stage);
+        return stage.stageId;
+    },
+    
+    /**
+     * @for APP.StageManager
+     * @method toggleStage
+     * @param {String | null} stageId Element id of stage to toggle on/off, or null to toggle off regardless of current active stage
+     */
+    this.toggleStage = function(stageId) {
+        
+        var targetStage,
+            activeStage;
+        
+        function hideActiveStage() {
+            var activeStage = stages.get(activeStageId);
+            activeStageId = null;
+            $('#' + activeStage.stageId).removeClass('active');
+            activeStage.onHide();
+        }
+        
+        function showNewStage(stageId) {
+            var newStage = stages.get(stageId);
+            activeStageId = newStage.stageId;
+            $('#' + newStage.stageId).addClass('active');
+            newStage.onShow();
+        }
+        
+        if(stageId === null) {
+            if(activeStageId !== null) {
+                hideActiveStage();
             }
-            
-            function showNewStage(stageId) {
-                var newStage = stages.get(stageId);
-                activeStageId = newStage.stageId;
-                $('#' + newStage.stageId).addClass('active');
-                newStage.onShow();
-            }
-            
-            if(stageId === null) {
-                if(activeStageId !== null) {
+        } else {
+            if(activeStageId === null) { // no active stage
+                showNewStage(stageId);
+            } else { // has active stage
+                if(activeStageId === stageId) {
                     hideActiveStage();
-                }
-            } else {
-                if(activeStageId === null) { // no active stage
+                } else {
+                    hideActiveStage();
                     showNewStage(stageId);
-                } else { // has active stage
-                    if(activeStageId === stageId) {
-                        hideActiveStage();
-                    } else {
-                        hideActiveStage();
-                        showNewStage(stageId);
+                }
+            }
+        }
+        
+    },
+    
+    /**
+     *
+     */
+    this.setStage_Home = function() {
+        var stageId = this.addStage(new APP.Stage(null, 'button-home', '', 'stage-home')),
+            stage = stages.get(stageId);
+        
+        stage.setOnShow(function() {
+            // default
+        });
+        stage.setOnHide(function() {
+            // default
+        });
+        stage.setMenuConstruct(function() {
+            // default
+        });
+        stage.setConstruct(function() {
+            // default
+        });
+        stage.setTearDown(function() {
+            // default
+        });
+        stage.setUpdate(function() {
+            // default
+        });
+        stage.setUpdateError(function() {
+            // default
+        });
+        stage.setPollFunction(1000, function() {
+            
+        });
+    }
+    
+    /**
+     *
+     */
+    this.setStage_Room = function(roomId, roomName) {
+        var func = this,
+            safeRoomName = roomName.replace(/\s/, '-'),
+            stageId = this.addStage(new APP.Stage('menu-control',
+                'button-control-' + safeRoomName, roomName, 'stage-control-' + safeRoomName)),
+            stage = stages.get(stageId);
+            
+        // this function fetches the latest data of the given room
+        function getRoom(roomId) {
+            for(var j = 0; j < APP.data.houseStructure[APP.API.STATE.ROOMS].length; j++) {
+                if(APP.data.houseStructure[APP.API.STATE.ROOMS][j][[APP.API.STATE.ROOM.ID]] === roomId) {
+                    return APP.data.houseStructure[APP.API.STATE.ROOMS][j];
+                }
+            }
+        }
+        
+        stage.setOnShow(function() {
+            // default
+        });
+        stage.setOnHide(function() {
+            // default
+        });
+        stage.setMenuConstruct(function() {
+            var wrapper = $('<div></div>').addClass('context-menu-inner-wrapper'),
+                content = $('<div></div>').addClass('context-menu-content');
+            
+            function constructRoomsPanel() {
+                var roomsPanel = $('<div></div>'),
+                    addPanel,
+                    addInputSelector = 'context-add-room-name-input',
+                    addButton,
+                    removePanel,
+                    removeInputSelector = 'context-remove-room-name-input',
+                    removeButton,
+                    container;
+                
+                // add
+                addPanel = $('<fieldset></fieldset');
+                addPanel.append($('<legend></legend>').html('Add new room'));
+                container = $('<div></div>');
+                container.append($('<input></input>').attr({
+                    id: addInputSelector,
+                    type: 'text',
+                    placeholder: 'Room name'})
+                );
+                addButton = $('<a href="#">Add</a>').attr({id: 'context-add-room-button', class: 'button'});
+                addButton.click(function() {
+                    var addRoomName = $('#' + addInputSelector).val();
+                    APP.ajax_post_rooms(addRoomName,
+                        function(json) {
+                            var obj = APP.unpackToPayload(json),
+                                roomId = obj[APP.API.ROOMID.ID];
+                            console.log(func);
+                            func(roomId, roomName);
+                            stage.tearDown();
+                            stage.construct();
+                        },
+                        function() {
+                            // do nothing
+                        }
+                    );
+                });
+                container.append(addButton);
+                addPanel.append(container);
+                roomsPanel.append(addPanel);
+                
+                // remove
+                removePanel = $('<fieldset></fieldset>');
+                removePanel.append($('<legend></legend>').html('Remove this room ('+ roomName + ')'));
+                container = $('<div></div>');
+                container.append($('<input></input>').attr({
+                    id: removeInputSelector,
+                    type: 'text',
+                    placeholder: 'Confirm this room\'s name'})
+                );
+                removeButton = $('<a href="#">Remove</a>').attr({id: 'context-remove-room-button', class: 'button'});
+                removeButton.click(function() {
+                    
+                });
+                container.append(removeButton);
+                removePanel.append(container);
+                roomsPanel.append(removePanel);
+                return roomsPanel;
+            }
+            
+            function constructItemsPanel(roomItems) {
+                var supportedTypes = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES],
+                    supportedBrands,
+                    itemsPanel = $('<div></div>'),
+                    addPanel,
+                    addInputNameSelector = 'context-add-item-name-input',
+                    addInputIPSelector = 'context-add-item-ip-input',
+                    addSelectSelector = 'context-add-item-select',
+                    addSelect,
+                    addButton,
+                    addWarningName,
+                    addWarningIP,
+                    internalAddItemId, // value used to locate type + brand
+                    removePanel,
+                    removeSelectSelector = 'context-remove-item-select',
+                    removeSelect,
+                    removeInputSelector = 'context-remove-item-name-input',
+                    removeButton,
+                    removeWarning,
+                    itemTypes,
+                    optgroup,
+                    container;
+                    
+                itemsPanel.append($('<h2></h2>').html('Items'));
+                
+                // add
+                addPanel = $('<fieldset></fieldset>');
+                addPanel.append($('<legend></legend>').html('Add'));
+                container = $('<div></div>');
+                addWarningName = $('<div></div>').addClass('error-message-display');
+                container.append(addWarningName);
+                addWarningIP = $('<div></div>').addClass('error-message-display');
+                container.append(addWarningIP);
+                container.append($('<input></input>').attr({
+                    id: addInputNameSelector,
+                    type: 'text',
+                    placeholder: 'Item\'s name'})
+                );
+                container.append($('<input></input>').attr({
+                    id: addInputIPSelector,
+                    type: 'text',
+                    placeholder: 'Item\'s static IPv4 address'})
+                );
+                addSelect = $('<select></select>').attr({id: addSelectSelector});
+                internalAddItemId = 0;
+                for(var type in supportedTypes) {
+                    if(supportedTypes.hasOwnProperty(type)) {
+                        optgroup = $('<optgroup></optgroup>').attr({label: supportedTypes[type][APP.API.VERSION.SUPPORTED_TYPE.STATE.NAME]});
+                        supportedBrands = supportedTypes[type][APP.API.VERSION.SUPPORTED_TYPE.SUPPORTED_BRANDS];
+                        for(var i = 0; i < supportedBrands.length; i++) {
+                            optgroup.append($('<option>' + supportedBrands[i] + '</option>').attr({
+                                'data-type': type,
+                                'data-brand': supportedBrands[i],
+                                value: internalAddItemId})
+                            );
+                            internalAddItemId++;
+                        }
+                        addSelect.append(optgroup);
                     }
                 }
+                container.append($('<div class="select-wrapper"></div>').append(addSelect));
+                addButton = $('<a href="#">Add</a>').attr({id: 'context-add-item-button', class: 'button'});
+                addButton.click(function() {
+                    var self = $(this),
+                        roomIndex,
+                        itemIndex,
+                        targetBrand,
+                        targetIP,
+                        targetOption,
+                        targetName,
+                        targetType,
+                        newItem = {},
+                        validIP = true,
+                        duplicateIP = false;
+                    
+                    targetName = $('#' + addInputNameSelector).val();
+                    if(targetName === '') {
+                        addWarningName.html('Name is undefined.');
+                    } else {
+                        addWarningName.html('');
+                    }
+                    
+                    // perform IP check
+                    targetIP = $('#' + addInputIPSelector).val();
+                    // regex from http://stackoverflow.com/questions/10006459/regular-expression-for-ip-address-validation
+                    if(/^(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))$/.test(targetIP) === true) {
+                        for(var j = 0; j < APP.data.houseStructure[APP.API.STATE.ROOMS].length; j++) {
+                            for(var k = 0; k < APP.data.houseStructure[APP.API.STATE.ROOMS][j][APP.API.STATE.ROOM.ITEMS].length; k++) {
+                                if(targetIP === APP.data.houseStructure[APP.API.STATE.ROOMS][j][APP.API.STATE.ROOM.ITEMS][k][APP.API.STATE.ROOM.ITEM.IP]) {
+                                    duplicateIP = true;
+                                    roomIndex = j;
+                                    itemIndex = k;
+                                    break;
+                                }
+                            }
+                        }
+                        if(! duplicateIP) {
+                            addWarningName.html('');
+                            addWarningIP.html('');
+                            targetItemId = $('#' + addSelectSelector).val();
+                            targetOption = $('#' + addSelectSelector).find('option[value=' + targetItemId + ']');
+                            targetBrand = targetOption.attr('data-brand');
+                            targetType = targetOption.attr('data-type');
+                            newItem[APP.API.ITEMS.BRAND] = targetBrand;
+                            newItem[APP.API.ITEMS.IP] = targetIP;
+                            newItem[APP.API.ITEMS.NAME] = targetName;
+                            newItem[APP.API.ITEMS.ITEM_TYPE] = targetType;
+                            
+                            self.parent().addClass(APP.DOM_HOOK.UPDATING);
+                            
+                            // AJAX call
+                            APP.ajax_post_rooms_roomId_items(roomId, targetBrand, targetIP, targetName, targetType,
+                                function(json) {
+                                    var obj = APP.unpackToPayload(json),
+                                        newItemId = obj[APP.API.ITEMS.ITEM_ID],
+                                        hasSameType = false;
+                                    
+                                    // AJAX call
+                                    APP.ajax_get_state(
+                                        function() {
+                                            self.parent().removeClass(APP.DOM_HOOK.UPDATING);                                                        
+                                            stage.tearDown();
+                                            stage.construct();
+                                        },
+                                        function() {
+                                            // do nothing
+                                        }
+                                    );
+                                },
+                                function() {
+                                    // do nothing
+                                }
+                            );
+                        } else {
+                            console.log(rooms[roomIndex][APP.API.STATE.ROOM.ITEMS][itemIndex][APP.API.STATE.ROOM.ITEM.NAME]);
+                            console.log(rooms[roomIndex][APP.API.STATE.ROOM.NAME]);
+                            addWarningIP.html('IP specified is already in use by existing item (' + rooms[roomIndex][APP.API.STATE.ROOM.ITEMS][itemIndex][APP.API.STATE.ROOM.ITEM.NAME] + ') in the room ' + rooms[roomIndex][APP.API.STATE.ROOM.NAME] + '.');
+                        }
+                    } else {
+                        addWarningIP.html('Invalid IPv4 address.');
+                    }
+
+                });
+                container.append(addButton);
+                addPanel.append(container);
+                itemsPanel.append(addPanel);
+                
+                // remove
+                removePanel = $('<fieldset></fieldset>');
+                removePanel.append($('<legend></legend>').html('Remove'));
+                container = $('<div></div>');
+                removeWarning = $('<div></div>').addClass('error-message-display');
+                container.append(removeWarning);
+                removeSelect = $('<select></select>').attr({id: removeSelectSelector});
+                itemTypes = stage.data.itemTypes;
+                for(var itemType in itemTypes) {
+                    if(itemTypes.hasOwnProperty(itemType)) {
+                        optgroup = $('<optgroup></optgroup>').attr({label: supportedTypes[itemType][APP.API.VERSION.SUPPORTED_TYPE.STATE.NAME]});
+                        for(var j = 0; j < roomItems.length; j++) {
+                            if(roomItems[j][APP.API.STATE.ROOM.ITEM.ITEM_TYPE] === itemType) {
+                                optgroup.append($('<option>' + roomItems[j][APP.API.STATE.ROOM.ITEM.NAME] + ' (' + roomItems[j][APP.API.STATE.ROOM.ITEM.IP] + ')' + '</option>').attr({
+                                    value: roomItems[j][APP.API.STATE.ROOM.ITEM.ID],
+                                    'data-id': roomItems[j][APP.API.STATE.ROOM.ITEM.ID],
+                                    'data-type': roomItems[j][APP.API.STATE.ROOM.ITEM.ITEM_TYPE],
+                                    'data-name': roomItems[j][APP.API.STATE.ROOM.ITEM.NAME]
+                                    })
+                                );
+                            }
+                        }
+                        removeSelect.append(optgroup);
+                    }
+                }
+                container.append($('<div class="select-wrapper"></div>').append(removeSelect));
+                container.append($('<input></input>').attr({
+                    id: removeInputSelector,
+                    type: 'text',
+                    placeholder: 'Confirm this item\'s name'})
+                );
+                
+                removeButton = $('<a href="#">Remove</a>').attr({id: 'context-remove-item-button', class: 'button'});
+                removeButton.click(function() {
+                    var self = $(this),
+                        targetItemId = parseInt($('#' + removeSelectSelector).val()),
+                        targetOption = $('#' + removeSelectSelector).find('option[value="' + targetItemId + '"]'),
+                        targetType = targetOption.attr('data-type'),
+                        targetName = targetOption.attr('data-name'),
+                        types = stage.data.itemTypes,
+                        displays = stage.data.itemTypeDisplays;
+                    
+                    if($('#' + removeInputSelector).val() === targetName) {
+                        removeWarning.html('');
+                        self.parent().addClass(APP.DOM_HOOK.UPDATING);
+                        // AJAX call
+                        APP.ajax_delete_rooms_roomId_items_itemId(roomId, targetItemId,
+                            function() {
+                                // AJAX call
+                                APP.ajax_get_state(
+                                    function() {
+                                        stage.tearDown();
+                                        stage.construct();
+                                    },
+                                    function() {
+                                        // do nothing
+                                    }
+                                );
+                            },
+                            function() {
+                                // Do nothing
+                            }
+                        );
+                    } else {
+                        removeWarning.html('Names do not match. Please reconfirm.');
+                    }
+                });
+                container.append(removeButton);
+                removePanel.append(container);
+                itemsPanel.append(removePanel);
+                return itemsPanel;
             }
             
-        },
+            wrapper.append(content);
+            content.append($('<h1></h1>').html('Room manager'));
+            content.append(constructRoomsPanel());
+            content.append(constructItemsPanel(getRoom(roomId)[APP.API.STATE.ROOM.ITEMS]));
+            stage.contextMenu.getContext().append(wrapper);
+        });
+        stage.setConstruct(function() {
+            var itemTypes,
+                items = getRoom(roomId)[APP.API.STATE.ROOM.ITEMS],
+                item,
+                itemType;
+            stage.getContext().append($('<div></div>').attr({id: 'context-bar'}));
+
+            stage.data.itemTypes = {};
+            itemTypes = stage.data.itemTypes;
+            for(var j = 0; j < items.length; j++) {
+                item = items[j];
+                itemType = item[APP.API.STATE.ROOM.ITEM.ITEM_TYPE];
+                if(itemTypes[itemType] === undefined) {
+                    itemTypes[itemType] = [];
+                }
+                itemTypes[itemType].push(item);
+            }                        
+            stage.data.roomId = roomId;
+            stage.data.itemTypeDisplays = {};
+            
+            for(var type in itemTypes) {
+                if(itemTypes.hasOwnProperty(type)) {
+                    stage.data.itemTypeDisplays[type] = new APP.ItemTypeDisplay(stage, type, getRoom(roomId));
+                    stage.data.itemTypeDisplays[type].construct();
+                }
+            }
+            stage.poller.startPolling();
+        });
+        stage.setTearDown(function() {
+            // default
+        });
+        stage.setUpdate(function() {
+            $('#context-bar').html('');
+            $('#context-menu div.updating').removeClass('updating');
+            for(var display in stage.data.itemTypeDisplays) {
+                if(stage.data.itemTypeDisplays.hasOwnProperty(display)) {
+                    stage.data.itemTypeDisplays[display].update();
+                }
+            }
+        });
+        stage.setUpdateError(function() {
+            $('#context-bar').html('Caution: Connection to server lost. Displaying last available state info retrieved at ' + APP.clock.getTimestamp(APP.data.connection.lastSuccess));
+            for(var display in stage.data.itemTypeDisplays) {
+                if(stage.data.itemTypeDisplays.hasOwnProperty(display)) {
+                    stage.data.itemTypeDisplays[display].updateError();
+                }
+            }
+        });
+        stage.setPollFunction(1000, function() {
+            APP.ajax_get_state(stage.update, stage.updateError);
+        });
         
-        init = function() {
+    }
+    
+    /**
+     *
+     */
+    this.setStage_ECA = function() {
+        var stageId = this.addStage(new APP.Stage('menu-rules', 'button-rules-eca', 'ECA', 'stage-rules-eca')),
+            stage = stages.get(stageId);
+        
+        stage.setOnShow(function() {
+            // default
+        });
+        stage.setOnHide(function() {
+            // default
+        });
+        stage.setMenuConstruct(function() {
+            // default
+        });
+        stage.setConstruct(function() {
+            // default
+        });
+        stage.setTearDown(function() {
+            // default
+        });
+        stage.setUpdate(function() {
+            // default
+        });
+        stage.setUpdateError(function() {
+            // default
+        });
+        stage.setPollFunction(1000, function() {
+            
+        });
+    };
+    
+    /**
+     * @for APP.StageManager
+     * @method init
+     */
+    this.init = function() {
+        var self = this;
+        console.log(self);
         
         // home stage
-        (function() {
-            var stageId = addStage(new APP.Stage(null, 'button-home', '', 'stage-home')),
-                stage = stages.get(stageId);
-            
-            stage.setOnShow(function() {
-                // default
-            });
-            stage.setOnHide(function() {
-                // default
-            });
-            stage.setMenuConstruct(function() {
-                // default
-            });
-            stage.setConstruct(function() {
-                // default
-            });
-            stage.setTearDown(function() {
-                // default
-            });
-            stage.setUpdate(function() {
-                // default
-            });
-            stage.setUpdateError(function() {
-                // default
-            });
-            stage.setPollFunction(1000, function() {
-                
-            });
-        })();
+        this.setStage_Home();
         
         // control stages
         APP.ajax_get_state(function() {
@@ -1245,417 +1670,19 @@ APP.StageManager = function() {
                 __roomNames.push(rooms[i][APP.API.STATE.ROOM.NAME]);
                 __room = rooms[i];
             }
-            
-            // this function fetches the latest data of the given room
-            function getRoom(roomId) {
-                for(var j = 0; j < APP.data.houseStructure[APP.API.STATE.ROOMS].length; j++) {
-                    if(APP.data.houseStructure[APP.API.STATE.ROOMS][j][[APP.API.STATE.ROOM.ID]] === roomId) {
-                        return APP.data.houseStructure[APP.API.STATE.ROOMS][j];
-                    }
-                }
-            }
-            
-            // set room stage behavior
-            function setRoomStage(roomId, roomName) {
-                    var safeRoomName = roomName.replace(/\s/, '-'),
-                        stageId = addStage(new APP.Stage('menu-control',
-                            'button-control-' + safeRoomName, roomName, 'stage-control-' + safeRoomName)),
-                        stage = stages.get(stageId);
-                    stage.setOnShow(function() {
-                        // default
-                    });
-                    stage.setOnHide(function() {
-                        // default
-                    });
-                    stage.setMenuConstruct(function() {
-                        var wrapper = $('<div></div>').addClass('context-menu-inner-wrapper'),
-                            content = $('<div></div>').addClass('context-menu-content');
-                        
-                        function constructRoomsPanel() {
-                            var roomsPanel = $('<div></div>'),
-                                addPanel,
-                                addButton,
-                                removePanel,
-                                removeButton,
-                                container;
-                            
-                            // add
-                            addPanel = $('<fieldset></fieldset');
-                            addPanel.append($('<legend></legend>').html('Add new room'));
-                            container = $('<div></div>');
-                            container.append($('<input></input>').attr({
-                                id: 'context-add-room-name-input',
-                                type: 'text',
-                                placeholder: 'Room name'})
-                            );
-                            addButton = $('<a href="#">Add</a>').attr({id: 'context-add-room-button', class: 'button'});
-                            addButton.click(function() {
-                                
-                            });
-                            container.append(addButton);
-                            addPanel.append(container);
-                            roomsPanel.append(addPanel);
-                            
-                            // remove
-                            removePanel = $('<fieldset></fieldset>');
-                            removePanel.append($('<legend></legend>').html('Remove this room ('+ roomName + ')'));
-                            container = $('<div></div>');
-                            container.append($('<input></input>').attr({
-                                id: 'context-remove-room-name-input',
-                                type: 'text',
-                                placeholder: 'Confirm this room\'s name'})
-                            );
-                            removeButton = $('<a href="#">Remove</a>').attr({id: 'context-remove-room-button', class: 'button'});
-                            removeButton.click(function() {
-                                
-                            });
-                            container.append(removeButton);
-                            removePanel.append(container);
-                            roomsPanel.append(removePanel);
-                            return roomsPanel;
-                        }
-                        
-                        function constructItemsPanel(roomItems) {
-                            var supportedTypes = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES],
-                                supportedBrands,
-                                itemsPanel = $('<div></div>'),
-                                addPanel,
-                                addInputNameSelector = 'context-add-item-name-input',
-                                addInputIPSelector = 'context-add-item-ip-input',
-                                addSelectSelector = 'context-add-item-select',
-                                addSelect,
-                                addButton,
-                                addWarningName,
-                                addWarningIP,
-                                internalAddItemId, // value used to locate type + brand
-                                removePanel,
-                                removeSelectSelector = 'context-remove-item-select',
-                                removeSelect,
-                                removeInputSelector = 'context-remove-item-name-input',
-                                removeButton,
-                                removeWarning,
-                                itemTypes,
-                                optgroup,
-                                container;
-                                
-                            itemsPanel.append($('<h2></h2>').html('Items'));
-                            
-                            // add
-                            addPanel = $('<fieldset></fieldset>');
-                            addPanel.append($('<legend></legend>').html('Add'));
-                            container = $('<div></div>');
-                            addWarningName = $('<div></div>').addClass('error-message-display');
-                            container.append(addWarningName);
-                            addWarningIP = $('<div></div>').addClass('error-message-display');
-                            container.append(addWarningIP);
-                            container.append($('<input></input>').attr({
-                                id: addInputNameSelector,
-                                type: 'text',
-                                placeholder: 'Item\'s name'})
-                            );
-                            container.append($('<input></input>').attr({
-                                id: addInputIPSelector,
-                                type: 'text',
-                                placeholder: 'Item\'s static IPv4 address'})
-                            );
-                            addSelect = $('<select></select>').attr({id: addSelectSelector});
-                            internalAddItemId = 0;
-                            for(var type in supportedTypes) {
-                                if(supportedTypes.hasOwnProperty(type)) {
-                                    optgroup = $('<optgroup></optgroup>').attr({label: supportedTypes[type][APP.API.VERSION.SUPPORTED_TYPE.STATE.NAME]});
-                                    supportedBrands = supportedTypes[type][APP.API.VERSION.SUPPORTED_TYPE.SUPPORTED_BRANDS];
-                                    for(var i = 0; i < supportedBrands.length; i++) {
-                                        optgroup.append($('<option>' + supportedBrands[i] + '</option>').attr({
-                                            'data-type': type,
-                                            'data-brand': supportedBrands[i],
-                                            value: internalAddItemId})
-                                        );
-                                        internalAddItemId++;
-                                    }
-                                    addSelect.append(optgroup);
-                                }
-                            }
-                            container.append($('<div class="select-wrapper"></div>').append(addSelect));
-                            addButton = $('<a href="#">Add</a>').attr({id: 'context-add-item-button', class: 'button'});
-                            addButton.click(function() {
-                                var self = $(this),
-                                    roomIndex,
-                                    itemIndex,
-                                    targetBrand,
-                                    targetIP,
-                                    targetOption,
-                                    targetName,
-                                    targetType,
-                                    newItem = {},
-                                    validIP = true,
-                                    duplicateIP = false;
-                                
-                                targetName = $('#' + addInputNameSelector).val();
-                                if(targetName === '') {
-                                    addWarningName.html('Name is undefined.');
-                                } else {
-                                    addWarningName.html('');
-                                }
-                                
-                                // perform IP check
-                                targetIP = $('#' + addInputIPSelector).val();
-                                // regex from http://stackoverflow.com/questions/10006459/regular-expression-for-ip-address-validation
-                                if(/^(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))$/.test(targetIP) === true) {
-                                    for(var j = 0; j < rooms.length; j++) {
-                                        for(var k = 0; k < rooms[j][APP.API.STATE.ROOM.ITEMS].length; k++) {
-                                            if(targetIP === rooms[j][APP.API.STATE.ROOM.ITEMS][k][APP.API.STATE.ROOM.ITEM.IP]) {
-                                                duplicateIP = true;
-                                                roomIndex = j;
-                                                itemIndex = k;
-                                                break;
-                                            }
-                                        }
-                                    }
-                                    if(! duplicateIP) {
-                                        addWarningName.html('');
-                                        addWarningIP.html('');
-                                        targetItemId = $('#' + addSelectSelector).val();
-                                        targetOption = $('#' + addSelectSelector).find('option[value=' + targetItemId + ']');
-                                        targetBrand = targetOption.attr('data-brand');
-                                        targetType = targetOption.attr('data-type');
-                                        newItem[APP.API.ITEMS.BRAND] = targetBrand;
-                                        newItem[APP.API.ITEMS.IP] = targetIP;
-                                        newItem[APP.API.ITEMS.NAME] = targetName;
-                                        newItem[APP.API.ITEMS.ITEM_TYPE] = targetType;
-                                        
-                                        self.parent().addClass(APP.DOM_HOOK.UPDATING);
-                                        
-                                        // AJAX call
-                                        APP.ajax_post_rooms_roomId_items(roomId, targetBrand, targetIP, targetName, targetType,
-                                            function(json) {
-                                                var obj = APP.unpackToPayload(json),
-                                                    newItemId = obj[APP.API.ITEMS.ITEM_ID],
-                                                    hasSameType = false;
-                                                
-                                                // AJAX call
-                                                APP.ajax_get_state(
-                                                    function() {
-                                                        self.parent().removeClass(APP.DOM_HOOK.UPDATING);                                                        
-                                                        stage.tearDown();
-                                                        stage.construct();
-                                                    },
-                                                    function() {
-                                                        // do nothing
-                                                    }
-                                                );
-                                            },
-                                            function() {
-                                                // do nothing
-                                            }
-                                        );
-                                    } else {
-                                        console.log(rooms[roomIndex][APP.API.STATE.ROOM.ITEMS][itemIndex][APP.API.STATE.ROOM.ITEM.NAME]);
-                                        console.log(rooms[roomIndex][APP.API.STATE.ROOM.NAME]);
-                                        addWarningIP.html('IP specified is already in use by existing item (' + rooms[roomIndex][APP.API.STATE.ROOM.ITEMS][itemIndex][APP.API.STATE.ROOM.ITEM.NAME] + ') in the room ' + rooms[roomIndex][APP.API.STATE.ROOM.NAME] + '.');
-                                    }
-                                } else {
-                                    addWarningIP.html('Invalid IPv4 address.');
-                                }
-
-                            });
-                            container.append(addButton);
-                            addPanel.append(container);
-                            itemsPanel.append(addPanel);
-                            
-                            // remove
-                            removePanel = $('<fieldset></fieldset>');
-                            removePanel.append($('<legend></legend>').html('Remove'));
-                            container = $('<div></div>');
-                            removeWarning = $('<div></div>').addClass('error-message-display');
-                            container.append(removeWarning);
-                            removeSelect = $('<select></select>').attr({id: removeSelectSelector});
-                            itemTypes = stage.data.itemTypes;
-                            for(var itemType in itemTypes) {
-                                if(itemTypes.hasOwnProperty(itemType)) {
-                                    optgroup = $('<optgroup></optgroup>').attr({label: supportedTypes[itemType][APP.API.VERSION.SUPPORTED_TYPE.STATE.NAME]});
-                                    for(var j = 0; j < roomItems.length; j++) {
-                                        if(roomItems[j][APP.API.STATE.ROOM.ITEM.ITEM_TYPE] === itemType) {
-                                            optgroup.append($('<option>' + roomItems[j][APP.API.STATE.ROOM.ITEM.NAME] + ' (' + roomItems[j][APP.API.STATE.ROOM.ITEM.IP] + ')' + '</option>').attr({
-                                                value: roomItems[j][APP.API.STATE.ROOM.ITEM.ID],
-                                                'data-id': roomItems[j][APP.API.STATE.ROOM.ITEM.ID],
-                                                'data-type': roomItems[j][APP.API.STATE.ROOM.ITEM.ITEM_TYPE],
-                                                'data-name': roomItems[j][APP.API.STATE.ROOM.ITEM.NAME]
-                                                })
-                                            );
-                                        }
-                                    }
-                                    removeSelect.append(optgroup);
-                                }
-                            }
-                            container.append($('<div class="select-wrapper"></div>').append(removeSelect));
-                            container.append($('<input></input>').attr({
-                                id: removeInputSelector,
-                                type: 'text',
-                                placeholder: 'Confirm this item\'s name'})
-                            );
-                            
-                            removeButton = $('<a href="#">Remove</a>').attr({id: 'context-remove-item-button', class: 'button'});
-                            removeButton.click(function() {
-                                var self = $(this),
-                                    targetItemId = parseInt($('#' + removeSelectSelector).val()),
-                                    targetOption = $('#' + removeSelectSelector).find('option[value="' + targetItemId + '"]'),
-                                    targetType = targetOption.attr('data-type'),
-                                    targetName = targetOption.attr('data-name'),
-                                    types = stage.data.itemTypes,
-                                    displays = stage.data.itemTypeDisplays;
-                                
-                                if($('#' + removeInputSelector).val() === targetName) {
-                                    removeWarning.html('');
-                                    self.parent().addClass(APP.DOM_HOOK.UPDATING);
-                                    // AJAX call
-                                    APP.ajax_delete_rooms_roomId_items_itemId(roomId, targetItemId,
-                                        function() {
-                                            // AJAX call
-                                            APP.ajax_get_state(
-                                                function() {
-                                                    stage.tearDown();
-                                                    stage.construct();
-                                                },
-                                                function() {
-                                                    // do nothing
-                                                }
-                                            );
-                                        },
-                                        function() {
-                                            // Do nothing
-                                        }
-                                    );
-                                } else {
-                                    removeWarning.html('Names do not match. Please reconfirm.');
-                                }
-                            });
-                            container.append(removeButton);
-                            removePanel.append(container);
-                            itemsPanel.append(removePanel);
-                            return itemsPanel;
-                        }
-                        
-                        wrapper.append(content);
-                        content.append($('<h1></h1>').html('Room manager'));
-                        content.append(constructRoomsPanel());
-                        content.append(constructItemsPanel(getRoom(roomId)[APP.API.STATE.ROOM.ITEMS]));
-                        stage.contextMenu.getContext().append(wrapper);
-                    });
-                    stage.setConstruct(function() {
-                        var itemTypes,
-                            items = getRoom(roomId)[APP.API.STATE.ROOM.ITEMS],
-                            item,
-                            itemType;
-                        stage.getContext().append($('<div></div>').attr({id: 'context-bar'}));
-
-                        stage.data.itemTypes = {};
-                        itemTypes = stage.data.itemTypes;
-                        for(var j = 0; j < items.length; j++) {
-                            item = items[j];
-                            itemType = item[APP.API.STATE.ROOM.ITEM.ITEM_TYPE];
-                            if(itemTypes[itemType] === undefined) {
-                                itemTypes[itemType] = [];
-                            }
-                            itemTypes[itemType].push(item);
-                        }                        
-                        stage.data.roomId = roomId;
-                        stage.data.itemTypeDisplays = {};
-                        
-                        for(var type in itemTypes) {
-                            if(itemTypes.hasOwnProperty(type)) {
-                                stage.data.itemTypeDisplays[type] = new APP.ItemTypeDisplay(stage, type, getRoom(roomId));
-                                stage.data.itemTypeDisplays[type].construct();
-                            }
-                        }
-                        stage.poller.startPolling();
-                    });
-                    stage.setTearDown(function() {
-                        // default
-                    });
-                    stage.setUpdate(function() {
-                        $('#context-bar').html('');
-                        $('#context-menu div.updating').removeClass('updating');
-                        for(var display in stage.data.itemTypeDisplays) {
-                            if(stage.data.itemTypeDisplays.hasOwnProperty(display)) {
-                                stage.data.itemTypeDisplays[display].update();
-                            }
-                        }
-                    });
-                    stage.setUpdateError(function() {
-                        $('#context-bar').html('Caution: Connection to server lost. Displaying last available state info retrieved at ' + APP.clock.getTimestamp(APP.data.connection.lastSuccess));
-                        for(var display in stage.data.itemTypeDisplays) {
-                            if(stage.data.itemTypeDisplays.hasOwnProperty(display)) {
-                                stage.data.itemTypeDisplays[display].updateError();
-                            }
-                        }
-                    });
-                    stage.setPollFunction(1000, function() {
-                        APP.ajax_get_state(stage.update, stage.updateError);
-                    });
-                    
-                }
-            
+                   
             // for each room... use static data to initialize
             for(var i = 0; i < __roomIds.length; i++) {
-                setRoomStage(__roomIds[i], __roomNames[i]);
+                self.setStage_Room(__roomIds[i], __roomNames[i]);
             }
             
         });
         
         // eca stage
-        (function() {
-            var stageId = addStage(new APP.Stage('menu-rules', 'button-rules-eca', 'ECA', 'stage-rules-eca')),
-                stage = stages.get(stageId);
-            
-            stage.setOnShow(function() {
-                // default
-            });
-            stage.setOnHide(function() {
-                // default
-            });
-            stage.setMenuConstruct(function() {
-                // default
-            });
-            stage.setConstruct(function() {
-                // default
-            });
-            stage.setTearDown(function() {
-                // default
-            });
-            stage.setUpdate(function() {
-                // default
-            });
-            stage.setUpdateError(function() {
-                // default
-            });
-            stage.setPollFunction(1000, function() {
-                
-            });
-        })();
+        this.setStage_ECA();
         
     };
     
-    /**
-     * @for APP.StageManager
-     * @method addStage
-     * @param {APP.Stage} stage Stage object to be managed by this manager
-     * @return {String}         Input stage element id, for convenience
-     * If the new stage shares an existing stageId, it will replace the old stage
-     */
-    this.addStage = addStage;
-    
-    /**
-     * @for APP.StageManager
-     * @method toggleStage
-     * @param {String | null} stageId Element id of stage to toggle on/off, or null to toggle off regardless of current active stage
-     */
-    this.toggleStage = toggleStage;
-        
-    /**
-     * @for APP.StageManager
-     * @method init
-     */
-    this.init = init;
 };
 
 /**
