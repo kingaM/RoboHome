@@ -90,7 +90,7 @@ class House(object):
         roomId -- the id of the room to delete
         """
         if roomId in self.rooms:
-            self.database.room.deleteRoom(roomId)
+            self.database.room.deleteEntryByID(roomId)
             del self.rooms[roomId]
         else:
             raise KeyError("Invalid roomId")

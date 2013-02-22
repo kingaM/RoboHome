@@ -112,6 +112,7 @@ def rooms_roomId(version, roomId):
     if request.method == 'DELETE':
         # Delete room
         house.deleteRoom(int(roomId))
+        return jsonify(pack('success'))
 
 @app.route('/version/<string:version>/rooms/<int:roomId>/items/', methods=['POST'])
 def rooms_roomId_items(version, roomId):

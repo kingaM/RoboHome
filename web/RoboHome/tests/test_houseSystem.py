@@ -115,6 +115,9 @@ class MockRoomTable:
         self.entries.append(MockRoom(self.i, name))
         return self.i
 
+    def deleteEntryByID(self, id):
+        pass
+
     def retrieveAllData(self):
         return ((1, "lounge"),)
 
