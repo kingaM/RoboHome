@@ -34,6 +34,7 @@ APP.DOM_HOOK.ENTITY.ITEM_TYPE = 'item-type';
 APP.DOM_HOOK.ENTITY.ROOM = 'room';
 APP.DOM_HOOK.ENTITY.ITEM = 'item';
 APP.DOM_HOOK.UPDATING = 'updating';
+APP.DOM_HOOK.ERROR_MESSAGE_DISPLAY = 'error-message-display';
 APP.DOM_HOOK.CONNECTION_ERROR = 'connection-error';
 
 // These are property name bindings as specified by the API
@@ -258,7 +259,6 @@ APP.data = {
         lastNoSuccess: undefined
     },
     state: undefined,
-    menuManager: undefined,
     stageManager: undefined
 };
 
@@ -995,116 +995,71 @@ APP.ItemTypeDisplay.prototype.updateError = function() {
 };
 
 /**
- * @class APP.MenuManager
- * @constructor
- * @param {APP.StageManager} stageManager StageManager object responsible for hiding the stages
- * This class handles the top menus. Linking of buttons in the secondary menu
- *   and the stages are configured under APP.StageManager instead.
+ *
  */
 APP.MenuManager = function(stageManager) {
-    var linked = false,
-        stageManager
-        // map specifying the menus to generate at the start
-        map = {
-            'button-home' :  {
-                menuId: null,
-                buttonText: 'Home',
-                class: 'blue'
-            },
-            'button-control' : {
-                menuId: 'menu-control',
-                buttonText: 'Control',
-                class: 'blue'
-            },
-            'button-rules' : {
-                menuId: 'menu-rules',
-                buttonText: 'Rules',
-                class: 'green'
-            },
-            'button-config' : {
-                menuId: 'menu-config',
-                buttonText: 'Config',
-                class: 'yellow'
-            }
-        },
-        primaryMenu = $('#menu-primary'),
-        secondaryMenuWrapper = $('#wrapper-secondary'),
-        
-        init = function() {
-            var target,
-                mapping;
+    var primaryButtonSelector = '#menu-prmary > li > a',
+        secondaryButtonSelector = '#wrapper-secondary > ul > li > a';
+
+    this.stageManager = stageManager;
+    this.buttons = {};
+    
+    /**
+     * Creates a button and binds it to a stage. Clicking on it shows/hides the stage, and other stages.
+     */
+    this.addButton = function(stage) {
+        var button,
+            buttonWrapper;
+        if(document.getElementById(stage.buttonId) === null) {
+            console.log('Button: ' + stage.buttonId + ' created');
+            button = $('<a>' + stage.buttonText + '</a>').attr({id: stage.buttonId, href: '#'}),
+            buttonWrapper = $('<li></li>').append(button);
             
-            function constructButton(buttonId, buttonText, cls, menuId) {
-                var button;
-                if (document.getElementById(buttonId) === null) { 
-                    button = $('<a>' + buttonText + '</a>').attr({id: buttonId, class: cls, 'data-color-class': cls, href: '#'});
-                    if(menuId === null) { button.addClass('no-menu'); }
-                    button = $('<li></li>').append(button);
-                    $('#menu-primary').append(button);
-                }
+            $('#' + stage.menuId).append(buttonWrapper);
+            if(this.buttons[stage.menuId] === undefined) {
+                this.buttons[stage.menuId] = [];
             }
-            
-            function constructSecondaryMenu(menuId, buttons, cls) {
-                // construct menu
-                var menu;
-                if(menuId !== null) {
-                    if(document.getElementById(menuId) === null) {
-                        menu = $('<ul></ul>').attr({id: menuId, class: 'menu horizontal secondary ' + cls, 'data-color-class': cls});
-                        secondaryMenuWrapper.append(menu);
-                    } else {
-                        menu = $('#' + menuId);
+            this.buttons[stage.menuId].push({buttonId: stage.buttonId, stageId: stage.stageId, data: stage.data});
+        } else {
+            console.warn('WARNING: ' + stage.buttonId + ' already exists! Button remapped.');
+            button = $('#' + stage.buttonId);
+            for(var prop in this.buttons) {
+                if(this.buttons.hasOwnProperty(prop)) {
+                    if(this.buttons[prop].buttonId = stage.buttonId) {
+                        button.unbind('click');
                     }
                 }
             }
-            
-            // This links the buttons with the menus
-            function link() {
-                var primaryButtons = primaryMenu.children().children(),
-                    menus = secondaryMenuWrapper.children();
-                primaryButtons.each(function() {
-                    $(this).click(function() {
-                        target = $(this);
-                        if(map[$(this).attr('id')].menuId !== null) {
-                            target.toggleClass('selected');
-                        }
-                        primaryButtons.not(target).each(function() {
-                            $(this).removeClass('selected');
-                        });
-                        mapping = map[$(this).attr('id')].menuId;
-                        $('#' + mapping).toggleClass('active');
-                        menus.not('#' + mapping).removeClass('active');
-                        menus.children().removeClass('selected');
-                        // If this button has an associated menu --> not being used as Stage button
-                        if(mapping !== null) {
-                            var primaryButtonSelector = '#menu-prmary > li > a',
-                                secondaryButtonSelector = '#wrapper-secondary > ul > li > a';
-                            $(primaryButtonSelector).not(target).removeClass('selected');
-                            $(secondaryButtonSelector).not(target).removeClass('selected');
-                            stageManager.toggleStage(null);
-                        }
-                        APP.resizer.resizeStageWrapper();
-                    });
-                });
-            }
-            
-            for(var buttonId in map) {
-                var obj = map[buttonId];
-                constructButton(buttonId, obj.buttonText, obj.class, obj.menuId);
-                constructSecondaryMenu(obj.menuId, obj.buttons, obj.class);
-            }
-            if(!linked) {
-                linked = true;
-                link();
-            }
         }
+        button.click(function() {
+            var primaryButtonSelector = '#menu-prmary > li > a',
+                secondaryButtonSelector = '#wrapper-secondary > ul > li > a';
+            
+            // toggle clicked button
+            $(this).toggleClass('selected');
+            // toggle sibling buttons
+            $(primaryButtonSelector).not($(this)).removeClass('selected');
+            $(secondaryButtonSelector).not($(this)).removeClass('selected');
+            // toggle stages
+            stageManager.toggleStage(stage.stageId);
+        });
+    };
     
     /**
-     * @for APP.MenuManager
-     * @method init
-     * This constructs the top menus according to what's specified in this class.
+     * Removes the button with given Id. This does not remove the associated stage.
      */
-    this.init = init;
-};
+    this.removeButton = function(stage) {
+        if(document.getElementById(stage.buttonId) !== null) {
+            for(var i = 0; i < this.buttons[stage.menuId].length; i++) {
+                if(this.buttons[stage.menuId][i] = buttonId) {
+                    $('#' + stage.buttonId).remove();
+                    this.buttons[stage.menuId].splice(i, 1);
+                }
+            }
+        }
+    };
+    
+}
 
 /**
  * @class APP.StageManager
@@ -1112,21 +1067,50 @@ APP.MenuManager = function(stageManager) {
  * This class handles Stage objects
  */
 APP.StageManager = function() {
-    var primaryMenuId = 'menu-primary',
-        primaryButtonSelector = '#menu-prmary > li > a',
+    var self = this,
+        primaryMenuId = 'menu-primary',
         secondaryMenuId = 'wrapper-secondary',
-        secondaryButtonSelector = '#wrapper-secondary > ul > li > a',
         stageSelector = '#stages > .stage',
         activeStageSelector = '#stages > .stage.active',
         stageContainerSelector = '#stages',
         
         activeStageId = null,
         stages = new APP.Map(),
+        menuManager = new APP.MenuManager(this),
+        primaryMenuMap = {
+            'button-home' :  {
+                menuId: null,
+                buttonText: 'Home',
+                class: 'blue',
+                buttons: {}
+            },
+            'button-control' : {
+                menuId: 'menu-control',
+                buttonText: 'Control',
+                class: 'blue',
+                buttons: {}
+            },
+            'button-rules' : {
+                menuId: 'menu-rules',
+                buttonText: 'Rules',
+                class: 'green',
+                buttons: {}
+            },
+            'button-config' : {
+                menuId: 'menu-config',
+                buttonText: 'Config',
+                class: 'yellow',
+                buttons: {}
+            }
+        };
         
     // private methods
-    setActiveStage = function(stageId) {
+     function setActiveStage(stageId) {
         activeStageId = stageId;
     };
+    
+    // menu manager
+    this.menuManager = new APP.MenuManager(this);
     
     // public methods
     /**
@@ -1137,36 +1121,27 @@ APP.StageManager = function() {
      * If the new stage shares an existing stageId, it will replace the old stage
      */
     this.addStage = function(stage) {
-        var self = this;
-        // construct menu buttons
-        if(document.getElementById(stage.buttonId) === null) {
-            button = $('<li></li>').append($('<a>' + stage.buttonText + '</a>').attr({id: stage.buttonId, href: '#'}));
-            $('#' + stage.menuId).append(button);
-        }
         
-        // construct stage template
         if(document.getElementById(stage.stageId) === null) {
             var stageElement = $('<div></div>').attr({id: stage.stageId, class: 'stage'});
             stageElement.append($('<div></div>').addClass('stage-content ' + stage.colorClass));
             $(stageContainerSelector).append(stageElement);
         }
         
-        // link
-        $('#' + stage.buttonId).click(function() {
-            var targetButton = $(this);
-            // toggle clicked button
-            targetButton.toggleClass('selected');
-            // toggle sibling buttons
-            $(primaryButtonSelector).not(targetButton).removeClass('selected');
-            $(secondaryButtonSelector).not(targetButton).removeClass('selected');
-            // toggle stages
-            self.toggleStage(stage.stageId);
-        });
-        
-        // register stage
+        this.menuManager.addButton(stage);
         stages.put(stage.stageId, stage);
         return stage.stageId;
     },
+    
+    /**
+     *
+     */
+    this.removeStage = function(stage) {
+        
+        this.menuManager.removeButton(stage.menuId, stage.buttonId);
+        stages.remove(stage.stageId);
+        
+    }
     
     /**
      * @for APP.StageManager
@@ -1248,12 +1223,14 @@ APP.StageManager = function() {
      *
      */
     this.setStage_Room = function(roomId, roomName) {
-        var func = this,
-            safeRoomName = roomName.replace(/\s/, '-'),
+        var safeRoomName = roomName.replace(/\s/, '-'),
             stageId = this.addStage(new APP.Stage('menu-control',
-                'button-control-' + safeRoomName, roomName, 'stage-control-' + safeRoomName)),
+                'button-control-' + safeRoomName + '-id-' + roomId, roomName, 'stage-control-' + safeRoomName)),
             stage = stages.get(stageId);
-            
+        
+        stage.data.roomId = roomId;
+        stage.data.roomName = roomName;
+        
         // this function fetches the latest data of the given room
         function getRoom(roomId) {
             for(var j = 0; j < APP.data.houseStructure[APP.API.STATE.ROOMS].length; j++) {
@@ -1281,6 +1258,7 @@ APP.StageManager = function() {
                     removePanel,
                     removeInputSelector = 'context-remove-room-name-input',
                     removeButton,
+                    removeWarning,
                     container;
                 
                 // add
@@ -1294,13 +1272,16 @@ APP.StageManager = function() {
                 );
                 addButton = $('<a href="#">Add</a>').attr({id: 'context-add-room-button', class: 'button'});
                 addButton.click(function() {
-                    var addRoomName = $('#' + addInputSelector).val();
+                    var dis = $(this),
+                        addRoomName = $('#' + addInputSelector).val();
+                    console.log(addRoomName);
+                    $(this).parent().addClass(APP.DOM_HOOK.UPDATING);
                     APP.ajax_post_rooms(addRoomName,
                         function(json) {
                             var obj = APP.unpackToPayload(json),
                                 roomId = obj[APP.API.ROOMID.ID];
-                            console.log(func);
-                            func(roomId, roomName);
+                            dis.parent().removeClass(APP.DOM_HOOK.UPDATING);
+                            self.setStage_Room(roomId, addRoomName);
                             stage.tearDown();
                             stage.construct();
                         },
@@ -1317,6 +1298,8 @@ APP.StageManager = function() {
                 removePanel = $('<fieldset></fieldset>');
                 removePanel.append($('<legend></legend>').html('Remove this room ('+ roomName + ')'));
                 container = $('<div></div>');
+                removeWarning = $('<div></div>').addClass(APP.DOM_HOOK.ERROR_MESSAGE_DISPLAY);
+                container.append(removeWarning);
                 container.append($('<input></input>').attr({
                     id: removeInputSelector,
                     type: 'text',
@@ -1324,7 +1307,23 @@ APP.StageManager = function() {
                 );
                 removeButton = $('<a href="#">Remove</a>').attr({id: 'context-remove-room-button', class: 'button'});
                 removeButton.click(function() {
-                    
+                    var dis = $(this),
+                        removeRoomName = $('#' + removeInputSelector).val();
+                    if(removeRoomName === stage.data.roomName) {
+                        dis.parent().addClass(APP.DOM_HOOK.UPDATING);
+                        APP.ajax_delete_rooms_roomId(
+                            stage.data.roomId,
+                            function(json) {
+                                dis.parent().removeClass(APP.DOM_HOOK.UPDATING);
+                                self.removeStage(stage);
+                            },
+                            function() {
+                                // do nothing
+                            }
+                        );
+                    } else {
+                        removeWarning.html('Names do not match. Please reconfirm.');
+                    }
                 });
                 container.append(removeButton);
                 removePanel.append(container);
@@ -1361,9 +1360,9 @@ APP.StageManager = function() {
                 addPanel = $('<fieldset></fieldset>');
                 addPanel.append($('<legend></legend>').html('Add'));
                 container = $('<div></div>');
-                addWarningName = $('<div></div>').addClass('error-message-display');
+                addWarningName = $('<div></div>').addClass(APP.DOM_HOOK.ERROR_MESSAGE_DISPLAY);
                 container.append(addWarningName);
-                addWarningIP = $('<div></div>').addClass('error-message-display');
+                addWarningIP = $('<div></div>').addClass(APP.DOM_HOOK.ERROR_MESSAGE_DISPLAY);
                 container.append(addWarningIP);
                 container.append($('<input></input>').attr({
                     id: addInputNameSelector,
@@ -1483,7 +1482,7 @@ APP.StageManager = function() {
                 removePanel = $('<fieldset></fieldset>');
                 removePanel.append($('<legend></legend>').html('Remove'));
                 container = $('<div></div>');
-                removeWarning = $('<div></div>').addClass('error-message-display');
+                removeWarning = $('<div></div>').addClass(APP.DOM_HOOK.ERROR_MESSAGE_DISPLAY);
                 container.append(removeWarning);
                 removeSelect = $('<select></select>').attr({id: removeSelectSelector});
                 itemTypes = stage.data.itemTypes;
@@ -1574,8 +1573,7 @@ APP.StageManager = function() {
                     itemTypes[itemType] = [];
                 }
                 itemTypes[itemType].push(item);
-            }                        
-            stage.data.roomId = roomId;
+            }
             stage.data.itemTypeDisplays = {};
             
             for(var type in itemTypes) {
@@ -1590,6 +1588,43 @@ APP.StageManager = function() {
             // default
         });
         stage.setUpdate(function() {
+        
+            function updateMenu() {
+                var rooms = APP.data.houseStructure[APP.API.STATE.ROOMS],
+                    roomsCopy = rooms.slice(0),
+                    roomsCopyLength = roomsCopy.length,
+                    buttons = self.menuManager.buttons[stage.menuId],
+                    buttonsCopy = buttons.slice(0),
+                    buttonsCopyLength = buttonsCopy.length;
+                
+                for(var i = 0; i < buttonsCopyLength; i++) {
+                    for(var j = 0; i < roomsCopyLength; j++) {
+                        if(buttonsCopy[i].data.roomId === roomsCopy[j][APP.API.STATE.ROOM.ID]) {
+                            buttonsCopy.splice(i, 1);
+                            roomsCopy.splice(j, 1);
+                            buttonsCopyLength = buttonsCopy.length;
+                            roomsCopyLength = roomsCopy.length;
+                            i--;
+                            j--;
+                            break;
+                        }
+                    }
+                }
+                
+                // If there are any unmatched buttons, it means they need to be removed (with its associated stage);
+                for(var i = 0; i < buttonsCopy.length; i++) {
+                    this.removeStage(stages.get(buttonsCopy[i].data.stageId));
+                }
+                
+                // If there are any unmatched rooms, it means they need to be added
+                for(var j = 0; j < roomsCopy.length; j++) {
+                    self.setStage_Room(roomsCopy[i][APP.API.STATE.ROOM.ID], roomsCopy[i][APP.API.STATE.ROOM.NAME]);
+                }
+                
+            }
+        
+            updateMenu();
+            
             $('#context-bar').html('');
             $('#context-menu div.updating').removeClass('updating');
             for(var display in stage.data.itemTypeDisplays) {
@@ -1651,7 +1686,74 @@ APP.StageManager = function() {
      */
     this.init = function() {
         var self = this;
-        console.log(self);
+        
+        // initialize menus
+        (function () {
+            var primaryMenu = $('#menu-primary'),
+                secondaryMenuWrapper = $('#wrapper-secondary'),
+                target,
+                primaryMenuMapping;
+            
+            function constructButton(buttonId, buttonText, cls, menuId) {
+                var button;
+                if (document.getElementById(buttonId) === null) { 
+                    button = $('<a>' + buttonText + '</a>').attr({id: buttonId, class: cls, 'data-color-class': cls, href: '#'});
+                    if(menuId === null) { button.addClass('no-menu'); }
+                    button = $('<li></li>').append(button);
+                    $('#menu-primary').append(button);
+                }
+            }
+            
+            function constructSecondaryMenu(menuId, buttons, cls) {
+                // construct menu
+                var menu;
+                if(menuId !== null) {
+                    if(document.getElementById(menuId) === null) {
+                        menu = $('<ul></ul>').attr({id: menuId, class: 'menu horizontal secondary ' + cls, 'data-color-class': cls});
+                        secondaryMenuWrapper.append(menu);
+                    } else {
+                        menu = $('#' + menuId);
+                    }
+                }
+            }
+            
+            // This links the primary buttons with the menus
+            function link() {
+                var primaryButtons = primaryMenu.children().children(),
+                    menus = secondaryMenuWrapper.children();
+                primaryButtons.each(function() {
+                    $(this).click(function() {
+                        target = $(this);
+                        if(primaryMenuMap[$(this).attr('id')].menuId !== null) {
+                            target.toggleClass('selected');
+                        }
+                        primaryButtons.not(target).each(function() {
+                            $(this).removeClass('selected');
+                        });
+                        primaryMenuMapping = primaryMenuMap[$(this).attr('id')].menuId;
+                        $('#' + primaryMenuMapping).toggleClass('active');
+                        menus.not('#' + primaryMenuMapping).removeClass('active');
+                        menus.children().removeClass('selected');
+                        // If this button has an associated menu --> not being used as Stage button
+                        if(primaryMenuMapping !== null) {
+                            var primaryButtonSelector = '#menu-prmary > li > a',
+                                secondaryButtonSelector = '#wrapper-secondary > ul > li > a';
+                            $(primaryButtonSelector).not(target).removeClass('selected');
+                            $(secondaryButtonSelector).not(target).removeClass('selected');
+                            self.toggleStage(null);
+                        }
+                        APP.resizer.resizeStageWrapper();
+                    });
+                });
+            }
+            
+            for(var buttonId in primaryMenuMap) {
+                var obj = primaryMenuMap[buttonId];
+                constructButton(buttonId, obj.buttonText, obj.class, obj.menuId);
+                constructSecondaryMenu(obj.menuId, obj.buttons, obj.class);
+            }
+            link();            
+        })();
         
         // home stage
         this.setStage_Home();
@@ -1661,19 +1763,19 @@ APP.StageManager = function() {
             
             // fetch the latest list of rooms
             var rooms = APP.data.houseStructure[APP.API.STATE.ROOMS],
-                __roomNames = [],
-                __roomIds = [];
+                roomNames = [],
+                roomIds = [];
             
             // save a static copy of ids and names from that list
             for(var i = 0; i < rooms.length; i++) {
-                __roomIds.push(rooms[i][APP.API.STATE.ROOM.ID]);
-                __roomNames.push(rooms[i][APP.API.STATE.ROOM.NAME]);
-                __room = rooms[i];
+                roomIds.push(rooms[i][APP.API.STATE.ROOM.ID]);
+                roomNames.push(rooms[i][APP.API.STATE.ROOM.NAME]);
+                room = rooms[i];
             }
-                   
-            // for each room... use static data to initialize
-            for(var i = 0; i < __roomIds.length; i++) {
-                self.setStage_Room(__roomIds[i], __roomNames[i]);
+            
+            // for each room, use static data to initialize
+            for(var i = 0; i < roomIds.length; i++) {
+                self.setStage_Room(roomIds[i], roomNames[i]);
             }
             
         });
@@ -1858,11 +1960,9 @@ $(document).ready(function() {
     
     APP.ajax_get_version(function() {
         // Instantiate manager objects
-        APP.data.stageManager = new APP.StageManager(),
-        APP.data.menuManager = new APP.MenuManager(APP.data.stageManager);
+        APP.data.stageManager = new APP.StageManager();
         
         // Construct menus
-        APP.data.menuManager.init();
         APP.data.stageManager.init();
         
         // Start clock
