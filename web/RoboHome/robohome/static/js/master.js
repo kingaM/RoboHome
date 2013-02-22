@@ -1022,6 +1022,7 @@ APP.MenuManager = function(stageManager) {
             this.buttons[stage.menuId].push({buttonId: stage.buttonId, stageId: stage.stageId, data: stage.data});
         } else {
             console.warn('WARNING: ' + stage.buttonId + ' already exists! Button remapped.');
+            console.trace(this);
             button = $('#' + stage.buttonId);
             for(var prop in this.buttons) {
                 if(this.buttons.hasOwnProperty(prop)) {
@@ -1051,9 +1052,10 @@ APP.MenuManager = function(stageManager) {
     this.removeButton = function(stage) {
         if(document.getElementById(stage.buttonId) !== null) {
             for(var i = 0; i < this.buttons[stage.menuId].length; i++) {
-                if(this.buttons[stage.menuId][i] = buttonId) {
+                if(this.buttons[stage.menuId][i].buttonId === stage.buttonId) {
                     $('#' + stage.buttonId).remove();
                     this.buttons[stage.menuId].splice(i, 1);
+                    break;
                 }
             }
         }
@@ -1137,10 +1139,9 @@ APP.StageManager = function() {
      *
      */
     this.removeStage = function(stage) {
-        
-        this.menuManager.removeButton(stage.menuId, stage.buttonId);
+        this.toggleStage(null);
         stages.remove(stage.stageId);
-        
+        this.menuManager.removeButton(stage);
     }
     
     /**
@@ -1257,7 +1258,7 @@ APP.StageManager = function() {
                     addButton,
                     removePanel,
                     removeInputSelector = 'context-remove-room-name-input',
-                    removeButton,
+                    removeButtonElement,
                     removeWarning,
                     container;
                 
@@ -1305,8 +1306,8 @@ APP.StageManager = function() {
                     type: 'text',
                     placeholder: 'Confirm this room\'s name'})
                 );
-                removeButton = $('<a href="#">Remove</a>').attr({id: 'context-remove-room-button', class: 'button'});
-                removeButton.click(function() {
+                removeButtonElement = $('<a href="#">Remove</a>').attr({id: 'context-remove-room-button', class: 'button'});
+                removeButtonElement.click(function() {
                     var dis = $(this),
                         removeRoomName = $('#' + removeInputSelector).val();
                     if(removeRoomName === stage.data.roomName) {
@@ -1315,7 +1316,7 @@ APP.StageManager = function() {
                             stage.data.roomId,
                             function(json) {
                                 dis.parent().removeClass(APP.DOM_HOOK.UPDATING);
-                                self.removeStage(stage);
+                                // self.removeStage(stage);
                             },
                             function() {
                                 // do nothing
@@ -1325,7 +1326,7 @@ APP.StageManager = function() {
                         removeWarning.html('Names do not match. Please reconfirm.');
                     }
                 });
-                container.append(removeButton);
+                container.append(removeButtonElement);
                 removePanel.append(container);
                 roomsPanel.append(removePanel);
                 return roomsPanel;
@@ -1348,7 +1349,7 @@ APP.StageManager = function() {
                     removeSelectSelector = 'context-remove-item-select',
                     removeSelect,
                     removeInputSelector = 'context-remove-item-name-input',
-                    removeButton,
+                    removeButtonElement,
                     removeWarning,
                     itemTypes,
                     optgroup,
@@ -1510,8 +1511,8 @@ APP.StageManager = function() {
                     placeholder: 'Confirm this item\'s name'})
                 );
                 
-                removeButton = $('<a href="#">Remove</a>').attr({id: 'context-remove-item-button', class: 'button'});
-                removeButton.click(function() {
+                removeButtonElement = $('<a href="#">Remove</a>').attr({id: 'context-remove-item-button', class: 'button'});
+                removeButtonElement.click(function() {
                     var self = $(this),
                         targetItemId = parseInt($('#' + removeSelectSelector).val()),
                         targetOption = $('#' + removeSelectSelector).find('option[value="' + targetItemId + '"]'),
@@ -1545,7 +1546,7 @@ APP.StageManager = function() {
                         removeWarning.html('Names do not match. Please reconfirm.');
                     }
                 });
-                container.append(removeButton);
+                container.append(removeButtonElement);
                 removePanel.append(container);
                 itemsPanel.append(removePanel);
                 return itemsPanel;
@@ -1613,7 +1614,7 @@ APP.StageManager = function() {
                 
                 // If there are any unmatched buttons, it means they need to be removed (with its associated stage);
                 for(var i = 0; i < buttonsCopy.length; i++) {
-                    this.removeStage(stages.get(buttonsCopy[i].data.stageId));
+                    self.removeStage(stages.get(buttonsCopy[i].stageId));
                 }
                 
                 // If there are any unmatched rooms, it means they need to be added
