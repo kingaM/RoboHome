@@ -112,6 +112,7 @@ APP.URL.EVENTS = '/version/' + APP.CONSTANTS.VERSION + '/events/';
 APP.URL.EVENTS_EVENTID = function(eventId) {
     return '/version/' + APP.CONSTANTS.VERSION + '/events/' + eventId + '/';
 };
+APP.URL.WHITELIST = '/version/' + APP.CONSTANTS.VERSION + '/whitelist/';
 
 // ---------------------------------------------------------------------
 // Data structures
@@ -320,7 +321,7 @@ APP.unpackToPayload = function(json) {
  * @method APP.ajax
  * @param {String} requestType  HTTP request type e.g. 'GET', 'POST', etc.
  * @param {String} url          URL string to send request to
- * @param {Object} payload      Object to feed into the data property
+ * @param {any} payload         Data to feed into the data property
  * @param {Function} callback   Callback function
  * @param {Function} error      Function to execute if AJAX request fails
  */
@@ -411,9 +412,9 @@ APP.ajax_post_rooms = function(roomName, callback, error) {
 
 /**
  * @method APP.ajax_delete_rooms_roomId
- * @param {int} roomId RoomId
- * @param {Function} callback Callback function to execute after response is received
- * @param {Function} error    Function to execute if AJAX request fails
+ * @param {int} roomId          RoomId
+ * @param {Function} callback   Callback function to execute after response is received
+ * @param {Function} error      Function to execute if AJAX request fails
  */
 APP.ajax_delete_rooms_roomId = function(roomId, callback, error) {
     APP.ajax('DELETE', APP.URL.ROOMS_ROOMID(roomId),
@@ -425,12 +426,12 @@ APP.ajax_delete_rooms_roomId = function(roomId, callback, error) {
 
 /**
  * @method APP.ajax_delete_rooms_roomId_items
- * @param {int} roomId Room ID
- * @param {String} targetBrand Brand of item
- * @param {String} Static IPv4 address of item
- * @param {String} targetName Name of item
- * @param {String} targetType Type of item
- * @param {Function} callback Callback function to execute after response is received
+ * @param {int} roomId          Room ID
+ * @param {String} targetBrand  Brand of item
+ * @param {String} Static       IPv4 address of item
+ * @param {String} targetName   Name of item
+ * @param {String} targetType   Type of item
+ * @param {Function} callback   Callback function to execute after response is received
  * @param {Function} error      Function to execute if AJAX request fails
  * Add new item to room
  */
@@ -448,9 +449,9 @@ APP.ajax_post_rooms_roomId_items = function(roomId, itemBrand, itemIP, itemName,
 
 /**
  * @method APP.ajax_delete_rooms_roomId_items_itemId
- * @param {int} roomId Room ID
- * @param {int} itemId Item ID
- * @param {Function} callback Callback function to execute after response is received
+ * @param {int} roomId          Room ID
+ * @param {int} itemId          Item ID
+ * @param {Function} callback   Callback function to execute after response is received
  * @param {Function} error      Function to execute if AJAX request fails
  * Deletes specified item in room
  */
@@ -463,21 +464,46 @@ APP.ajax_delete_rooms_roomId_items_itemId = function(roomId, itemId, callback, e
 
 /**
  * @method APP.ajax_put_rooms_roomId_items_itemId_cmd
- * @param {int} roomId ID of room
- * @param {int} itemId ID of item
- * @param {String} cmd Command to send to the item
+ * @param {int} roomId        ID of room
+ * @param {int} itemId        ID of item
+ * @param {String} cmd        Command to send to the item
  * @param {Function} callback Callback function to execute after response is received
- * @param {Function} error      Function to execute if AJAX request fails
+ * @param {Function} error    Function to execute if AJAX request fails
  * Updates the specified item in the room with the new state
  */
 APP.ajax_put_rooms_roomId_items_itemId_cmd = function(roomId, itemId, cmd, callback, error) {
     APP.ajax('PUT', APP.URL.ROOMS_ROOMID_ITEMS_ITEMID_CMD(roomId, itemId, cmd), '',
-        function(json) {
-            callback();
-        },
+        callback,
         error
     );
 }
+
+/**
+ * @method APP.ajax_get_whitelist
+ * @param {Function} callback Callback function to execute after response is received
+ * @param {Function} error    Function to execute if AJAX request fails
+ * Fetches the string of whitelisted email addresses
+ */
+APP.ajax_get_whitelist = function(callback, error) {
+    APP.ajax('GET', APP.URL.WHITELIST, '',
+    callback,
+    error
+    );
+};
+
+/**
+ * @method APP.ajax_get_whitelist
+ * @param {any} payload         Data to feed into the data property
+ * @param {Function} callback   Callback function to execute after response is received
+ * @param {Function} error      Function to execute if AJAX request fails
+ * Fetches the string of whitelisted email addresses
+ */
+APP.ajax_put_whitelist = function(payload, callback, error) {
+    APP.ajax('PUT', APP.URL.WHITELIST, payload,
+    callback,
+    error
+    );
+};
 
 // ---------------------------------------------------------------------
 // Core
@@ -1011,7 +1037,6 @@ APP.MenuManager = function(stageManager) {
         var button,
             buttonWrapper;
         if(document.getElementById(stage.buttonId) === null) {
-            console.log('Button: ' + stage.buttonId + ' created');
             button = $('<a>' + stage.buttonText + '</a>').attr({id: stage.buttonId, href: '#'}),
             buttonWrapper = $('<li></li>').append(button);
             
@@ -1022,7 +1047,7 @@ APP.MenuManager = function(stageManager) {
             this.buttons[stage.menuId].push({buttonId: stage.buttonId, stageId: stage.stageId, data: stage.data});
         } else {
             console.warn('WARNING: ' + stage.buttonId + ' already exists! Button remapped.');
-            console.trace(this);
+            // console.trace(this);
             button = $('#' + stage.buttonId);
             for(var prop in this.buttons) {
                 if(this.buttons.hasOwnProperty(prop)) {
@@ -1080,25 +1105,25 @@ APP.StageManager = function() {
         stages = new APP.Map(),
         menuManager = new APP.MenuManager(this),
         primaryMenuMap = {
-            'button-home' :  {
+            'button-home':  {
                 menuId: null,
                 buttonText: 'Home',
                 class: 'blue',
                 buttons: {}
             },
-            'button-control' : {
+            'button-control': {
                 menuId: 'menu-control',
                 buttonText: 'Control',
                 class: 'blue',
                 buttons: {}
             },
-            'button-rules' : {
+            'button-rules': {
                 menuId: 'menu-rules',
                 buttonText: 'Rules',
                 class: 'green',
                 buttons: {}
             },
-            'button-config' : {
+            'button-config': {
                 menuId: 'menu-config',
                 buttonText: 'Config',
                 class: 'yellow',
@@ -1123,7 +1148,6 @@ APP.StageManager = function() {
      * If the new stage shares an existing stageId, it will replace the old stage
      */
     this.addStage = function(stage) {
-        
         if(document.getElementById(stage.stageId) === null) {
             var stageElement = $('<div></div>').attr({id: stage.stageId, class: 'stage'});
             stageElement.append($('<div></div>').addClass('stage-content ' + stage.colorClass));
@@ -1215,7 +1239,7 @@ APP.StageManager = function() {
         stage.setUpdateError(function() {
             // default
         });
-        stage.setPollFunction(1000, function() {
+        stage.setPollFunction(undefined, function() {
             
         });
     }
@@ -1225,12 +1249,16 @@ APP.StageManager = function() {
      */
     this.setStage_Room = function(roomId, roomName) {
         var safeRoomName = roomName.replace(/\s/, '-'),
-            stageId = this.addStage(new APP.Stage('menu-control',
-                'button-control-' + safeRoomName + '-id-' + roomId, roomName, 'stage-control-' + safeRoomName)),
-            stage = stages.get(stageId);
+            stageObj = new APP.Stage('menu-control',
+                'button-control-' + safeRoomName + '-id-' + roomId, roomName, 'stage-control-' + safeRoomName + '-id-' + roomId),
+            stageId,
+            stage;
         
+        stageId = stageObj.stageId;
+        stage = stageObj;
         stage.data.roomId = roomId;
         stage.data.roomName = roomName;
+        this.addStage(stageObj);
         
         // this function fetches the latest data of the given room
         function getRoom(roomId) {
@@ -1279,12 +1307,19 @@ APP.StageManager = function() {
                     $(this).parent().addClass(APP.DOM_HOOK.UPDATING);
                     APP.ajax_post_rooms(addRoomName,
                         function(json) {
-                            var obj = APP.unpackToPayload(json),
-                                roomId = obj[APP.API.ROOMID.ID];
-                            dis.parent().removeClass(APP.DOM_HOOK.UPDATING);
-                            self.setStage_Room(roomId, addRoomName);
-                            stage.tearDown();
-                            stage.construct();
+                            APP.ajax_get_state(
+                                function() {
+                                    var obj = APP.unpackToPayload(json),
+                                        roomId = obj[APP.API.ROOMID.ID];
+                                    dis.parent().removeClass(APP.DOM_HOOK.UPDATING);
+                                    self.setStage_Room(roomId, addRoomName);
+                                    stage.tearDown();
+                                    stage.construct();
+                                },
+                                function() {
+                                    // do nothing
+                                }
+                            );
                         },
                         function() {
                             // do nothing
@@ -1676,10 +1711,72 @@ APP.StageManager = function() {
         stage.setUpdateError(function() {
             // default
         });
-        stage.setPollFunction(1000, function() {
+        stage.setPollFunction(undefined, function() {
             
         });
     };
+    
+    /**
+     *
+     */
+    this.setStage_Whitelist = function() {
+        var stageId = this.addStage(new APP.Stage('menu-config', 'button-config-whitelist', 'Whitelist', 'stage-whitelist')),
+            stage = stages.get(stageId);
+        
+        stage.setOnShow(function() {
+            // default
+        });
+        stage.setOnHide(function() {
+            // default
+        });
+        stage.setMenuConstruct(function() {
+            // default
+        });
+        stage.setConstruct(function() {
+            var box = $('<div></div>').addClass('whitelist-display'),
+                text = $('<div></div>').html('Caution: This page does not update itself. Information retrieved ' + APP.data.connection.lastSuccess),
+                textarea = $('<textarea></textarea>').attr({id: 'whitelist-textarea'});
+                button = $('<button>Submit</button>');
+            
+            button.click(function() {
+                APP.ajax_put_whitelist(
+                    textarea.val(),
+                    function() {
+                        text.html('Caution: This page does not update itself. Information retrieved ' + APP.data.connection.lastSuccess);
+                    },
+                    function() {
+                        // do nothing
+                    }
+                );
+            });
+            
+            APP.ajax_get_whitelist(
+                function(json) {
+                    var obj = APP.unpackToPayload(json);
+                    textarea.html(obj);
+                },
+                function() {
+                    // do nothing
+                }
+            );
+            box.append(text);
+            box.append(textarea);
+            box.append(button);
+            stage.getContext().append(box);
+        });
+        stage.setTearDown(function() {
+            // default
+        });
+        stage.setUpdate(function() {
+            // default
+        });
+        stage.setUpdateError(function() {
+            // default
+        });
+        stage.setPollFunction(undefined, function() {
+            
+        });
+    }
     
     /**
      * @for APP.StageManager
@@ -1780,9 +1877,12 @@ APP.StageManager = function() {
             }
             
         });
-        
+                
         // eca stage
         this.setStage_ECA();
+        
+        // whitelist stage
+        this.setStage_Whitelist();
         
     };
     

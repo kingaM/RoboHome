@@ -79,7 +79,7 @@ def rooms_version():
 @app.route('/version/<string:version>/state/', methods=['GET'])
 def structure(version):
     if g.user is None and not isIpOnLocalNetwork():
-       return redirect(url_for('login'))
+        return redirect(url_for('login'))
     if request.method == 'GET':
         # Return structure of house. This is used for passing hierarchial info
         return jsonify(pack(house.getStructure()))
@@ -88,7 +88,7 @@ def structure(version):
 @app.route('/version/<string:version>/rooms/', methods=['POST'])
 def rooms(version):
     if g.user is None and not isIpOnLocalNetwork():
-       return redirect(url_for('login'))
+        return redirect(url_for('login'))
     if request.method == 'POST':
         # Create new room
         args = request.args.to_dict()
@@ -157,7 +157,7 @@ def rooms_roomId_items_itemId_cmd(version, roomId, itemId, cmd):
 @app.route('/version/<string:version>/events/', methods=['GET', 'POST'])
 def events(version):
     if g.user is None and not isIpOnLocalNetwork():
-      return redirect(url_for('login'))
+        return redirect(url_for('login'))
     if request.method == 'GET':
         # Return a list of all events
         pass
@@ -182,6 +182,23 @@ def events_eventId(version, eventId):
     if request.method == 'DELETE':
         # Remove event
         pass
+
+
+
+MOCK_WHITELIST = {
+    'LIST': 'foo@bar.com\nbar@foo.com\n'
+}
+
+@app.route('/version/<string:version>/whitelist/', methods=['GET', 'PUT'])
+def whitelist(version):
+    if g.user is None and not isIpOnLocalNetwork():
+        return redirect(url_for('login'))
+    if request.method == 'GET':
+        return jsonify(pack(MOCK_WHITELIST['LIST']))
+    if request.method == 'PUT':
+        MOCK_WHITELIST['LIST'] = request.data
+        print MOCK_WHITELIST['LIST']
+        return jsonify(pack('success'))
 
 # OPENID ----------------------------------------------------------------
 # Based upon: https://github.com/mitsuhiko/flask-openid

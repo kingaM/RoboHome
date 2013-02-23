@@ -524,172 +524,19 @@ div.stage {
     text-align: center;
 }
 
-/*
-.stage-content .attachments.command,
-.stage-content .attachments.collapse {
-    display: block;
-    margin: 0 0 0 -0.5em;
-    padding: 0.5em 0.5em 0.5em 0.3em;
-    border-left: none;
-    clear: left;
-}
-.stage-content .attachments.collapse {
-    margin-top: -0.8em;
-}
-.stage-content .attachments.command > .attachment {
-    vertical-align: top;
+.stage-content .whitelist-display div {
+    font-size: 0.7em;
 }
 
-.stage-content .attachments.collapse .attachment {
-    display: inline-block;
-    border: 1px solid #FF0000;
-    min-height: 1em;
-    min-width: 5.35em;
-    margin: 0.2em 0.2em;
-    text-align: center;
-}
-.stage-content .attachments.command > .attachment > div.collapse,
-.stage-content .attachments.command > .attachment .filler {
-    height: 1.2em;
-}
-.stage-content .attachments.command > .attachment > div > .sprite {
-    width: 0em;
-    height: 0em;
-    display: inline-block;
-    position: relative;
-    border-width: 0.5em;
-    border-style: solid;
-    border-color: transparent;
-    border-bottom-color: #ffffff;
-    bottom: 0.2em;
-}
-.stage-content .attachments.command > .attachment > div.collapse {
-    border: 1px solid #444444;
-    background-color: rgba(20,20,20,0.6);
-}
-.stage-content .attachments.command > .attachment > div.collapsed {
-    background-color: rgba(255,0,0,0.6);
-}
-.stage-content .attachments.command > .attachment > div.collapsed > .sprite {
-    border-color: transparent;
-    border-top-color: #ffffff;
-    bottom: 0;
-    top: 0.3em;
+.stage-content .whitelist-display button {
+    padding: 0.3em 1em;
 }
 
-.stage-content .attachments.panel {
-    clear: both;
-}
-
-.stage-content .attachment {
-    overflow: hidden;
-}
-
-.stage-content .entity-display.door .entity-display,
-.stage-content .entity-display.window .entity-display {
-    width: 23%;
-    float: left;
-    margin-right: 1em;
-}
-
-.stage-content .entity-display .attachments.self {
-    display: inline-block;
-    margin: 0 0.5em;
-    text-align: center;
-}
-
-.stage-content .entity-display.door .attachments .self,
-.stage-content .entity-display.window .attachments .self {
-    border: none;
+#whitelist-textarea {
+    width: 50%;
+    height: 20em;
     display: block;
 }
-
-.stage-content .entity-display .attachments.command > .attachment,
-.stage-content .entity-display .attachments.self > .attachment {
-    display: inline-block;
-}
-
-.stage-content .entity-display .attacments.command > .attachment > div {
-    display: block;
-}
-
-.stage-content .entity-display .attachments.command > .attachment > div,
-.stage-content .entity-display .attachments.self > .attachment {
-            cursor: pointer;
-            text-align: center;
-            margin: 0 0.2em;
-            padding: 0.3em 1em;
-            font-family: sans-serif;
-            font-weight: bold;
-            font-size: 0.7em;
-    -webkit-box-shadow: 0 0 1px 1px rgba(0,0,0,0.7) inset;
-       -moz-box-shadow: 0 0 1px 1px rgba(0,0,0,0.7) inset;
-        -ms-box-shadow: 0 0 1px 1px rgba(0,0,0,0.7) inset;
-         -o-box-shadow: 0 0 1px 1px rgba(0,0,0,0.7) inset;
-            box-shadow: 0 0 1px 1px rgba(0,0,0,0.7) inset;
-}
-
-.stage-content .entity-display .attachments.self .attachment { width: 6em; }
-.stage-content .entity-display .attachments.command .attachment > div.command { width: 5.8em; }
-.stage-content .entity-display .bar .control-button:first-child { margin-left: 1em; }
-
-.stage-content .entity-display.lock > .attachments.command > .attachment > div.command,
-.stage-content .entity-display.curtain > .attachments.command > .attachment > div.command {
-    margin: 0;
-    padding: 0.2em 0;
-    display: block;
-}
-
-.stage-content .entity-display > .attachments.command > .attachment:not(.self) {
-    white-space: pre-wrap;
-}
-
-.stage-content .entity-display .filler {
-    cursor: default !important;
-    border: 1px solid #444444;
-    background-color: rgba(20,20,20,0.6);
-    background-image:        -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,255,255,0.2)), color-stop(30%,rgba(255,255,255,0))) !important;
-    background-image: -webkit-linear-gradient(top, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%) !important;
-    background-image:    -moz-linear-gradient(top, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%) !important;
-    background-image:     -ms-linear-gradient(top, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%) !important;
-    background-image:      -o-linear-gradient(top, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%) !important;
-    background-image:   linear-gradient(to bottom, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%) !important;
-}
-
-.stage-content .entity-display[data-state-door="0"] > .attachments.command > .attachment > div.command.door,
-.stage-content .entity-display[data-state-window="0"] > .attachments.command > .attachment > div.command.window,
-.stage-content .entity-display[data-state-curtain="0"] > .attachments.command > .attachment > div.command.curtain,
-.stage-content .entity-display[data-state-lock="0"] > .attachments.command > .attachment > div.command.lock,
-.stage-content .entity-display.door[data-state-self="0"] > .attachments.self > .attachment,
-.stage-content .entity-display.window[data-state-self="0"] > .attachments.self > .attachment,
-.stage-content .entity-display.curtain[data-state-self="0"] > .attachments.self > .attachment,
-.stage-content .entity-display.lock[data-state-self="0"] > .attachments.self > .attachment {
-    border: 1px solid #444444;
-    background-color: rgba(0,150,0,0.6);
-}
-.stage-content .entity-display[data-state-door="1"] > .attachments.command > .attachment > div.command.door,
-.stage-content .entity-display[data-state-window="1"] > .attachments.command > .attachment > div.command.window,
-.stage-content .entity-display[data-state-curtain="1"] > .attachments.command > .attachment > div.command.curtain,
-.stage-content .entity-display[data-state-lock="1"] > .attachments.command > .attachment > div.command.lock,
-.stage-content .entity-display.door[data-state-self="1"] > .attachments.self > .attachment,
-.stage-content .entity-display.window[data-state-self="1"] > .attachments.self > .attachment,
-.stage-content .entity-display.curtain[data-state-self="1"] > .attachments.self > .attachment,
-.stage-content .entity-display.lock[data-state-self="1"] > .attachments.self > .attachment {
-    border: 1px solid #666666;
-    background-color: rgba(255,200,0,0.6);
-}
-.stage-content .entity-display[data-state-light="0"] > .attachments.command > .attachment > div.command.light,
-.stage-content .entity-display.light[data-state-self="0"] > .attachments.self > .attachment.self {
-    border: 1px solid #444444;
-    background-color: rgba(20,20,20,0.6);
-}
-.stage-content .entity-display[data-state-light="1"] > .attachments.command > .attachment > div.command.light,
-.stage-content .entity-display.light[data-state-self="1"] > .attachments.self > .attachment {
-    border: 1px solid #AAAAAA;
-    background-color: rgba(255,255,255,0.6);
-}
-*/
-
 
 /* ----- pretty borders -----
  * 
