@@ -191,7 +191,7 @@ def dottedQuadToNum(ip):
     return struct.unpack('L',socket.inet_aton(ip))[0]
 
 def networkMask(ip,bits):
-    return dottedQuadToNum(ip) and ((2L<<bits-1) - 1)
+    return dottedQuadToNum(ip) & ((2L<<bits-1) - 1)
 
 def addressInNetwork(ip,net):
    return dottedQuadToNum(ip) & net == net
@@ -210,7 +210,7 @@ def getIp():
 
 def isIpOnLocalNetwork():
     network10 = networkMask("10.0.0.0",24)
-    network192 = networkMask("192.168.0.0",24)
+    network192 = networkMask("192.168.0.0",255)
     return addressInNetwork(getIp(), network10) or addressInNetwork(getIp(), network192) or getIp() == '127.0.0.1'
 
 
