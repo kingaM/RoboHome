@@ -186,19 +186,30 @@ def events_eventId(version, eventId):
 
 
 MOCK_WHITELIST = {
-    'LIST': 'foo@bar.com\nbar@foo.com\n'
+    'emails': [
+        'foo@bar.com',
+        'bar@foo.com'
+    ]
 }
 
-@app.route('/version/<string:version>/whitelist/', methods=['GET', 'PUT'])
+@app.route('/version/<string:version>/whitelist/', methods=['GET', 'POST', 'DELETE'])
 def whitelist(version):
     if g.user is None and not isIpOnLocalNetwork():
         return redirect(url_for('login'))
+        
     if request.method == 'GET':
-        return jsonify(pack(MOCK_WHITELIST['LIST']))
-    if request.method == 'PUT':
-        MOCK_WHITELIST['LIST'] = request.data
-        print MOCK_WHITELIST['LIST']
+        return jsonify(pack(MOCK_WHITELIST))
+    
+    if request.method == 'POST':
+        args = request.args.to_dict()
+        MOCK_WHITELIST['emails'].append(args['email'])
         return jsonify(pack('success'))
+    
+    if request.method == 'DELETE':
+        args = request.args.to_dict()
+        MOCK_WHITELIST['emails'] = filter(lambda email : email != args['email'], MOCK_WHITELIST['emails'])
+        return jsonify(pack('success'))
+        
 
 # OPENID ----------------------------------------------------------------
 # Based upon: https://github.com/mitsuhiko/flask-openid
