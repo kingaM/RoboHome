@@ -1814,7 +1814,9 @@ APP.StageManager = function() {
                 
                 // If there are any unmatched buttons, it means they need to be removed (with its associated stage);
                 for(var i = 0; i < buttonsCopy.length; i++) {
-                    self.removeStage(stages.get(buttonsCopy[i].stageId));
+                    if(buttonsCopy[i].stageId !== 'stage-no-room') {
+                        self.removeStage(stages.get(buttonsCopy[i].stageId));
+                    }
                 }
                 
                 // If there are any unmatched rooms, it means they need to be added
