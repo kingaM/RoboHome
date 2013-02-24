@@ -90,6 +90,11 @@ APP.API.ITEMS.NAME = 'name';
 APP.API.ITEMS.ITEM_TYPE = 'itemType';
 APP.API.ITEMS.ITEM_ID = 'itemId';
 
+// /whitelist
+APP.API.WHITELIST = {};
+APP.API.WHITELIST.EMAIL = 'email';
+APP.API.WHITELIST.EMAILS = 'emails';
+
 // RESTful API URL specification
 // Remember to specify the trailing slash so Flask does not have to redirect
 APP.URL = {};
@@ -482,7 +487,7 @@ APP.ajax_put_rooms_roomId_items_itemId_cmd = function(roomId, itemId, cmd, callb
  * @method APP.ajax_get_whitelist
  * @param {Function} callback Callback function to execute after response is received
  * @param {Function} error    Function to execute if AJAX request fails
- * Fetches the string of whitelisted email addresses
+ * Fetches the list of whitelisted email addresses
  */
 APP.ajax_get_whitelist = function(callback, error) {
     APP.ajax('GET', APP.URL.WHITELIST, '',
@@ -492,14 +497,32 @@ APP.ajax_get_whitelist = function(callback, error) {
 };
 
 /**
- * @method APP.ajax_get_whitelist
- * @param {any} payload         Data to feed into the data property
+ * @method APP.ajax_post_whitelist
+ * @param {String} email        Email address string to add
  * @param {Function} callback   Callback function to execute after response is received
  * @param {Function} error      Function to execute if AJAX request fails
- * Fetches the string of whitelisted email addresses
+ * Adds an email address to the whitelist
  */
-APP.ajax_put_whitelist = function(payload, callback, error) {
-    APP.ajax('PUT', APP.URL.WHITELIST, payload,
+APP.ajax_post_whitelist = function(email, callback, error) {
+    APP.ajax('POST', APP.URL.WHITELIST + '?' + 
+    APP.API.WHITELIST.EMAIL + '=' + email,
+    '',
+    callback,
+    error
+    );
+};
+
+/**
+ * @method APP.ajax_delete_whitelist
+ * @param {String} email        Email address string to delete
+ * @param {Function} callback   Callback function to execute after response is received
+ * @param {Function} error      Function to execute if AJAX request fails
+ * Deletes an email address from the whitelist
+ */
+APP.ajax_delete_whitelist = function(email, callback, error) {
+    APP.ajax('DELETE', APP.URL.WHITELIST + '?' + 
+    APP.API.WHITELIST.EMAIL + '=' + email,
+    '',
     callback,
     error
     );
@@ -1284,6 +1307,7 @@ APP.StageManager = function() {
                     addPanel,
                     addInputSelector = 'context-add-room-name-input',
                     addButton,
+                    addWarning,
                     removePanel,
                     removeInputSelector = 'context-remove-room-name-input',
                     removeButtonElement,
@@ -1294,6 +1318,8 @@ APP.StageManager = function() {
                 addPanel = $('<fieldset></fieldset');
                 addPanel.append($('<legend></legend>').html('Add new room'));
                 container = $('<div></div>');
+                addWarning = $('<div></div>').addClass(APP.DOM_HOOK.ERROR_MESSAGE_DISPLAY);
+                container.append(addWarning);
                 container.append($('<input></input>').attr({
                     id: addInputSelector,
                     type: 'text',
@@ -1303,28 +1329,31 @@ APP.StageManager = function() {
                 addButton.click(function() {
                     var dis = $(this),
                         addRoomName = $('#' + addInputSelector).val();
-                    console.log(addRoomName);
-                    $(this).parent().addClass(APP.DOM_HOOK.UPDATING);
-                    APP.ajax_post_rooms(addRoomName,
-                        function(json) {
-                            APP.ajax_get_state(
-                                function() {
-                                    var obj = APP.unpackToPayload(json),
-                                        roomId = obj[APP.API.ROOMID.ID];
-                                    dis.parent().removeClass(APP.DOM_HOOK.UPDATING);
-                                    self.setStage_Room(roomId, addRoomName);
-                                    stage.tearDown();
-                                    stage.construct();
-                                },
-                                function() {
-                                    // do nothing
-                                }
-                            );
-                        },
-                        function() {
-                            // do nothing
-                        }
-                    );
+                    if(addRoomName === '' || /\s+/.test(addRoomName) === true) {
+                        addWarning.html('Room name cannot be undefined or all whitespace.');
+                    } else {
+                        $(this).parent().addClass(APP.DOM_HOOK.UPDATING);
+                        APP.ajax_post_rooms(addRoomName,
+                            function(json) {
+                                APP.ajax_get_state(
+                                    function() {
+                                        var obj = APP.unpackToPayload(json),
+                                            roomId = obj[APP.API.ROOMID.ID];
+                                        dis.parent().removeClass(APP.DOM_HOOK.UPDATING);
+                                        self.setStage_Room(roomId, addRoomName);
+                                        stage.tearDown();
+                                        stage.construct();
+                                    },
+                                    function() {
+                                        // do nothing
+                                    }
+                                );
+                            },
+                            function() {
+                                // do nothing
+                            }
+                        );
+                    }
                 });
                 container.append(addButton);
                 addPanel.append(container);
@@ -1443,8 +1472,8 @@ APP.StageManager = function() {
                         duplicateIP = false;
                     
                     targetName = $('#' + addInputNameSelector).val();
-                    if(targetName === '') {
-                        addWarningName.html('Name is undefined.');
+                    if(targetName === '' || /\s+/.test(addRoomName) === true) {
+                        addWarningName.html('Name cannot be undefined or entirely whitespace.');
                     } else {
                         addWarningName.html('');
                     }
@@ -1662,7 +1691,7 @@ APP.StageManager = function() {
             updateMenu();
             
             $('#context-bar').html('');
-            $('#context-menu div.updating').removeClass('updating');
+            $('#context-menu div.' + APP.DOM_HOOK.UPDATING).removeClass(APP.DOM_HOOK.UPDATING);
             for(var display in stage.data.itemTypeDisplays) {
                 if(stage.data.itemTypeDisplays.hasOwnProperty(display)) {
                     stage.data.itemTypeDisplays[display].update();
@@ -1670,7 +1699,7 @@ APP.StageManager = function() {
             }
         });
         stage.setUpdateError(function() {
-            $('#context-bar').html('Caution: Connection to server lost. Displaying last available state info retrieved at ' + APP.clock.getTimestamp(APP.data.connection.lastSuccess));
+            $('#context-bar').html('Caution: Connection to server lost. Displaying last available state info retrieved at ' + APP.data.connection.lastSuccess);
             for(var display in stage.data.itemTypeDisplays) {
                 if(stage.data.itemTypeDisplays.hasOwnProperty(display)) {
                     stage.data.itemTypeDisplays[display].updateError();
@@ -1733,6 +1762,84 @@ APP.StageManager = function() {
             // default
         });
         stage.setConstruct(function() {
+            APP.ajax_get_whitelist(
+                function(json) {
+                    var obj = APP.unpackToPayload(json),
+                        emails = obj[APP.API.WHITELIST.EMAILS],
+                        container = $('<div></div>').addClass('whitelist-display'),
+                        warning = $('<div></div').addClass(APP.DOM_HOOK.ERROR_MESSAGE_DISPLAY);
+                    
+                    function constructRemoveForm(email) {
+                        var panel = $('<div></div>'),
+                            field = $('<span></span>').html(email),
+                            removeButton = $('<button>Remove</button>').attr({id: 'whitelist-remove-button-' + email});
+                            
+                        removeButton.click(function() {
+                            var parent = $(this).parent();
+                            parent.addClass(APP.DOM_HOOK.UPDATING);
+                            APP.ajax_delete_whitelist(email,
+                                function() {
+                                    console.log('foo');
+                                    parent.remove();
+                                },
+                                function() {
+                                    // TODO
+                                    parent.removeClass(APP.DOM_HOOK.UPDATING);
+                                }
+                            );
+                        });
+                        panel.append(field);
+                        panel.append(removeButton);
+                        container.append(panel);
+                    }
+                    
+                    function constructAddForm() {
+                        var panel = $('<div></div>'),
+                            form = $('<input></input>').attr({type: 'text', id: 'whitelist-add-form'}),
+                            addButton = $('<button>Add</button>').attr({id: 'whitelist-add-button'});
+                        
+                        addButton.click(function() {
+                            var parent = $(this).parent(),
+                                email = $('#' + 'whitelist-add-form').val();
+                                
+                            // regex from http://stackoverflow.com/questions/46155/validate-email-address-in-javascript
+                            if(/[^\s@]+@[^\s@]+\.[^\s@]+/.test(email) === true) {
+                                    parent.addClass(APP.DOM_HOOK.UPDATING);
+                                APP.ajax_post_whitelist(email,
+                                    function() {
+                                        parent.remove();
+                                        constructRemoveForm(email);
+                                        constructAddForm();
+                                    },
+                                    function() {
+                                        // TODO
+                                        parent.removeClass(APP.DOM_HOOK.UPDATING);
+                                    }
+                                );
+                            } else {
+                                warning.html('New email address must be in format [string] @ [string] . [string]');
+                            }
+                        });
+                        panel.append(form);
+                        panel.append(addButton);
+                        container.append(panel);
+                    }
+                    
+                    stage.getContext().append(container);
+                    container.append(warning);
+                    
+                    for(var i = 0; i < emails.length; i++) {
+                        constructRemoveForm(emails[i]);
+                    }
+                    constructAddForm();
+                    
+                },
+                function() {
+                    // do nothing
+                }
+            );
+            
+            /*
             var box = $('<div></div>').addClass('whitelist-display'),
                 text = $('<div></div>').html('Caution: This page does not update itself. Information retrieved ' + APP.data.connection.lastSuccess),
                 textarea = $('<textarea></textarea>').attr({id: 'whitelist-textarea'});
@@ -1763,6 +1870,7 @@ APP.StageManager = function() {
             box.append(textarea);
             box.append(button);
             stage.getContext().append(box);
+            */
         });
         stage.setTearDown(function() {
             // default

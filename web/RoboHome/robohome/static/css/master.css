@@ -532,10 +532,70 @@ div.stage {
     padding: 0.3em 1em;
 }
 
-#whitelist-textarea {
-    width: 50%;
-    height: 20em;
-    display: block;
+.whitelist-display {
+    font-size: 1.3em;
+    width: 30%;
+}
+
+@media only screen and (max-width: 1200px) {
+    .whitelist-display {
+        font-size: 2.6em;
+        width: 70%;
+    }
+}
+
+.whitelist-display div {
+    padding: 0.4em;
+    overflow: auto;
+}
+
+.whitelist-display span {
+    line-height: 2em;
+}
+
+.whitelist-display span,
+.whitelist-display input {
+    display: inline-block;
+    float: left;
+}
+
+.whitelist-display button,
+.whitelist-display input {
+            color: #FFFFFF;
+            font-size: 0.9em;
+            border: 1px solid #666666;
+            background: rgba(255,255,0,0.2);
+            padding: 0.2em;
+            margin: 0.2em 0;
+    -webkit-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+       -moz-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+        -ms-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+         -o-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+            box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+}
+
+.whitelist-display button {
+    float: right;
+    cursor: pointer;
+    min-width: 6em;
+    text-align: center;
+    font-family: 'serene';
+    display: inline-block;
+    margin-left: 2em;
+}
+
+.whitelist-display button:hover {
+    border: 1px solid rgb(229,151,0);
+}
+
+.whitelist-display input {
+    text-align: left;
+    width: 60%;
+}
+
+.whitelist-display .error-message-display {
+    font-size: 0.8em;
+    color: rgba(196,30,30,1);
 }
 
 /* ----- pretty borders -----
