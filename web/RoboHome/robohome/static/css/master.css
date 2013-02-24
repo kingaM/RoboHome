@@ -524,6 +524,60 @@ div.stage {
     text-align: center;
 }
 
+.stage-content .no-room {
+    border: 1px solid #666666;
+    display: inline-block;
+    padding: 1em;
+}
+
+.stage-content .no-room input {
+            display: inline-block;
+            min-width: 60%;
+            padding: 0.2em 0.4em;
+            margin: 0.2em 0;
+            text-decoration: none;
+            font-size: 0.8em;
+            color: #FFFFFF;
+            border: 1px solid #666666;
+            background: rgba(0,200,200,0.2);
+    -webkit-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+       -moz-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+        -ms-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+         -o-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+            box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+}
+.stage-content .no-room input::-webkit-input-placeholder { color: rgba(50,184,191,1); }
+.stage-content .no-room input::-moz-placeholder { #color: rgba(50,184,191,1); }
+.stage-content .no-room input:-moz-placeholder { #color: rgba(50,184,191,1); }
+.stage-content .no-room input:ms-input-placeholder { #color: rgba(50,184,191,1); }
+.stage-content .no-room input:hover {
+    border: 1px solid rgb(229, 151, 0);
+}
+
+.stage-content .no-room button {
+            cursor: pointer;
+            float: right;
+            color: #FFFFFF;
+            display: inline-block;
+            text-decoration: none;
+            font-size: 0.8em;
+            border: 1px solid #666666;
+            background: rgba(0,200,200,0.3);
+            padding: 0.2em;
+            margin: 0.2em 0 0.2em 0.5em;
+            min-width: 6em;
+            text-align: center;
+            font-family: 'serene';
+    -webkit-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+       -moz-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+        -ms-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+         -o-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+            box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+}
+.stage-content .no-room button:hover {
+    border: 1px solid rgb(229, 151, 0);
+}
+
 .stage-content .whitelist-display div {
     font-size: 0.7em;
 }
@@ -584,7 +638,8 @@ div.stage {
     margin-left: 2em;
 }
 
-.whitelist-display button:hover {
+.whitelist-display button:hover,
+.whitelist-display input:hover {
     border: 1px solid rgb(229,151,0);
 }
 

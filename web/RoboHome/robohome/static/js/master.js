@@ -33,6 +33,11 @@ APP.DOM_HOOK.ENTITY = {};
 APP.DOM_HOOK.ENTITY.ITEM_TYPE = 'item-type';
 APP.DOM_HOOK.ENTITY.ROOM = 'room';
 APP.DOM_HOOK.ENTITY.ITEM = 'item';
+APP.DOM_HOOK.NO_ROOM = 'no-room';
+APP.DOM_HOOK.ECA = {};
+APP.DOM_HOOK.ECA.EVENT = 'eca-event';
+APP.DOM_HOOK.ECA.CONDITION = 'eca-condition';
+APP.DOM_HOOK.ECA.ACTION = 'eca-action';
 APP.DOM_HOOK.UPDATING = 'updating';
 APP.DOM_HOOK.ERROR_MESSAGE_DISPLAY = 'error-message-display';
 APP.DOM_HOOK.CONNECTION_ERROR = 'connection-error';
@@ -713,7 +718,7 @@ APP.Stage = function(menuId, buttonId, buttonText, stageId) {
         this.contextMenu.tearDown();    // clear context menu
         this.poller.stopPolling();      // stop any polling
     };
-        
+    
     /**
      * @for APP.Stage
      * @method update
@@ -1044,6 +1049,59 @@ APP.ItemTypeDisplay.prototype.updateError = function() {
 };
 
 /**
+ * @class APP.ECAEventDisplay
+ * @constructor
+ */
+APP.ECAEventDisplay = function(stage, eventObj) {
+    this.stage = stage;
+    this.obj = eventObj;
+    this.context = $('<div></div>').addClass();
+}
+
+/**
+ *
+ */
+APP.ECAEventDisplay.prototype.construct = function() {
+
+}
+
+/**
+ * @class APP.ECAConditionNode
+ * @constructor
+ */
+APP.ECAConditionDisplay = function(parent, stage, conditionObj) {
+    this.parent = parent;
+    this.stage = stage;
+    this.obj = conditionObj;
+    this.context = $('<div></div>').addClass();
+}
+
+/**
+ *
+ */
+APP.ECAConditionDisplay.prototype.construct = function() {
+
+}
+
+/**
+ * @class APP.ECAActionNode
+ * @constructor
+ */
+APP.ECAActionDisplay = function(parent, stage, actionObj) {
+    this.parent = parent;
+    this.stage = stage;
+    this.obj = actionObj;
+    this.context = $('<div></div>').addClass();
+}
+
+/**
+ *
+ */
+APP.ECAConditionDisplay.prototype.construct = function() {
+
+}
+
+/**
  *
  */
 APP.MenuManager = function(stageManager) {
@@ -1180,7 +1238,7 @@ APP.StageManager = function() {
         this.menuManager.addButton(stage);
         stages.put(stage.stageId, stage);
         return stage.stageId;
-    },
+    };
     
     /**
      *
@@ -1188,8 +1246,9 @@ APP.StageManager = function() {
     this.removeStage = function(stage) {
         this.toggleStage(null);
         stages.remove(stage.stageId);
+        $('#' + stage.stageId).remove();
         this.menuManager.removeButton(stage);
-    }
+    };
     
     /**
      * @for APP.StageManager
@@ -1232,7 +1291,7 @@ APP.StageManager = function() {
             }
         }
         
-    },
+    };
     
     /**
      *
@@ -1265,7 +1324,76 @@ APP.StageManager = function() {
         stage.setPollFunction(undefined, function() {
             
         });
-    }
+    };
+    
+    /**
+     *
+     */
+    this.setStage_NoRoom = function() {
+        var stageId = this.addStage(new APP.Stage('menu-control', 'button-control-no-room', 'Add new room', 'stage-no-room')),
+            stage = stages.get(stageId);
+        
+        stage.setOnShow(function() {
+            // default
+        });
+        stage.setOnHide(function() {
+            // default
+        });
+        stage.setMenuConstruct(function() {
+            // default
+        });
+        stage.setConstruct(function() {
+            var box = $('<div></div>').addClass(APP.DOM_HOOK.NO_ROOM),
+                warning = $('<div></div>').addClass(APP.DOM_HOOK.ERROR_MESSAGE_DISPLAY),
+                input = $('<input></input>').attr({type: 'text', id: 'no-room-input', placeholder: 'Room name'}),
+                button = $('<button>Add</button>');
+            button.click(function() {
+                var dis = $(this),
+                    roomName = input.val();
+                $('#debug').append(/\s+/.test(roomName));
+                if(roomName === '' || /\s+/.test(roomName) === true) {
+                    warning.html('Name cannot be undefined or entirely whitespace.');
+                } else {
+                    dis.parent().addClass(APP.DOM_HOOK.UPDATING);
+                    APP.ajax_post_rooms(roomName,
+                        function(json) {
+                            APP.ajax_get_state(
+                                function() {
+                                    var obj = APP.unpackToPayload(json),
+                                        roomId = obj[APP.API.ROOMID.ID];
+                                    dis.parent().removeClass(APP.DOM_HOOK.UPDATING);
+                                    self.setStage_Room(roomId, roomName);
+                                    self.removeStage(stage);
+                                },
+                                function() {
+                                    // do nothing
+                                }
+                            );
+                        },
+                        function() {
+                            // do nothing
+                        }
+                    );
+                }
+            });
+            box.append(warning);
+            box.append(input);
+            box.append(button);
+            stage.getContext().append(box);
+        });
+        stage.setTearDown(function() {
+            // default
+        });
+        stage.setUpdate(function() {
+            // default
+        });
+        stage.setUpdateError(function() {
+            // default
+        });
+        stage.setPollFunction(undefined, function() {
+            
+        });
+    };
     
     /**
      *
@@ -1330,7 +1458,7 @@ APP.StageManager = function() {
                     var dis = $(this),
                         addRoomName = $('#' + addInputSelector).val();
                     if(addRoomName === '' || /\s+/.test(addRoomName) === true) {
-                        addWarning.html('Room name cannot be undefined or all whitespace.');
+                        addWarning.html('Name cannot be undefined or entirely whitespace.');
                     } else {
                         $(this).parent().addClass(APP.DOM_HOOK.UPDATING);
                         APP.ajax_post_rooms(addRoomName,
@@ -1341,8 +1469,6 @@ APP.StageManager = function() {
                                             roomId = obj[APP.API.ROOMID.ID];
                                         dis.parent().removeClass(APP.DOM_HOOK.UPDATING);
                                         self.setStage_Room(roomId, addRoomName);
-                                        stage.tearDown();
-                                        stage.construct();
                                     },
                                     function() {
                                         // do nothing
@@ -1379,8 +1505,18 @@ APP.StageManager = function() {
                         APP.ajax_delete_rooms_roomId(
                             stage.data.roomId,
                             function(json) {
-                                dis.parent().removeClass(APP.DOM_HOOK.UPDATING);
-                                // self.removeStage(stage);
+                                APP.ajax_get_state(
+                                    function() {
+                                        if(APP.data.houseStructure[APP.API.STATE.ROOMS].length === 0) {
+                                            self.setStage_NoRoom();
+                                        }
+                                        dis.parent().removeClass(APP.DOM_HOOK.UPDATING);
+                                        self.removeStage(stage);
+                                    },
+                                    function() {
+                                        // do nothing
+                                    }
+                                );
                             },
                             function() {
                                 // do nothing
@@ -1678,7 +1814,9 @@ APP.StageManager = function() {
                 
                 // If there are any unmatched buttons, it means they need to be removed (with its associated stage);
                 for(var i = 0; i < buttonsCopy.length; i++) {
-                    self.removeStage(stages.get(buttonsCopy[i].stageId));
+                    if(buttonsCopy[i].stageId !== 'stage-no-room') {
+                        self.removeStage(stages.get(buttonsCopy[i].stageId));
+                    }
                 }
                 
                 // If there are any unmatched rooms, it means they need to be added
@@ -1710,7 +1848,7 @@ APP.StageManager = function() {
             APP.ajax_get_state(stage.update, stage.updateError);
         });
         
-    }
+    };
     
     /**
      *
@@ -1783,8 +1921,8 @@ APP.StageManager = function() {
                                     parent.remove();
                                 },
                                 function() {
-                                    // TODO
                                     parent.removeClass(APP.DOM_HOOK.UPDATING);
+                                    // do nothing
                                 }
                             );
                         });
@@ -1804,7 +1942,7 @@ APP.StageManager = function() {
                                 
                             // regex from http://stackoverflow.com/questions/46155/validate-email-address-in-javascript
                             if(/[^\s@]+@[^\s@]+\.[^\s@]+/.test(email) === true) {
-                                    parent.addClass(APP.DOM_HOOK.UPDATING);
+                                parent.addClass(APP.DOM_HOOK.UPDATING);
                                 APP.ajax_post_whitelist(email,
                                     function() {
                                         parent.remove();
@@ -1812,8 +1950,8 @@ APP.StageManager = function() {
                                         constructAddForm();
                                     },
                                     function() {
-                                        // TODO
                                         parent.removeClass(APP.DOM_HOOK.UPDATING);
+                                        // do nothing
                                     }
                                 );
                             } else {
@@ -1827,7 +1965,6 @@ APP.StageManager = function() {
                     
                     stage.getContext().append(container);
                     container.append(warning);
-                    
                     for(var i = 0; i < emails.length; i++) {
                         constructRemoveForm(emails[i]);
                     }
@@ -1884,7 +2021,7 @@ APP.StageManager = function() {
         stage.setPollFunction(undefined, function() {
             
         });
-    }
+    };
     
     /**
      * @for APP.StageManager
@@ -1972,18 +2109,21 @@ APP.StageManager = function() {
                 roomNames = [],
                 roomIds = [];
             
-            // save a static copy of ids and names from that list
-            for(var i = 0; i < rooms.length; i++) {
-                roomIds.push(rooms[i][APP.API.STATE.ROOM.ID]);
-                roomNames.push(rooms[i][APP.API.STATE.ROOM.NAME]);
-                room = rooms[i];
+            if(rooms.length === 0) {
+                self.setStage_NoRoom();
+            } else {
+                // save a static copy of ids and names from that list
+                for(var i = 0; i < rooms.length; i++) {
+                    roomIds.push(rooms[i][APP.API.STATE.ROOM.ID]);
+                    roomNames.push(rooms[i][APP.API.STATE.ROOM.NAME]);
+                    room = rooms[i];
+                }
+                
+                // for each room, use static data to initialize
+                for(var i = 0; i < roomIds.length; i++) {
+                    self.setStage_Room(roomIds[i], roomNames[i]);
+                }
             }
-            
-            // for each room, use static data to initialize
-            for(var i = 0; i < roomIds.length; i++) {
-                self.setStage_Room(roomIds[i], roomNames[i]);
-            }
-            
         });
                 
         // eca stage
@@ -2171,7 +2311,7 @@ $(document).ready(function() {
         // Instantiate manager objects
         APP.data.stageManager = new APP.StageManager();
         
-        // Construct menus
+        // Initialize UI menus and stages
         APP.data.stageManager.init();
         
         // Start clock
