@@ -702,7 +702,9 @@ APP.Stage = function(menuId, buttonId, buttonText, stageId) {
      *   beginning to make sure the stage has been cleared for construction.
      * Set this via setConstruct()
      */
-    this.construct = function() {};
+    this.construct = function() {
+        self.contextMenu.construct();
+    };
     
     /**
      * @for APP.Stage
@@ -1055,7 +1057,7 @@ APP.ItemTypeDisplay.prototype.updateError = function() {
 APP.ECAEventDisplay = function(stage, eventObj) {
     this.stage = stage;
     this.obj = eventObj;
-    this.context = $('<div></div>').addClass();
+    this.context = $('<div></div>').addClass(APP.DOM_HOOK.ECA.EVENT);
 }
 
 /**
@@ -1073,7 +1075,7 @@ APP.ECAConditionDisplay = function(parent, stage, conditionObj) {
     this.parent = parent;
     this.stage = stage;
     this.obj = conditionObj;
-    this.context = $('<div></div>').addClass();
+    this.context = $('<div></div>').addClass(APP.DOM_HOOK.ECA.CONDITION);
 }
 
 /**
@@ -1091,7 +1093,7 @@ APP.ECAActionDisplay = function(parent, stage, actionObj) {
     this.parent = parent;
     this.stage = stage;
     this.obj = actionObj;
-    this.context = $('<div></div>').addClass();
+    this.context = $('<div></div>').addClass(APP.DOM_HOOK.ECA.ACTION);
 }
 
 /**
@@ -1886,6 +1888,39 @@ APP.StageManager = function() {
     /**
      *
      */
+    this.setStage_Settings = function() {
+        var stageId = this.addStage(new APP.Stage('menu-config', 'button-settings', 'Settings', 'stage-settings')),
+            stage = stages.get(stageId);
+        
+        stage.setOnShow(function() {
+            // default
+        });
+        stage.setOnHide(function() {
+            // default
+        });
+        stage.setMenuConstruct(function() {
+            // default
+        });
+        stage.setConstruct(function() {
+            // default
+        });
+        stage.setTearDown(function() {
+            // default
+        });
+        stage.setUpdate(function() {
+            // default
+        });
+        stage.setUpdateError(function() {
+            // default
+        });
+        stage.setPollFunction(undefined, function() {
+            
+        });
+    };
+    
+    /**
+     *
+     */
     this.setStage_Whitelist = function() {
         var stageId = this.addStage(new APP.Stage('menu-config', 'button-config-whitelist', 'Whitelist', 'stage-whitelist')),
             stage = stages.get(stageId);
@@ -1955,7 +1990,7 @@ APP.StageManager = function() {
                                     }
                                 );
                             } else {
-                                warning.html('New email address must be in format [string] @ [string] . [string]');
+                                warning.html('Invalid email address.');
                             }
                         });
                         panel.append(form);
@@ -2023,6 +2058,72 @@ APP.StageManager = function() {
         });
     };
     
+    /**
+     *
+     */
+    this.setStage_Logs = function() {
+        var stageId = this.addStage(new APP.Stage('menu-config', 'button-logs', 'Logs', 'stage-logs')),
+            stage = stages.get(stageId);
+        
+        stage.setOnShow(function() {
+            // default
+        });
+        stage.setOnHide(function() {
+            // default
+        });
+        stage.setMenuConstruct(function() {
+            // default
+        });
+        stage.setConstruct(function() {
+            // default
+        });
+        stage.setTearDown(function() {
+            // default
+        });
+        stage.setUpdate(function() {
+            // default
+        });
+        stage.setUpdateError(function() {
+            // default
+        });
+        stage.setPollFunction(undefined, function() {
+            
+        });
+    };
+    
+    /**
+     *
+     */
+    this.setStage_About = function() {
+        var stageId = this.addStage(new APP.Stage('menu-config', 'button-about', 'About', 'stage-about')),
+            stage = stages.get(stageId);
+        
+        stage.setOnShow(function() {
+            // default
+        });
+        stage.setOnHide(function() {
+            // default
+        });
+        stage.setMenuConstruct(function() {
+            // default
+        });
+        stage.setConstruct(function() {
+            // default
+        });
+        stage.setTearDown(function() {
+            // default
+        });
+        stage.setUpdate(function() {
+            // default
+        });
+        stage.setUpdateError(function() {
+            // default
+        });
+        stage.setPollFunction(undefined, function() {
+            
+        });
+    };
+        
     /**
      * @for APP.StageManager
      * @method init
@@ -2129,8 +2230,17 @@ APP.StageManager = function() {
         // eca stage
         this.setStage_ECA();
         
+        // settings stage
+        this.setStage_Settings();
+        
         // whitelist stage
         this.setStage_Whitelist();
+        
+        // logs stage
+        this.setStage_Logs();
+        
+        // about stage
+        this.setStage_About();
         
     };
     
