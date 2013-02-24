@@ -245,7 +245,7 @@ def isIpOnLocalNetwork():
 @app.route('/login', methods=['GET', 'POST'])
 @oid.loginhandler
 def login():
-    """Does the login via OpenID."""
+    # Does the login via OpenID.
     if g.user is not None or isIpOnLocalNetwork():
         app.logger.info('logged-in: '+oid.get_next_url())
         return redirect(oid.get_next_url())
@@ -260,7 +260,7 @@ def login():
     
 @oid.after_login
 def create_or_login(resp):
-    """Called when the login was successful"""
+    # Called when the login was successful
     session['openid'] = resp.identity_url
     user = db.users.getUserByOpenid(resp.identity_url)
     if user is not None:
