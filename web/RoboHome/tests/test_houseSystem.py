@@ -54,18 +54,19 @@ class MockHouse(House):
 
         self.rooms = {1: self.room1, 2: self.room2}
 
-        self.event1 = MockEvent(1, "mockType1", self.item1, None, "mockTrigger", 1)
-        self.event2 = MockEvent(2, "mockType2", self.item2, None, "mockTrigger", 1)
-        self.event3 = MockEvent(3, "mockType2", self.item2, None, "mockTrigger2", 1)
-        self.event4 = MockEvent(4, "mockType1", self.item1, None, "mockTrigger", 1)
+        self.event1 = MockEvent(1, "Rule1", "mockType1", self.item1, None, "mockTrigger", 1)
+        self.event2 = MockEvent(2, "Rule2", "mockType2", self.item2, None, "mockTrigger", 1)
+        self.event3 = MockEvent(3, "Rule3", "mockType2", self.item2, None, "mockTrigger2", 1)
+        self.event4 = MockEvent(4, "Rule4", "mockType1", self.item1, None, "mockTrigger", 1)
 
         self.events = [self.event1, self.event2, self.event3, self.event4]
 
 
 class MockEvent:
-    def __init__(self, id, type, item, room, trigger, enabled):
+    def __init__(self, id, name, type, item, room, trigger, enabled):
         self.id = id
         self.item = item
+        self.name = name
         self.type = type
         self.trigger = trigger
         self.enabled = enabled
@@ -523,6 +524,23 @@ class TestHouse(unittest.TestCase):
         self.assertRaises(KeyError, h.deleteItem, 1, 1)
         self.assertFalse(db.items.deleteEntryCalled)
 
+    def test_getRules(self):
+        h = MockHouse()
+        #self.event1 = MockEvent(1, "mockType1", self.item1, None, "mockTrigger", 1)
+        #self.event2 = MockEvent(2, "mockType2", self.item2, None, "mockTrigger", 1)
+        #self.event3 = MockEvent(3, "mockType2", self.item2, None, "mockTrigger2", 1)
+        #self.event4 = MockEvent(4, "mockType1", self.item1, None, "mockTrigger", 1)
+
+        rule1JSON = {"ruleId": 1, "ruleName": "Rule1", "event": {"eventId": 1, "id": 1, "itemType": "mockType1", "scope": "item", "itemState": "mockTrigger", "enabled": True}, "conditions": [], "actions": []}
+        rule2JSON = {"ruleId": 2, "ruleName": "Rule2", "event": {"eventId": 2, "id": 2, "itemType": "mockType2", "scope": "item", "itemState": "mockTrigger", "enabled": True}, "conditions": [], "actions": []}
+        rule3JSON = {"ruleId": 3, "ruleName": "Rule3", "event": {"eventId": 3, "id": 2, "itemType": "mockType2", "scope": "item", "itemState": "mockTrigger2", "enabled": True}, "conditions": [], "actions": []}
+        rule4JSON = {"ruleId": 4, "ruleName": "Rule4", "event": {"eventId": 4, "id": 1, "itemType": "mockType1", "scope": "item", "itemState": "mockTrigger", "enabled": True}, "conditions": [], "actions": []}
+
+        rulesJSON = {"rules": [rule1JSON, rule2JSON, rule3JSON, rule4JSON]}
+
+        self.assertEqual(h.getRules(), rulesJSON)
+
+
 class TestRoom(unittest.TestCase):
 
     def test_init(self):
@@ -563,6 +581,8 @@ class TestRoom(unittest.TestCase):
         r = Room(_id, name)
         r.addItem(1, item)
         self.assertEqual(r.getState(),  [{'id': 1, 'state': 1}])
+
+
 
 if __name__ == '__main__':
     unittest.main()

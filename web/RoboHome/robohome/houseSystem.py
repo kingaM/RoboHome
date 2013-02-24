@@ -244,6 +244,58 @@ class House(object):
         finalDict['supportedTypes'] = dictVersion
         return finalDict
 
+    def getRules(self):
+        """
+        Returns ECA Rules in the correct API format
+        """
+
+        rules = []
+
+        for event in self.events:
+            ruleJSON = {"ruleId": event.id, "ruleName": event.name}
+
+            eventJSON = {"eventId": event.id, "itemType": event.type, "itemState": event.trigger, "enabled": bool(event.enabled)}
+
+            if not event.item is None:
+                eventJSON["id"] = event.item._id
+                eventJSON["scope"] = "item"
+            elif not event.room is None:
+                eventJSON["id"] = event.room.id
+                eventJSON["scope"] = "room"
+            else:
+                eventJSON["id"] = None
+                eventJSON["scope"] = "house"
+
+            ruleJSON["event"] = eventJSON
+
+            conditionsJSON = []
+            ruleJSON["conditions"] = conditionsJSON
+
+            for c in event.conditions:
+                conditionsJSON.append({"conditionId": c.id, "itemId": c.item._id, "itemType": c.item._type, "method": c.method, "equivalence": c.equivalence, "value": c.value})
+
+            actionsJSON = []
+            ruleJSON["actions"] = actionsJSON
+
+            for a in event.actions:
+                actionJSON = {"actionId": a.id, "method": a.method}
+
+                if not a.item is None:
+                    actionJSON["id"] = a.item._id
+                    actionJSON["scope"] = "item"
+                elif not a.room is None:
+                    actionJSON["id"] = a.room.id
+                    actionJSON["scope"] = "room"
+                else:
+                    actionJSON["id"] = None
+                    actionJSON["scope"] = "house"
+
+                actionsJSON.append(actionJSON)
+
+            rules.append(ruleJSON)
+
+        return {"rules": rules}
+
     def getEventsForTrigger(self, item, trigger):
         """
         Returns the possible events relating to an item trigger
