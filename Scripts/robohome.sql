@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS robohome.rooms(id INT PRIMARY KEY AUTO_INCREMENT NOT 
 CREATE TABLE IF NOT EXISTS robohome.types(id INT PRIMARY KEY AUTO_INCREMENT NOT NULL, name VARCHAR(45) NOT NULL);
 CREATE TABLE IF NOT EXISTS robohome.items(id INT PRIMARY KEY AUTO_INCREMENT NOT NULL, name VARCHAR(45) NOT NULL, brand VARCHAR(45) NOT NULL, ip VARCHAR(45) NOT NULL, roomId INT NOT NULL, typeId INT NOT NULL, FOREIGN KEY (typeId) REFERENCES types(id) ON DELETE CASCADE ON UPDATE CASCADE, FOREIGN KEY (roomId) REFERENCES rooms(id) ON DELETE CASCADE ON UPDATE CASCADE);
 CREATE TABLE IF NOT EXISTS robohome.methods(id INT PRIMARY KEY AUTO_INCREMENT NOT NULL, name VARCHAR(45) NOT NULL, signature VARCHAR(45) NOT NULL, type VARCHAR(45) NOT NULL, typeId INT, FOREIGN KEY (typeId) REFERENCES types(id) ON DELETE CASCADE ON UPDATE CASCADE);
-CREATE TABLE IF NOT EXISTS robohome.events(id INT PRIMARY KEY AUTO_INCREMENT NOT NULL, typeId INT NOT NULL, itemId INT, roomId INT, `trigger` VARCHAR(45) NOT NULL, enabled INT NOT NULL, FOREIGN KEY (typeId) REFERENCES types(id) ON DELETE CASCADE ON UPDATE CASCADE, FOREIGN KEY (itemId) REFERENCES items(id) ON DELETE CASCADE ON UPDATE CASCADE, FOREIGN KEY (roomId) REFERENCES rooms(id) ON DELETE CASCADE ON UPDATE CASCADE);
+CREATE TABLE IF NOT EXISTS robohome.events(id INT PRIMARY KEY AUTO_INCREMENT NOT NULL, name VARCHAR(45) NOT NULL, typeId INT NOT NULL, itemId INT, roomId INT, `trigger` VARCHAR(45) NOT NULL, enabled INT NOT NULL, FOREIGN KEY (typeId) REFERENCES types(id) ON DELETE CASCADE ON UPDATE CASCADE, FOREIGN KEY (itemId) REFERENCES items(id) ON DELETE CASCADE ON UPDATE CASCADE, FOREIGN KEY (roomId) REFERENCES rooms(id) ON DELETE CASCADE ON UPDATE CASCADE);
 CREATE TABLE IF NOT EXISTS robohome.conditions(id INT PRIMARY KEY AUTO_INCREMENT NOT NULL, itemId INT NOT NULL, methodId INT NOT NULL, equivalence VARCHAR(45) NOT NULL, value INT NOT NULL, eventId INT NOT NULL, FOREIGN KEY (itemId) REFERENCES items(id) ON DELETE CASCADE ON UPDATE CASCADE, FOREIGN KEY (methodId) REFERENCES methods(id) ON DELETE CASCADE ON UPDATE CASCADE, FOREIGN KEY (eventId) REFERENCES events(id) ON DELETE CASCADE ON UPDATE CASCADE);
 CREATE TABLE IF NOT EXISTS robohome.actions(id INT PRIMARY KEY AUTO_INCREMENT NOT NULL, itemId INT, roomId INT, eventId INT NOT NULL, methodId INT NOT NULL, FOREIGN KEY (itemId) REFERENCES items(id) ON DELETE CASCADE ON UPDATE CASCADE, FOREIGN KEY (roomId) REFERENCES rooms(id) ON DELETE CASCADE ON UPDATE CASCADE, FOREIGN KEY (methodId) REFERENCES methods(id) ON DELETE CASCADE ON UPDATE CASCADE, FOREIGN KEY (eventId) REFERENCES events(id) ON DELETE CASCADE ON UPDATE CASCADE);
 CREATE TABLE IF NOT EXISTS robohome.users (id INT PRIMARY KEY AUTO_INCREMENT NOT NULL, name varchar(200) NOT NULL, email varchar(200) NOT NULL, openid varchar(200) NOT NULL);
@@ -74,11 +74,11 @@ INSERT INTO `robohome`.`items` (`name`, `brand`, `ip`, `roomId`, `typeId`) VALUE
 INSERT INTO `robohome`.`items` (`name`, `brand`, `ip`, `roomId`, `typeId`) VALUES ('Office Plug', 'arduino', '192.168.0.113', 6, 9);
 INSERT INTO `robohome`.`items` (`name`, `brand`, `ip`, `roomId`, `typeId`) VALUES ('Office Plug', 'arduino', '192.168.0.114', 6, 9);
 
-INSERT INTO `robohome`.`events` (`typeId`, `itemId`, `roomId`, `trigger`, `enabled`) VALUES (6, NULL, 1, 'Opened', 1);
-INSERT INTO `robohome`.`events` (`typeId`, `itemId`, `roomId`, `trigger`, `enabled`) VALUES (1, NULL, 1, 'Motion Detected', 1);
-INSERT INTO `robohome`.`events` (`typeId`, `itemId`, `roomId`, `trigger`, `enabled`) VALUES (7, NULL, 2, 'Opened', 1);
-INSERT INTO `robohome`.`events` (`typeId`, `itemId`, `roomId`, `trigger`, `enabled`) VALUES (10, NULL, 2, 'On', 1);
-INSERT INTO `robohome`.`events` (`typeId`, `itemId`, `roomId`, `trigger`, `enabled`) VALUES (1, NULL, 4, 'Motion Detected', 1);
+INSERT INTO `robohome`.`events` (`name`, `typeId`, `itemId`, `roomId`, `trigger`, `enabled`) VALUES ('Event1', 6, NULL, 1, 'Opened', 1);
+INSERT INTO `robohome`.`events` (`name`, `typeId`, `itemId`, `roomId`, `trigger`, `enabled`) VALUES ('Event2', 1, NULL, 1, 'Motion Detected', 1);
+INSERT INTO `robohome`.`events` (`name`, `typeId`, `itemId`, `roomId`, `trigger`, `enabled`) VALUES ('Event3', 7, NULL, 2, 'Opened', 1);
+INSERT INTO `robohome`.`events` (`name`, `typeId`, `itemId`, `roomId`, `trigger`, `enabled`) VALUES ('Event4', 10, NULL, 2, 'On', 1);
+INSERT INTO `robohome`.`events` (`name`, `typeId`, `itemId`, `roomId`, `trigger`, `enabled`) VALUES ('Event5', 1, NULL, 4, 'Motion Detected', 1);
 
 INSERT INTO `robohome`.`conditions` (`itemId`, `methodId`, `equivalence`, `value`, `eventId`) VALUES (2, 14, '=', 1, 1);
 INSERT INTO `robohome`.`conditions` (`itemId`, `methodId`, `equivalence`, `value`, `eventId`) VALUES (3, 1, '=', 1, 1);

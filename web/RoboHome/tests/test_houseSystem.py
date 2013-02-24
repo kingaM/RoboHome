@@ -169,7 +169,7 @@ class MockItemsTable:
 
 class MockEventsTable:
     def getEvents(self):
-        return ((1, "mockType", 1, 1, "mockTrigger", 1),)
+        return ((1, "mockName", "mockType", 1, 1, "mockTrigger", 1),)
 
 
 class MockConditionsTable:

@@ -36,11 +36,11 @@ class House(object):
         events = self.database.events.getEvents()
 
         for e in events:
-            if e[3] is not None:
-                tempRoom = self.rooms[e[3]]
+            if e[4] is not None:
+                tempRoom = self.rooms[e[4]]
             else:
                 tempRoom = None
-            self.events.append(eca.Event(e[0], e[1], self.getItemById(e[2]), tempRoom, e[4], e[5]))
+            self.events.append(eca.Event(e[0], e[1], e[2], self.getItemById(e[3]), tempRoom, e[5], e[6]))
 
         for e in self.events:
             conditions = self.database.conditions.getConditionsForEvent(e)

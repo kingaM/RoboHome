@@ -2,8 +2,9 @@ class Event():
     """
     Represents an event that can br triggered by items in the house
     """
-    def __init__(self, id, type, item, room, trigger, enabled):
+    def __init__(self, id, name, type, item, room, trigger, enabled):
         self.id = id
+        self.name = name
         self.type = type
         self.item = item
         self.room = room

@@ -89,11 +89,11 @@ class EventsTable(DatabaseHelper):
     def addTable(self):
         super(EventsTable, self).addTable(self.tablename, "id INT PRIMARY KEY AUTO_INCREMENT NOT NULL, typeId INT NOT NULL, itemId INT, roomId INT, `trigger` VARCHAR(45) NOT NULL, enabled INT NOT NULL, FOREIGN KEY (typeId) REFERENCES types(id) ON DELETE CASCADE ON UPDATE CASCADE, FOREIGN KEY (itemId) REFERENCES items(id) ON DELETE CASCADE ON UPDATE CASCADE, FOREIGN KEY (roomId) REFERENCES rooms(id) ON DELETE CASCADE ON UPDATE CASCADE")
 
-    def addEntry(self, typeId, itemId, roomId, trigger, enabled):
-        return super(EventsTable, self).addEntry(self.tablename, "typeId, itemId, roomId, `trigger`, enabled", "'" + str(typeId) + "'," + "'" + str(itemId) + "'," +"'" + str(roomId) + "'," +"'" + trigger + "'," +"'" + enabled + "'")
+    def addEntry(self, name, typeId, itemId, roomId, trigger, enabled):
+        return super(EventsTable, self).addEntry(self.tablename, "name, typeId, itemId, roomId, `trigger`, enabled", "'" + str(name) + "'," + "'" + str(typeId) + "'," + "'" + str(itemId) + "'," +"'" + str(roomId) + "'," +"'" + trigger + "'," +"'" + enabled + "'")
 
     def getEvents(self):
-        return super(EventsTable, self).retriveData("SELECT events.id, name, itemId, roomId, `trigger`, enabled FROM events, types WHERE events.typeId = types.id")
+        return super(EventsTable, self).retriveData("SELECT events.id, events.name, types.name, itemId, roomId, `trigger`, enabled FROM events, types WHERE events.typeId = types.id")
 
 class ConditionsTable(DatabaseHelper):
 
