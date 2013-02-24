@@ -159,8 +159,7 @@ def events(version):
     if g.user is None and not isIpOnLocalNetwork():
         return redirect(url_for('login'))
     if request.method == 'GET':
-        # Return a list of all events
-        pass
+        return jsonify(pack(house.getRules()))
 
     if request.method == 'POST':
         # Create a new event
