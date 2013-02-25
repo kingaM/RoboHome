@@ -45,6 +45,7 @@ APP.DOM_HOOK.ECA.CONDITION = 'eca-condition';
 APP.DOM_HOOK.ECA.ACTION = 'eca-action';
 APP.DOM_HOOK.ECA.SHOW_HIDE = 'eca-show-hide'
 APP.DOM_HOOK.ECA.ENABLE_DISABLE = 'eca-enable-disable';
+APP.DOM_HOOK.ECA.DELETE_EVENT = 'eca-delete-event';
 APP.DOM_HOOK.ECA.EVENT_FIELDSET = 'eca-event-fieldset';
 APP.DOM_HOOK.UPDATING = 'updating';
 APP.DOM_HOOK.ERROR_MESSAGE_DISPLAY = 'error-message-display';
@@ -304,6 +305,10 @@ APP.data = {
         lastSuccess: undefined,
         lastNoSuccess: undefined
     },
+    retrieved: { // stores Date objects marking the age of AJAX-retrieved data
+        houseStructure: undefined,
+        events: undefined
+    },
     houseStructure: undefined,
     events: undefined,
     stageManager: undefined
@@ -417,6 +422,7 @@ APP.ajax_get_state = function(callback, error) {
         function(json) {
             var obj = APP.unpackToPayload(json);
             APP.data.houseStructure = obj;
+            APP.data.retrieved.houseStructure = new Date(APP.data.connection.lastSuccess);
             callback();
         },
         error
@@ -434,6 +440,7 @@ APP.ajax_get_version = function(callback, error) {
         function(json) {
             var obj = APP.unpackToPayload(json);
             APP.data.cache = obj;
+            APP.data.retrieved.events = new Date(APP.data.connection.lastSuccess);
             callback();
         },
         error
@@ -1106,8 +1113,8 @@ APP.ItemTypeDisplay.prototype.updateError = function() {
 APP.ECARuleDisplay = function(ruleObj) {
     this.ruleObj = ruleObj;
     this.eventDisplay;
-    this.conditionDisplays = {};
-    this.actionDisplays = {};
+    this.conditionDisplay = {};
+    this.actionDisplay = {};
 };
 
 /**
@@ -1118,12 +1125,17 @@ APP.ECARuleDisplay.prototype.construct = function() {
         boundingBox = $('<div></div>').addClass(APP.DOM_HOOK.ECA.RULE),
         titleBox = $('<div></div>').addClass(APP.DOM_HOOK.ECA.RULE_TITLE),
         contentBox = $('<div></div>'),
-        eventBox = $('<fieldset></fieldset>').addClass(APP.DOM_HOOK.ECA.EVENT_FIELDSET),
-        conditionsBox = $('<fieldset></fieldset>'),
-        actionsBox = $('<fieldset></fieldset>'),
+        eventFieldset = $('<fieldset></fieldset>').addClass(APP.DOM_HOOK.ECA.EVENT_FIELDSET),
+        eventBox = $('<div></div>'),
+        conditionsFieldset = $('<fieldset></fieldset>'),
+        conditionsBox= $('<div></div>'),
+        actionsFieldset = $('<fieldset></fieldset>'),
+        actionsBox = $('<div></div>'),
         showHide = $('<button></button>').addClass(APP.DOM_HOOK.ECA.SHOW_HIDE + ' ' + APP.DOM_HOOK.COLLAPSED),
         ruleName = $('<div></div>').html(this.ruleObj[APP.API.EVENTS.RULE.RULE_NAME]),
-        enableDisable = $('<button></button>').addClass(APP.DOM_HOOK.ECA.ENABLE_DISABLE);
+        enableDisable = $('<button></button>').addClass(APP.DOM_HOOK.ECA.ENABLE_DISABLE),
+        deleteEventInput = $('<input></input>').attr({class: APP.DOM_HOOK.ECA.DELETE_EVENT, placeholder: 'Confirm event name'}),
+        deleteEventButton = $('<button>Delete</button>').addClass(APP.DOM_HOOK.ECA.DELETE_EVENT);
     
     showHide.click(function() {
         $(this).toggleClass(APP.DOM_HOOK.COLLAPSED);
@@ -1139,47 +1151,43 @@ APP.ECARuleDisplay.prototype.construct = function() {
         // TODO
     });
     
+    deleteEventButton.click(function() {
+        // TODO
+    });
+    
+    // title box
     if(self.ruleObj[APP.API.EVENTS.RULE.ENABLED] === true) {
         enableDisable.addClass(APP.DOM_HOOK.ENABLED);
     }
     titleBox.append(showHide);
     titleBox.append(ruleName);
     titleBox.append(enableDisable);
+    titleBox.append(deleteEventButton);
+    titleBox.append(deleteEventInput);
     boundingBox.append(titleBox);
     
     // event box
-    eventBox.append($('<legend></legend>').html('Event'));
+    eventFieldset.append($('<legend></legend>').html('Event'));
+    eventFieldset.append(eventBox);
     this.eventDisplay = new APP.ECAEventDisplay(self, this.ruleObj[APP.API.EVENTS.RULE.EVENT]);
     eventBox.append(this.eventDisplay.construct());
-    contentBox.append(eventBox);
+    contentBox.append(eventFieldset);
     
     // conditions box
-    conditionsBox.append($('<legend></legend>').html('Conditions'));
-    for(var i = 0; i < this.ruleObj[APP.API.EVENTS.RULE.CONDITIONS].length; i++) {
-        var conditionId = this.ruleObj[APP.API.EVENTS.RULE.CONDITIONS][i][APP.API.EVENTS.RULE.CONDITION.CONDITION_ID];
-        this.conditionDisplays[conditionId] = new APP.ECAConditionDisplay(self, this.ruleObj[APP.API.EVENTS.RULE.CONDITIONS]);
-    }
-    for(var property in this.conditionDisplays) {
-        if(this.conditionDisplays.hasOwnProperty(property)) {
-            conditionsBox.append(this.conditionDisplays[property].construct());
-        }
-    }
-    contentBox.append(conditionsBox);
+    conditionsFieldset.append($('<legend></legend>').html('Conditions'));
+    conditionsFieldset.append(conditionsBox);
+    this.conditionDisplay = new APP.ECAConditionDisplay(self, this.ruleObj[APP.API.EVENTS.RULE.CONDITIONS]);
+    conditionsBox.append(this.conditionDisplay.construct());
+    contentBox.append(conditionsFieldset);
     
     // actions box
-    actionsBox.append($('<legend></legend>').html('Actions'));
-    for(var i = 0; i < this.ruleObj[APP.API.EVENTS.RULE.ACTIONS].length; i++) {
-        var actionId = this.ruleObj[APP.API.EVENTS.RULE.ACTIONS][i][APP.API.EVENTS.RULE.ACTION.ACTION_ID];
-        this.actionDisplays[actionId] = new APP.ECAActionDisplay(self, this.ruleObj[APP.API.EVENTS.RULE.ACTIONS]);
-    }
-    for(var property in this.actionDisplays) {
-        if(this.actionDisplays.hasOwnProperty(property)) {
-            actionsBox.append(this.actionDisplays[property].construct());
-        }
-    }
-    contentBox.append(actionsBox);
-    contentBox.hide();
+    actionsFieldset.append($('<legend></legend>').html('Actions'));
+    actionsFieldset.append(actionsBox);
+    this.actionDisplay = new APP.ECAActionDisplay(self, this.ruleObj[APP.API.EVENTS.RULE.ACTIONS]);
+    actionsBox.append(this.actionDisplay.construct());
+    contentBox.append(actionsFieldset);
     
+    contentBox.hide();
     boundingBox.append(contentBox);
     return boundingBox;
 };
@@ -1194,7 +1202,9 @@ APP.ECARuleDisplay.prototype.update = function() {
 /**
  *
  */
-APP.ECANewRuleDisplay = function() {};
+APP.ECANewRuleDisplay = function(stage) {
+    this.stage = stage;
+};
 
 /**
  *
@@ -1207,7 +1217,7 @@ APP.ECANewRuleDisplay.prototype.construct = function() {
         button = $('<button></button>').html('Add');
     
     button.click(function() {
-        
+        // TODO
     });
     
     titleBox.append(input);
@@ -1243,8 +1253,8 @@ APP.ECAEventDisplay.prototype.update = function() {
  * @class APP.ECAConditionNode
  * @constructor
  */
-APP.ECAConditionDisplay = function(conditionObj) {
-    this.conditionObj = conditionObj;
+APP.ECAConditionDisplay = function(conditionArray) {
+    this.conditionArray = conditionArray;
     this.context = $('<div></div>').addClass(APP.DOM_HOOK.ECA.CONDITION);
 };
 
@@ -1266,8 +1276,8 @@ APP.ECAConditionDisplay.prototype.update = function() {
  * @class APP.ECAActionNode
  * @constructor
  */
-APP.ECAActionDisplay = function(actionObj) {
-    this.actionObj = actionObj;
+APP.ECAActionDisplay = function(actionArray) {
+    this.actionArray = actionArray;
     this.context = $('<div></div>').addClass(APP.DOM_HOOK.ECA.ACTION);
 };
 
@@ -1370,7 +1380,7 @@ APP.StageManager = function() {
         stages = new APP.Map(),
         menuManager = new APP.MenuManager(this),
         primaryMenuMap = {
-            'button-home':  {
+            'button-home': {
                 menuId: null,
                 buttonText: 'Home',
                 class: 'blue',
@@ -2021,7 +2031,7 @@ APP.StageManager = function() {
             }
         });
         stage.setUpdateError(function() {
-            $('#context-bar').html('Caution: Connection to server lost. Displaying last available state info retrieved at ' + APP.data.connection.lastSuccess);
+            $('#context-bar').html('Caution: Connection to server lost. Displaying last available state info retrieved at ' + APP.data.retrieved.houseStructure);
             for(var display in stage.data.itemTypeDisplays) {
                 if(stage.data.itemTypeDisplays.hasOwnProperty(display)) {
                     stage.data.itemTypeDisplays[display].updateError();
@@ -2051,19 +2061,48 @@ APP.StageManager = function() {
             // default
         });
         stage.setConstruct(function() {
+            var stageMessage = $('<div></div>').addClass('stage-message');
+            
+            function construct() {
+                for(var i = 0; i < APP.data.events.length; i++) {
+                    stage.data.ruleDisplays.push(new APP.ECARuleDisplay(APP.data.events[i]));
+                    stage.getContext().append(stage.data.ruleDisplays[i].construct());
+                }
+                stage.getContext().append((new APP.ECANewRuleDisplay(stage)).construct());
+            }
+            
+            function constructWithError() {
+                stageMessage.html('Caution: Connection to server cannot be established. New commands will not be sent to the server. Data being shown is retrieved at ' + APP.data.retrieved.events + '.');
+                stageMessage.addClass(APP.DOM_HOOK.ERROR_MESSAGE_DISPLAY);
+                construct();
+            }
+            
+            function constructWithoutError() {
+                stageMessage.html('');
+                construct();
+            }
+            
+            function connectionError() {
+                if(APP.data.retrieved.houseStructure !== undefined && APP.data.retrieved.events !== undefined) {
+                    constructWithError();
+                } else {
+                    stage.getContext().html($('<div>Caution: Connection to server cannot be established.</div>').addClass(APP.DOM_HOOK.ERROR_MESSAGE_DISPLAY));
+                }
+            }
+            
             stage.data.ruleDisplays = [];
+            
+            stageMessage.append($('<span></span>').html('Loading'));
+            stageMessage.append($('<img></img>').attr({src: '../../static/img/ajax-loader.gif'}));
+            stage.getContext().append(stageMessage);
             APP.ajax_get_events(
                 function() {
-                    console.log(APP.data);
-                    for(var i = 0; i < APP.data.events.length; i++) {
-                        stage.data.ruleDisplays.push(new APP.ECARuleDisplay(APP.data.events[i]));
-                        stage.getContext().append(stage.data.ruleDisplays[i].construct());
-                    }
-                    stage.getContext().append((new APP.ECANewRuleDisplay()).construct());
+                    APP.ajax_get_state(
+                        constructWithoutError,
+                        connectionError
+                    );
                 },
-                function() {
-                    // do nothing
-                }
+                connectionError
             );
         });
         stage.setTearDown(function() {
@@ -2075,7 +2114,7 @@ APP.StageManager = function() {
         stage.setUpdateError(function() {
             // default
         });
-        stage.setPollFunction(undefined, function() {
+        stage.setPollFunction(1000, function() {
             
         });
     };
