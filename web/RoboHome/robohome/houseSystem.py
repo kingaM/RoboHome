@@ -252,9 +252,9 @@ class House(object):
         rules = []
 
         for event in self.events:
-            ruleJSON = {"ruleId": event.id, "ruleName": event.name}
+            ruleJSON = {"ruleId": event.id, "ruleName": event.name, "enabled": bool(event.enabled)}
 
-            eventJSON = {"eventId": event.id, "itemType": event.type, "itemState": event.trigger, "enabled": bool(event.enabled)}
+            eventJSON = {"itemType": event.type, "itemState": event.trigger}
 
             if not event.item is None:
                 eventJSON["id"] = event.item._id

@@ -28,6 +28,8 @@ APP.CONSTANTS.VERSION = '0.1';
 
 // DOM classes and ids
 APP.DOM_HOOK = {};
+APP.DOM_HOOK.COLLAPSED = 'collapsed';
+APP.DOM_HOOK.ENABLED = 'enabled';
 APP.DOM_HOOK.STAGE_CONTENT = 'stage-content';
 APP.DOM_HOOK.ENTITY = {};
 APP.DOM_HOOK.ENTITY.ITEM_TYPE = 'item-type';
@@ -35,9 +37,15 @@ APP.DOM_HOOK.ENTITY.ROOM = 'room';
 APP.DOM_HOOK.ENTITY.ITEM = 'item';
 APP.DOM_HOOK.NO_ROOM = 'no-room';
 APP.DOM_HOOK.ECA = {};
+APP.DOM_HOOK.ECA.RULE = 'eca-rule';
+APP.DOM_HOOK.ECA.NEW_RULE = 'eca-new-rule';
+APP.DOM_HOOK.ECA.RULE_TITLE = 'eca-rule-title';
 APP.DOM_HOOK.ECA.EVENT = 'eca-event';
 APP.DOM_HOOK.ECA.CONDITION = 'eca-condition';
 APP.DOM_HOOK.ECA.ACTION = 'eca-action';
+APP.DOM_HOOK.ECA.SHOW_HIDE = 'eca-show-hide'
+APP.DOM_HOOK.ECA.ENABLE_DISABLE = 'eca-enable-disable';
+APP.DOM_HOOK.ECA.EVENT_FIELDSET = 'eca-event-fieldset';
 APP.DOM_HOOK.UPDATING = 'updating';
 APP.DOM_HOOK.ERROR_MESSAGE_DISPLAY = 'error-message-display';
 APP.DOM_HOOK.CONNECTION_ERROR = 'connection-error';
@@ -94,6 +102,33 @@ APP.API.ITEMS.IP = 'ip';
 APP.API.ITEMS.NAME = 'name';
 APP.API.ITEMS.ITEM_TYPE = 'itemType';
 APP.API.ITEMS.ITEM_ID = 'itemId';
+
+// /events
+APP.API.EVENTS = {};
+APP.API.EVENTS.RULES = 'rules';
+APP.API.EVENTS.RULE = {};
+APP.API.EVENTS.RULE.RULE_ID = 'ruleId';
+APP.API.EVENTS.RULE.RULE_NAME = 'ruleName';
+APP.API.EVENTS.RULE.ENABLED = 'enabled';
+APP.API.EVENTS.RULE.EVENT = {};
+APP.API.EVENTS.RULE.EVENT.EVENT = 'event';
+APP.API.EVENTS.RULE.EVENT.ID = 'id';
+APP.API.EVENTS.RULE.EVENT.ITEM_TYPE = 'itemType';
+APP.API.EVENTS.RULE.EVENT.ITEM_STATE = 'itemState';
+APP.API.EVENTS.RULE.CONDITIONS = 'conditions';
+APP.API.EVENTS.RULE.CONDITION = {};
+APP.API.EVENTS.RULE.CONDITION.ITEM_ID = 'itemId';
+APP.API.EVENTS.RULE.CONDITION.CONDITION_ID = 'conditionId';
+APP.API.EVENTS.RULE.CONDITION.ITEM_TYPE = 'itemType';
+APP.API.EVENTS.RULE.CONDITION.EQUIVALENCE = 'equivalence';
+APP.API.EVENTS.RULE.CONDITION.VALUE = 'value';
+APP.API.EVENTS.RULE.CONDITION.METHOD = 'method';
+APP.API.EVENTS.RULE.ACTIONS = 'actions';
+APP.API.EVENTS.RULE.ACTION = {};
+APP.API.EVENTS.RULE.ACTION.ID = 'id';
+APP.API.EVENTS.RULE.ACTION.SCOPE = 'scope';
+APP.API.EVENTS.RULE.ACTION.ACTION_ID = 'actionId';
+APP.API.EVENTS.RULE.ACTION.METHOD = 'method';
 
 // /whitelist
 APP.API.WHITELIST = {};
@@ -269,7 +304,8 @@ APP.data = {
         lastSuccess: undefined,
         lastNoSuccess: undefined
     },
-    state: undefined,
+    houseStructure: undefined,
+    events: undefined,
     stageManager: undefined
 };
 
@@ -487,6 +523,20 @@ APP.ajax_put_rooms_roomId_items_itemId_cmd = function(roomId, itemId, cmd, callb
         error
     );
 }
+
+/**
+ *
+ */
+APP.ajax_get_events = function(callback, error) {
+    APP.ajax('GET', APP.URL.EVENTS, '',
+        function(json) {
+            var obj = APP.unpackToPayload(json);
+            APP.data.events = obj[APP.API.EVENTS.RULES];
+            callback();
+        },
+        error
+    );
+};
 
 /**
  * @method APP.ajax_get_whitelist
@@ -1051,57 +1101,189 @@ APP.ItemTypeDisplay.prototype.updateError = function() {
 };
 
 /**
+ *
+ */
+APP.ECARuleDisplay = function(ruleObj) {
+    this.ruleObj = ruleObj;
+    this.eventDisplay;
+    this.conditionDisplays = {};
+    this.actionDisplays = {};
+};
+
+/**
+ *
+ */
+APP.ECARuleDisplay.prototype.construct = function() {
+    var self = this,
+        boundingBox = $('<div></div>').addClass(APP.DOM_HOOK.ECA.RULE),
+        titleBox = $('<div></div>').addClass(APP.DOM_HOOK.ECA.RULE_TITLE),
+        contentBox = $('<div></div>'),
+        eventBox = $('<fieldset></fieldset>').addClass(APP.DOM_HOOK.ECA.EVENT_FIELDSET),
+        conditionsBox = $('<fieldset></fieldset>'),
+        actionsBox = $('<fieldset></fieldset>'),
+        showHide = $('<button></button>').addClass(APP.DOM_HOOK.ECA.SHOW_HIDE + ' ' + APP.DOM_HOOK.COLLAPSED),
+        ruleName = $('<div></div>').html(this.ruleObj[APP.API.EVENTS.RULE.RULE_NAME]),
+        enableDisable = $('<button></button>').addClass(APP.DOM_HOOK.ECA.ENABLE_DISABLE);
+    
+    showHide.click(function() {
+        $(this).toggleClass(APP.DOM_HOOK.COLLAPSED);
+        contentBox.toggle(100);
+    });
+    
+    enableDisable.click(function() {
+        // ajax call
+            $(this).toggleClass(APP.DOM_HOOK.ENABLED);
+    });
+    
+    ruleName.click(function() {
+        // TODO
+    });
+    
+    if(self.ruleObj[APP.API.EVENTS.RULE.ENABLED] === true) {
+        enableDisable.addClass(APP.DOM_HOOK.ENABLED);
+    }
+    titleBox.append(showHide);
+    titleBox.append(ruleName);
+    titleBox.append(enableDisable);
+    boundingBox.append(titleBox);
+    
+    // event box
+    eventBox.append($('<legend></legend>').html('Event'));
+    this.eventDisplay = new APP.ECAEventDisplay(self, this.ruleObj[APP.API.EVENTS.RULE.EVENT]);
+    eventBox.append(this.eventDisplay.construct());
+    contentBox.append(eventBox);
+    
+    // conditions box
+    conditionsBox.append($('<legend></legend>').html('Conditions'));
+    for(var i = 0; i < this.ruleObj[APP.API.EVENTS.RULE.CONDITIONS].length; i++) {
+        var conditionId = this.ruleObj[APP.API.EVENTS.RULE.CONDITIONS][i][APP.API.EVENTS.RULE.CONDITION.CONDITION_ID];
+        this.conditionDisplays[conditionId] = new APP.ECAConditionDisplay(self, this.ruleObj[APP.API.EVENTS.RULE.CONDITIONS]);
+    }
+    for(var property in this.conditionDisplays) {
+        if(this.conditionDisplays.hasOwnProperty(property)) {
+            conditionsBox.append(this.conditionDisplays[property].construct());
+        }
+    }
+    contentBox.append(conditionsBox);
+    
+    // actions box
+    actionsBox.append($('<legend></legend>').html('Actions'));
+    for(var i = 0; i < this.ruleObj[APP.API.EVENTS.RULE.ACTIONS].length; i++) {
+        var actionId = this.ruleObj[APP.API.EVENTS.RULE.ACTIONS][i][APP.API.EVENTS.RULE.ACTION.ACTION_ID];
+        this.actionDisplays[actionId] = new APP.ECAActionDisplay(self, this.ruleObj[APP.API.EVENTS.RULE.ACTIONS]);
+    }
+    for(var property in this.actionDisplays) {
+        if(this.actionDisplays.hasOwnProperty(property)) {
+            actionsBox.append(this.actionDisplays[property].construct());
+        }
+    }
+    contentBox.append(actionsBox);
+    contentBox.hide();
+    
+    boundingBox.append(contentBox);
+    return boundingBox;
+};
+
+/**
+ *
+ */
+APP.ECARuleDisplay.prototype.update = function() {
+
+};
+
+/**
+ *
+ */
+APP.ECANewRuleDisplay = function() {};
+
+/**
+ *
+ */
+APP.ECANewRuleDisplay.prototype.construct = function() {
+    var self = this,
+        boundingBox = $('<div></div>').addClass(APP.DOM_HOOK.ECA.RULE + ' ' + APP.DOM_HOOK.ECA.NEW_RULE),
+        titleBox = $('<div></div>').addClass(APP.DOM_HOOK.ECA.RULE_TITLE),
+        input = $('<input></input>').attr({type: 'text', placeholder: 'New event name', id: 'eca-add-new-rule-input'}),
+        button = $('<button></button>').html('Add');
+    
+    button.click(function() {
+        
+    });
+    
+    titleBox.append(input);
+    titleBox.append(button);
+    boundingBox.append(titleBox);
+    return boundingBox
+};
+
+/**
  * @class APP.ECAEventDisplay
  * @constructor
  */
-APP.ECAEventDisplay = function(stage, eventObj) {
-    this.stage = stage;
-    this.obj = eventObj;
+APP.ECAEventDisplay = function(eventObj) {
+    this.eventObj = eventObj;
     this.context = $('<div></div>').addClass(APP.DOM_HOOK.ECA.EVENT);
-}
+};
 
 /**
  *
  */
 APP.ECAEventDisplay.prototype.construct = function() {
 
-}
+};
+
+/**
+ *
+ */
+APP.ECAEventDisplay.prototype.update = function() {
+
+};
 
 /**
  * @class APP.ECAConditionNode
  * @constructor
  */
-APP.ECAConditionDisplay = function(parent, stage, conditionObj) {
-    this.parent = parent;
-    this.stage = stage;
-    this.obj = conditionObj;
+APP.ECAConditionDisplay = function(conditionObj) {
+    this.conditionObj = conditionObj;
     this.context = $('<div></div>').addClass(APP.DOM_HOOK.ECA.CONDITION);
-}
+};
 
 /**
  *
  */
 APP.ECAConditionDisplay.prototype.construct = function() {
 
-}
+};
+
+/**
+ *
+ */
+APP.ECAConditionDisplay.prototype.update = function() {
+
+};
 
 /**
  * @class APP.ECAActionNode
  * @constructor
  */
-APP.ECAActionDisplay = function(parent, stage, actionObj) {
-    this.parent = parent;
-    this.stage = stage;
-    this.obj = actionObj;
+APP.ECAActionDisplay = function(actionObj) {
+    this.actionObj = actionObj;
     this.context = $('<div></div>').addClass(APP.DOM_HOOK.ECA.ACTION);
-}
+};
 
 /**
  *
  */
-APP.ECAConditionDisplay.prototype.construct = function() {
+APP.ECAActionDisplay.prototype.construct = function() {
 
-}
+};
+
+/**
+ *
+ */
+APP.ECAActionDisplay.prototype.update = function() {
+
+};
 
 /**
  *
@@ -1869,7 +2051,20 @@ APP.StageManager = function() {
             // default
         });
         stage.setConstruct(function() {
-            // default
+            stage.data.ruleDisplays = [];
+            APP.ajax_get_events(
+                function() {
+                    console.log(APP.data);
+                    for(var i = 0; i < APP.data.events.length; i++) {
+                        stage.data.ruleDisplays.push(new APP.ECARuleDisplay(APP.data.events[i]));
+                        stage.getContext().append(stage.data.ruleDisplays[i].construct());
+                    }
+                    stage.getContext().append((new APP.ECANewRuleDisplay()).construct());
+                },
+                function() {
+                    // do nothing
+                }
+            );
         });
         stage.setTearDown(function() {
             // default

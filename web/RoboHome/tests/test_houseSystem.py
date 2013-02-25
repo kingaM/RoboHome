@@ -531,10 +531,10 @@ class TestHouse(unittest.TestCase):
         #self.event3 = MockEvent(3, "mockType2", self.item2, None, "mockTrigger2", 1)
         #self.event4 = MockEvent(4, "mockType1", self.item1, None, "mockTrigger", 1)
 
-        rule1JSON = {"ruleId": 1, "ruleName": "Rule1", "event": {"eventId": 1, "id": 1, "itemType": "mockType1", "scope": "item", "itemState": "mockTrigger", "enabled": True}, "conditions": [], "actions": []}
-        rule2JSON = {"ruleId": 2, "ruleName": "Rule2", "event": {"eventId": 2, "id": 2, "itemType": "mockType2", "scope": "item", "itemState": "mockTrigger", "enabled": True}, "conditions": [], "actions": []}
-        rule3JSON = {"ruleId": 3, "ruleName": "Rule3", "event": {"eventId": 3, "id": 2, "itemType": "mockType2", "scope": "item", "itemState": "mockTrigger2", "enabled": True}, "conditions": [], "actions": []}
-        rule4JSON = {"ruleId": 4, "ruleName": "Rule4", "event": {"eventId": 4, "id": 1, "itemType": "mockType1", "scope": "item", "itemState": "mockTrigger", "enabled": True}, "conditions": [], "actions": []}
+        rule1JSON = {"ruleId": 1, "ruleName": "Rule1", "enabled": True, "event": {"id": 1, "itemType": "mockType1", "scope": "item", "itemState": "mockTrigger"}, "conditions": [], "actions": []}
+        rule2JSON = {"ruleId": 2, "ruleName": "Rule2", "enabled": True, "event": {"id": 2, "itemType": "mockType2", "scope": "item", "itemState": "mockTrigger"}, "conditions": [], "actions": []}
+        rule3JSON = {"ruleId": 3, "ruleName": "Rule3", "enabled": True, "event": {"id": 2, "itemType": "mockType2", "scope": "item", "itemState": "mockTrigger2"}, "conditions": [], "actions": []}
+        rule4JSON = {"ruleId": 4, "ruleName": "Rule4", "enabled": True, "event": {"id": 1, "itemType": "mockType1", "scope": "item", "itemState": "mockTrigger"}, "conditions": [], "actions": []}
 
         rulesJSON = {"rules": [rule1JSON, rule2JSON, rule3JSON, rule4JSON]}
 

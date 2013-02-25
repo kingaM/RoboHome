@@ -578,6 +578,113 @@ div.stage {
     border: 1px solid rgb(229, 151, 0);
 }
 
+.stage-content .eca-rule input {
+            display: inline-block;
+            padding: 0.2em 0.4em;
+            margin: 0.2em 0;
+            text-decoration: none;
+            font-size: 0.8em;
+            color: #FFFFFF;
+            padding: 0.4em;
+            border: 1px solid #666666;
+            background: rgba(0,200,0,0.2);
+    -webkit-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+       -moz-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+        -ms-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+         -o-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+            box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+}
+.stage-content .eca-rule input::-webkit-input-placeholder { color: rgba(132,169,14,1); }
+.stage-content .eca-rule input::-moz-placeholder { #color: rgba(132,169,14,1); }
+.stage-content .eca-rule input:-moz-placeholder { #color: rgba(132,169,14,1); }
+.stage-content .eca-rule input:ms-input-placeholder { #color: rgba(132,169,14,1); }
+
+.stage-content .eca-rule {
+            padding: 0.5em;
+            margin: 1em 0.5em;
+            border: 1px solid #666666;
+            background: rgba(0,100,0,0.1);
+    -webkit-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+       -moz-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+        -ms-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+         -o-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+            box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+}
+
+.stage-content .eca-rule div {
+    font-size: 1em;
+}
+
+.stage-content .eca-rule-title button,
+.stage-content .eca-rule-title div {
+    display: inline-block;
+}
+
+.stage-content .eca-rule-title div {
+    margin: 0 2em;
+    min-width: 15%;
+}
+
+.stage-content .eca-rule button {
+            cursor: pointer;
+            color: #FFFFFF;
+            display: inline-block;
+            font-size: 0.9em;
+            line-height: 1.5em;
+            border: 1px solid #666666;
+            background: rgba(0,200,0,0.2);
+            padding: 0.2em 1em;
+            min-width: 1.5em;
+            text-align: center;
+            font-family: 'serene';
+    -webkit-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+       -moz-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+        -ms-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+         -o-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+            box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+}
+
+.stage-content .eca-rule button:hover,
+.stage-content .eca-rule input:hover {
+    border: 1px solid rgb(229, 151, 0);
+}
+
+.stage-content .eca-show-hide {
+    padding: 0 !important;
+    font-size: 1.1em !important;
+    font-family: Arial !important;
+}
+.stage-content .eca-show-hide:after {
+    content: '-';
+}
+.stage-content .eca-show-hide.collapsed:after {
+    content: '+';
+}
+
+.stage-content .eca-enable-disable:after {
+    content: 'Disabled';
+}
+.stage-content .eca-enable-disable.enabled:after {
+    content: 'Enabled';
+}
+
+.stage-content .eca-rule fieldset {
+    border: 1px solid #666666;
+    margin: 0.3em 0.3em 0.3em 3em;
+}
+
+.stage-content .eca-event-fieldset {
+    margin-left: 0.3em;
+}
+
+.stage-content .eca-rule legend {
+    font-size: 0.8em;
+}
+
+.stage-content .eca-new-rule button {
+    margin-left: 1em;
+}
+
 .stage-content .whitelist-display div {
     font-size: 0.7em;
 }
