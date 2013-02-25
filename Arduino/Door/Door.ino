@@ -11,6 +11,8 @@ boolean lastOpen = LOW;
 boolean lastClose = LOW;
 int openState = 1;
 int closeState = 0;
+boolean motionDetected = false;
+boolean newMotion = false;
 
 //VARS
 //the time we give the sensor to calibrate (10-60 secs according to the datasheet)
@@ -21,13 +23,14 @@ long unsigned int lowIn;
 
 //the amount of milliseconds the sensor has to be low 
 //before we assume all motion has stopped
-long unsigned int pause = 1000;  
+long unsigned int pause = 3000;  
 
 boolean lockLow = true;
-boolean takeLowTime;  
+boolean takeLowTime = true;  
+boolean takeHighTime = true;  
 
 int pir1Pin = 8;    //the digital pin connected to the PIR sensor's output
-int pir2Pin = 8;    //the digital pin connected to the PIR sensor's output
+int pir2Pin = 9;    //the digital pin connected to the PIR sensor's output
 
 void handleCommand(WiFiClient client, char* cmd) {
   if (strcmp(cmd, "status") == 0) {
@@ -119,14 +122,65 @@ void respondToRequest() {
 }
 
 int pir(int pirPin) {
+  //  if(digitalRead(pirPin) == HIGH){
+  //    if(takeHighTime){
+  //      lowIn = millis();          //save the time of the transition from high to LOW
+  //      takeHighTime = false;       //make sure this is only done at the start of a LOW phase
+  //    }
+  //  if( millis() - lowIn > pause){  
+  //    takeLowTime = true;
+  //      delay(50);
+  //      return 1;
+  //    }
+  ////    delay(50);    
+  //  
+  ////    return 1;
+  //  }
+  //
+  //  if(digitalRead(pirPin) == LOW){       
+  //
+  //    if(takeLowTime){
+  //      lowIn = millis();          //save the time of the transition from high to LOW
+  //      takeLowTime = false;       //make sure this is only done at the start of a LOW phase
+  //    }
+  //    //if the sensor is low for more than the given pause, 
+  //    //we assume that no more motion is going to happen
+  //    if( millis() - lowIn > pause){  
+  //      takeHighTime = false;
+  //      delay(50);
+  //      return 0;
+  //    }
+  //  }
+
   if(digitalRead(pirPin) == HIGH){
-    delay(50);
-    return 1;      
+    if(lockLow){  
+      Serial.println("HIGH PIR");
+      //makes sure we wait for a transition to LOW before any further output is made:
+      lockLow = false;
+      newMotion = true;      
+      motionDetected = true;
+      delay(50);
+    }         
+    takeLowTime = true;
   }
 
   if(digitalRead(pirPin) == LOW){       
-    delay(50);
-    return 0;
+
+    if(takeLowTime){
+      lowIn = millis();          //save the time of the transition from high to LOW
+      takeLowTime = false;       //make sure this is only done at the start of a LOW phase
+    }
+    //if the sensor is low for more than the given pause, 
+    //we assume that no more motion is going to happen
+    if(!lockLow && millis() - lowIn > pause){  
+      Serial.println("LOW PIR");
+      //makes sure this block of code is only executed again after 
+      //a new motion sequence has been detected
+      lockLow = true;
+      newMotion = true;     
+      motionDetected = false;
+      delay(50);
+    }
   }
 }
 
@@ -158,11 +212,18 @@ void loop() {
   else {
     Serial.println("{status : 0}");
   }
-  if (pir(pir1Pin) == 1 || pir(pir2Pin) == 1) {
-    Serial.println("Motion Detected"); 
+  pir(pir1Pin);
+  //pir(pir2Pin);
+  Serial.print("Motion Detected: ");
+  Serial.println(motionDetected);
+  if(newMotion && motionDetected) {
+    Serial.println("NEW MOTION DETECTED"); 
   }
+  newMotion = false;
   delay(1000);
 }
+
+
 
 
 
