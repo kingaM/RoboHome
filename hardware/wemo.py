@@ -284,6 +284,12 @@ class upnp:
             if (hostFound and not self.UNIQ) or not hostFound:
                 #Get the new host's index number and create an entry in ENUM_HOSTS
                 index = len(self.ENUM_HOSTS)
+
+                print host
+                print protocol
+                print xmlFile
+                print upnpType
+
                 self.ENUM_HOSTS[index] = {
                     'name' : host,
                     'dataComplete' : False,
@@ -350,7 +356,7 @@ class upnp:
             try:
                 port = int(hostNameArray[1])
             except:
-                print 'Invalid port specified for host connection:',hostName[1]
+                #print 'Invalid port specified for host connection:',hostName[1]
                 return False
         else:
             host = hostName
@@ -757,78 +763,27 @@ class upnp:
             print "Error updating command completer structure; some command completion features might not work..."
         return
 
-
-
-
-################## Action Functions ######################
-#These functions handle user commands from the shell
-
-#Actively search for UPNP devices
-def msearch(argc, argv, hp, cycles=99999999):
-    defaultST = "upnp:rootdevice"
-    st = "schemas-upnp-org"
-    myip = gethostbyname(gethostname())
-    print myip
-    lport = hp.port
-    print lport
-
-    if argc >= 3:
-        if argc == 4:
-            st = argv[1]
-            searchType = argv[2]
-            searchName = argv[3]
-        else:
-            searchType = argv[1]
-            searchName = argv[2]
-        st = "urn:%s:%s:%s:%s" % (st,searchType,searchName,hp.UPNP_VERSION.split('.')[0])
-    else:
-        st = defaultST
-
-    #Build the request
-    request =   "M-SEARCH * HTTP/1.1\r\n"\
-            "HOST:%s:%d\r\n"\
-            "ST:%s\r\n" % (hp.ip,hp.port,st)
-    for header,value in hp.msearchHeaders.iteritems():
-            request += header + ':' + value + "\r\n"
-    request += "\r\n"
-
-    print "Entering discovery mode for '%s', Ctl+C to stop..." % st
-    print ''
-
-    #Have to create a new socket since replies will be sent directly to our IP, not the multicast IP
-    server = hp.createNewListener(myip,lport)
-    if server == False:
-        print 'Failed to bind port %d' % lport
-        return
-
-    hp.send(request,server)
-    while True:
-        try:
-            hp.parseSSDPInfo(hp.listen(1024,server),False,False)
-        except Exception:
-            print 'Discover mode halted...'
-            server.close()
-            break
-        cycles -= 1
-        if cycles == 0:
-            print 'Discover mode halted...'
-            server.close()
-            break
-
 conn = upnp()
-msearch(0, 0, conn, 3)
+
+conn.ENUM_HOSTS[0] = {
+                    'name' : '192.168.11.2:49152',
+                    'dataComplete' : False,
+                    'proto' : 'http://',
+                    'xmlFile' : 'http://192.168.11.2:49152/setup.xml',
+                    'serverType' : None,
+                    'upnpServer' : 'Linux/2.6.21, UPnP/1.0, Portable SDK for UPnP devices/1.6.6',
+                    'deviceList' : {}
+                }
 
 SWITCHES = []
 
 # populate all the host info, for every upnp device on the network
 for index in conn.ENUM_HOSTS:
     hostInfo = conn.ENUM_HOSTS[index]
-    print hostInfo
     if hostInfo['dataComplete'] == False:
         xmlHeaders, xmlData = conn.getXML(hostInfo['xmlFile'])
         conn.getHostInfo(xmlData,xmlHeaders,index)
 
-print SWITCHES
 
 for index in conn.ENUM_HOSTS:
     try:
