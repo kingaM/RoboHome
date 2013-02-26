@@ -58,6 +58,8 @@ body {
 #wrapper-right {
     width: 80%;
     background-image: url('../img/grid.png');
+    background-attachment: fixed;
+    background-position: center 0;
 }
 
 #wrapper-primary {
@@ -206,6 +208,8 @@ body {
 .context-menu-inner-wrapper {
     margin-right: 0.5em;
     background-image: url('../img/grid.png');
+    background-attachment: fixed;
+    background-position: center 0;
 }
 
 .context-menu-content {
@@ -624,8 +628,11 @@ div.stage {
 .stage-content .eca-rule-title div {
     margin: 0 1em;
     min-width: 15%;
-    cursor: pointer;
     padding: 0.2em;
+}
+
+div.eca-field-div {
+    cursor: pointer;
     border: 1px solid transparent;
 }
 
@@ -648,7 +655,7 @@ div.stage {
             box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
 }
 
-.stage-content .eca-rule-title div:hover,
+.stage-content .eca-field-div:hover,
 .stage-content .eca-rule button:hover,
 .stage-content .eca-rule input:hover {
     border: 1px solid rgb(229, 151, 0);
@@ -685,6 +692,8 @@ div.stage {
     margin: 0.5em 0 0 3em;
     padding: 0.5em;
     background-image: url('../img/grid.png');
+    background-attachment: fixed;
+    background-position: center 0;
 }
 
 .stage-content .eca-rule fieldset > div {
@@ -701,6 +710,23 @@ div.stage {
 }
 
 .stage-content .eca-new-rule button {
+    margin-left: 1em;
+}
+
+.stage-content .eca-event-display > div,
+.stage-content .eca-condition-display > div,
+.stage-content .eca-action-display > div {
+    display: inline-block;
+    font-size: 1em;
+    margin: 0 0.5em;
+    padding: 0.5em;
+}
+
+#stage-rules-eca .eca-capitalize {
+    text-transform: capitalize;
+}
+
+#stage-rules-eca img {
     margin-left: 1em;
 }
 

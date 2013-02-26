@@ -41,12 +41,17 @@ APP.DOM_HOOK.ECA.RULE = 'eca-rule';
 APP.DOM_HOOK.ECA.NEW_RULE = 'eca-new-rule';
 APP.DOM_HOOK.ECA.RULE_TITLE = 'eca-rule-title';
 APP.DOM_HOOK.ECA.EVENT = 'eca-event';
+APP.DOM_HOOK.ECA.EVENT_DISPLAY = 'eca-event-display';
 APP.DOM_HOOK.ECA.CONDITION = 'eca-condition';
+APP.DOM_HOOK.ECA.CONDITION_DISPLAY = 'eca-condition-display';
 APP.DOM_HOOK.ECA.ACTION = 'eca-action';
-APP.DOM_HOOK.ECA.SHOW_HIDE = 'eca-show-hide'
+APP.DOM_HOOK.ECA.ACTION_DISPLAY = 'eca-action-display';
+APP.DOM_HOOK.ECA.FIELD_DIV = 'eca-field-div';
+APP.DOM_HOOK.ECA.SHOW_HIDE = 'eca-show-hide';
 APP.DOM_HOOK.ECA.ENABLE_DISABLE = 'eca-enable-disable';
 APP.DOM_HOOK.ECA.DELETE_EVENT = 'eca-delete-event';
 APP.DOM_HOOK.ECA.EVENT_FIELDSET = 'eca-event-fieldset';
+APP.DOM_HOOK.ECA.CAPITALIZE = 'eca-capitalize';
 APP.DOM_HOOK.UPDATING = 'updating';
 APP.DOM_HOOK.ERROR_MESSAGE_DISPLAY = 'error-message-display';
 APP.DOM_HOOK.CONNECTION_ERROR = 'connection-error';
@@ -1110,17 +1115,47 @@ APP.ItemTypeDisplay.prototype.updateError = function() {
 /**
  *
  */
+APP.ECARuleManager = function(stage) {
+    this.stage = stage;
+    this.ruleDisplays = [];
+    
+    for(var i = 0; i < APP.data.events.length; i++) {
+        this.ruleDisplays.push(new APP.ECARuleDisplay(APP.data.events[i]));
+    }
+};
+
+/**
+ *
+ */
+APP.ECARuleManager.prototype.construct = function() {
+    for(var i = 0; i < this.ruleDisplays.length; i++) {
+        this.stage.getContext().append(this.ruleDisplays[i].construct());
+    }
+    this.stage.getContext().append((new APP.ECANewRuleDisplay()).construct());
+};
+
+/**
+ *
+ */
+APP.ECARuleManager.prototype.update = function() {
+
+};
+
+/**
+ *
+ */
 APP.ECARuleDisplay = function(ruleObj) {
     this.ruleObj = ruleObj;
-    this.eventDisplay;
-    this.conditionDisplay = {};
-    this.actionDisplay = {};
+    this.eventDisplay = new APP.ECAEventDisplay(ruleObj[APP.API.EVENTS.RULE.EVENT]);
+    this.conditionManager = new APP.ECAConditionManager(ruleObj[APP.API.EVENTS.RULE.CONDITIONS]);
+    this.actionManager = new APP.ECAActionManager(ruleObj[APP.API.EVENTS.RULE.ACTIONS]);
 };
 
 /**
  *
  */
 APP.ECARuleDisplay.prototype.construct = function() {
+    console.log(this.ruleObj);
     var self = this,
         boundingBox = $('<div></div>').addClass(APP.DOM_HOOK.ECA.RULE),
         titleBox = $('<div></div>').addClass(APP.DOM_HOOK.ECA.RULE_TITLE),
@@ -1132,7 +1167,7 @@ APP.ECARuleDisplay.prototype.construct = function() {
         actionsFieldset = $('<fieldset></fieldset>'),
         actionsBox = $('<div></div>'),
         showHide = $('<button></button>').addClass(APP.DOM_HOOK.ECA.SHOW_HIDE + ' ' + APP.DOM_HOOK.COLLAPSED),
-        ruleName = $('<div></div>').html(this.ruleObj[APP.API.EVENTS.RULE.RULE_NAME]),
+        ruleName = $('<div>' + this.ruleObj[APP.API.EVENTS.RULE.RULE_NAME] + '</div>').addClass(APP.DOM_HOOK.ECA.FIELD_DIV),
         enableDisable = $('<button></button>').addClass(APP.DOM_HOOK.ECA.ENABLE_DISABLE),
         deleteEventInput = $('<input></input>').attr({class: APP.DOM_HOOK.ECA.DELETE_EVENT, placeholder: 'Confirm event name'}),
         deleteEventButton = $('<button>Delete</button>').addClass(APP.DOM_HOOK.ECA.DELETE_EVENT);
@@ -1169,22 +1204,19 @@ APP.ECARuleDisplay.prototype.construct = function() {
     // event box
     eventFieldset.append($('<legend></legend>').html('Event'));
     eventFieldset.append(eventBox);
-    this.eventDisplay = new APP.ECAEventDisplay(self, this.ruleObj[APP.API.EVENTS.RULE.EVENT]);
     eventBox.append(this.eventDisplay.construct());
     contentBox.append(eventFieldset);
     
     // conditions box
     conditionsFieldset.append($('<legend></legend>').html('Conditions'));
     conditionsFieldset.append(conditionsBox);
-    this.conditionDisplay = new APP.ECAConditionDisplay(self, this.ruleObj[APP.API.EVENTS.RULE.CONDITIONS]);
-    conditionsBox.append(this.conditionDisplay.construct());
+    conditionsBox.append(this.conditionManager.construct());
     contentBox.append(conditionsFieldset);
     
     // actions box
     actionsFieldset.append($('<legend></legend>').html('Actions'));
     actionsFieldset.append(actionsBox);
-    this.actionDisplay = new APP.ECAActionDisplay(self, this.ruleObj[APP.API.EVENTS.RULE.ACTIONS]);
-    actionsBox.append(this.actionDisplay.construct());
+    actionsBox.append(this.actionManager.construct());
     contentBox.append(actionsFieldset);
     
     contentBox.hide();
@@ -1202,8 +1234,7 @@ APP.ECARuleDisplay.prototype.update = function() {
 /**
  *
  */
-APP.ECANewRuleDisplay = function(stage) {
-    this.stage = stage;
+APP.ECANewRuleDisplay = function() {
 };
 
 /**
@@ -1250,12 +1281,26 @@ APP.ECAEventDisplay.prototype.update = function() {
 };
 
 /**
+ *
+ */
+APP.ECAConditionManager = function(conditionArray) {
+    this.conditionArray = conditionArray;
+    this.context = $('<div></div>').addClass(APP.DOM_HOOK.ECA.CONDITION);
+};
+
+/**
+ *
+ */
+APP.ECAConditionManager.prototype.construct = function() {
+
+};
+
+/**
  * @class APP.ECAConditionNode
  * @constructor
  */
-APP.ECAConditionDisplay = function(conditionArray) {
-    this.conditionArray = conditionArray;
-    this.context = $('<div></div>').addClass(APP.DOM_HOOK.ECA.CONDITION);
+APP.ECAConditionDisplay = function(conditionObj) {
+    this.conditionObj = conditionObj;
 };
 
 /**
@@ -1268,30 +1313,162 @@ APP.ECAConditionDisplay.prototype.construct = function() {
 /**
  *
  */
+APP.ECAConditionManager.prototype.update = function() {
+
+};
+
+/**
+ *
+ */
+APP.ECANewConditionDisplay = function() {
+    
+};
+
+/**
+ *
+ */
+APP.ECANewConditionDisplay.prototype.construct = function() {
+    var self = this,
+        context = $('<div></div>').addClass(APP.DOM_HOOK.ECA.CONDITION_DISPLAY);
+    
+    return context;
+};
+
+/**
+ *
+ */
 APP.ECAConditionDisplay.prototype.update = function() {
 
 };
 
 /**
- * @class APP.ECAActionNode
- * @constructor
+ *
  */
-APP.ECAActionDisplay = function(actionArray) {
+APP.ECAActionManager = function(actionArray) {
     this.actionArray = actionArray;
+    this.actionDisplays = [];
+    this.newActionDisplay = new APP.ECANewActionDisplay();
     this.context = $('<div></div>').addClass(APP.DOM_HOOK.ECA.ACTION);
 };
 
 /**
  *
  */
-APP.ECAActionDisplay.prototype.construct = function() {
+APP.ECAActionManager.prototype.construct = function() {
+    for(var i = 0; i < this.actionArray.length; i++) {
+        $('#debug').append(i);
+        this.actionDisplays.push(new APP.ECAActionDisplay(this.actionArray[i]));
+        this.context.append(this.actionDisplays[i].construct());
+    }
+    this.context.append(this.newActionDisplay.construct());
+    return this.context;
+};
 
+/**
+ *
+ */
+APP.ECAActionManager.prototype.update = function() {
+    
+};
+
+/**
+ * @class APP.ECAActionNode
+ * @constructor
+ */
+APP.ECAActionDisplay = function(actionObj) {
+    this.actionObj = actionObj;
+};
+
+/**
+ *
+ */
+APP.ECAActionDisplay.prototype.construct = function() {
+    var self = this,
+        context = $('<div></div>').addClass(APP.DOM_HOOK.ECA.ACTION_DISPLAY),
+        bridge1 = $('<div>all</div>'),
+        itemType,
+        itemTypeField = $('<div></div>').addClass(APP.DOM_HOOK.ECA.FIELD_DIV),
+        bridge2 = $('<div>s in</div>'),
+        scopeName,
+        scopeField = $('<div></div>').addClass(APP.DOM_HOOK.ECA.FIELD_DIV),
+        methodName,
+        methodField = $('<div></div>').addClass(APP.DOM_HOOK.ECA.FIELD_DIV);
+    // scope === house / room,
+    // Method (all) itemType (in) scope
+    // scope === specific item,
+    // Method itemType itemName
+    
+    methodField.click(function() {
+        
+    });
+    
+    itemTypeField.click(function() {
+        
+    });
+    
+    scopeField.click(function() {
+        
+    });
+    
+    // methodField
+    methodField.html(this.actionObj[APP.API.EVENTS.RULE.ACTION.METHOD]);
+    
+    // nameField
+    /*
+    switch (actionObj[APP.API.EVENTS.RULE.ACTION.SCOPE]) {
+    case 'item':
+        for(var i = 0; i < APP.data.houseStructure[APP.API.STATE.ROOMS].length; i++) {
+            for(var j = 0; j < APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ITEMS].length; j++) {
+                if(actionObj[APP.API.EVENTS.RULE.ACTION.ID] === APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ITEMS][j][APP.API.STATE.ROOM.ITEM.ID]) {
+                    nameField.html(APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ITEMS][j][APP.API.STATE.ROOM.ITEM.NAME]);
+                    break;
+                }
+            }
+        }
+        break;
+    case 'room':
+        for(var i = 0; i < APP.data.houseStructure[APP.API.STATE.ROOMS].length; i++) {
+            if(actionObj[APP.API.EVENTS.RULE.ACTION.ID] === APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ID]) {
+                nameField.html(APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.NAME]);
+                break;
+            }
+        }
+    case 'house':
+        nameField
+        break;
+    }
+    */
+    
+    // scopeField
+    
+    
+    context.append(methodField);
+    context.append(bridge1);
+    context.append(itemTypeField);
+    context.append(bridge2);
+    context.append(scopeField);
+    
+    return context;
 };
 
 /**
  *
  */
 APP.ECAActionDisplay.prototype.update = function() {
+
+};
+
+/**
+ *
+ */
+APP.ECANewActionDisplay = function() {
+
+};
+
+/**
+ *
+ */
+APP.ECANewActionDisplay.prototype.construct = function() {
 
 };
 
@@ -2064,11 +2241,8 @@ APP.StageManager = function() {
             var stageMessage = $('<div></div>').addClass('stage-message');
             
             function construct() {
-                for(var i = 0; i < APP.data.events.length; i++) {
-                    stage.data.ruleDisplays.push(new APP.ECARuleDisplay(APP.data.events[i]));
-                    stage.getContext().append(stage.data.ruleDisplays[i].construct());
-                }
-                stage.getContext().append((new APP.ECANewRuleDisplay(stage)).construct());
+                stage.data.ruleManager = new APP.ECARuleManager(stage);
+                stage.data.ruleManager.construct();
             }
             
             function constructWithError() {
@@ -2090,7 +2264,7 @@ APP.StageManager = function() {
                 }
             }
             
-            stage.data.ruleDisplays = [];
+            stage.data.ruleManager = undefined;
             
             stageMessage.append($('<span></span>').html('Loading'));
             stageMessage.append($('<img></img>').attr({src: '../../static/img/ajax-loader.gif'}));
@@ -2531,16 +2705,13 @@ APP.clock = {
             currentDay = date.getDay(),
             timeOfDay;
             
-        if (currentMinutes < 10) { currentMinutes = "0" + currentMinutes; }
-        if (currentHours >= 12) {
-            if (currentHours === 12) {
-                currentHours = 12;
-                timeOfDay = 'PM';
-            } else {
-                currentHours -= 12;
-                timeOfDay = 'PM';
-            }
+        if(currentMinutes < 10) { currentMinutes = "0" + currentMinutes; }
+        if(currentHours >= 12) {
+            if (currentHours === 12) { currentHours = 12; }
+            else { currentHours -= 12; }
+            timeOfDay = 'PM';
         } else {
+            if(currentHours === 0) { currentHours = 12; }
             timeOfDay = "AM";
         }
 
