@@ -1459,7 +1459,7 @@ APP.ECANewConditionDisplay.prototype.construct = function() {
         stateFieldset = $('<fieldset><legend>Step 3 - Set state</legend></fieldset>'),
         stateWrapper = $('<div></div>').addClass('select-wrapper')
         stateField = $('<select></select>'),
-        addButton = $('<button>Add new action</button>'),
+        addButton = $('<button>Add new condition</button>'),
         cancelButton = $('<button>Cancel</button>'),
         saveButton = $('<button>Save</button>');
         

@@ -722,7 +722,7 @@ div.eca-field-div {
 
 .stage-content .eca-event {
     padding: 0.5em;
-    background-color: rgba(0,100,0,0.1);
+    background-color: rgba(0,100,0,0.3);
 }
 
 .stage-content .eca-condition-display,
@@ -737,7 +737,7 @@ div.eca-field-div {
 }
 
 .stage-content .eca-condition-display:hover,
-.stage-content .eca-condition-dsplay:hover {
+.stage-content .eca-action-display:hover {
     -webkit-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
        -moz-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
         -ms-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
@@ -745,12 +745,16 @@ div.eca-field-div {
             box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
 }
 
+.stage-content .eca-event:hover {
+    background-color: rgba(0,100,0,0.4);
+}
+
 .stage-content .eca-condition-display:hover {
-    background-color: rgba(0,0,255,0.2);
+    background-color: rgba(0,0,200,0.2);
 }
 
 .stage-content .eca-action-display:hover {
-    background-color: rgba(255,0,0,0.2);
+    background-color: rgba(255,0,0,0.1);
 }
 
 .eca-event .eca-field-div,
@@ -775,7 +779,7 @@ div.eca-field-div {
 }
 
 .eca-action-display .eca-field-div {
-    background-color: rgba(255,0,0,0.2);
+    background-color: rgba(255,0,0,0.1);
     border: 1px solid rgba(196,30,30,0.5);
 }
 
@@ -842,16 +846,17 @@ div.eca-field-div {
 }
 
 .stage-content .eca-condition {
-    background-color: rgba(0,0,200,0.1);
+    background-color: rgba(50,50,200,0.2);
 }
 
 .stage-content .eca-action {
-    background-color: rgba(255,0,0,0.2);
+    background-color: rgba(200,0,0,0.2);
+    margin-bottom: 0.5em;
 }
 
 .stage-content .eca-condition button {
     padding: 0.2em 1em;
-    background-color: rgba(0,0,255,0.2);
+    background-color: rgba(0,0,200,0.3);
 }
 
 .stage-content .eca-action button {
