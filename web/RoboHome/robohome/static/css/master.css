@@ -626,13 +626,19 @@ div.stage {
 }
 
 .stage-content .eca-rule-title div {
-    margin: 0.2em 0.2em 0.2em 1em;
-    min-width: 15%;
-    padding: 0.2em;
+            margin: 0.2em 0.2em 0.2em 1em;
+            min-width: 15%;
+            padding: 0.25em;
+            background: rgba(0,200,0,0.2);
+            border: 1px solid rgba(132,169,14,0.5);
+    -webkit-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+       -moz-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+        -ms-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+         -o-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+            box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
 }
 
 div.eca-field-div {
-    cursor: pointer;
     border: 1px solid transparent;
 }
 
@@ -655,9 +661,7 @@ div.eca-field-div {
             box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
 }
 
-.stage-content .eca-field-div:hover,
-.stage-content .eca-rule button:hover,
-.stage-content .eca-rule input:hover {
+.stage-content .eca-rule button:hover {
     border: 1px solid rgb(229, 151, 0);
 }
 
@@ -700,11 +704,11 @@ div.eca-field-div {
     background-position: center 0;
 }
 
-.stage-content .eca-rule fieldset > div {
+.stage-content .eca-rule > div > fieldset > div {
     margin: -1em -0.5em -0.5em -0.5em;
 }
 
-.stage-content .eca-rule fieldset.eca-event-fieldset {
+.stage-content .eca-rule > div > fieldset.eca-event-fieldset {
     margin-left: 0;
 }
 
@@ -716,11 +720,24 @@ div.eca-field-div {
     margin-left: 1em;
 }
 
+.stage-content .eca-event {
+    padding: 0.5em;
+    background-color: rgba(0,100,0,0.1);
+}
+
+.stage-content .eca-condition-display,
 .stage-content .eca-action-display {
     padding: 0.5em;
+    border-bottom: 1px solid #666666;
 }
-.stage-content .eca-action-display:hover {
-            background-color: rgba(255,0,0,0.2);
+
+.stage-content .eca-condition-display:last-child,
+.stage-content .eca-action-display:last-child {
+    border-bottom: 1px solid transparent;
+}
+
+.stage-content .eca-condition-display:hover,
+.stage-content .eca-condition-dsplay:hover {
     -webkit-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
        -moz-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
         -ms-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
@@ -728,7 +745,41 @@ div.eca-field-div {
             box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
 }
 
-.stage-content .eca-event-display > div,
+.stage-content .eca-condition-display:hover {
+    background-color: rgba(0,0,255,0.2);
+}
+
+.stage-content .eca-action-display:hover {
+    background-color: rgba(255,0,0,0.2);
+}
+
+.eca-event .eca-field-div,
+.eca-condition-display .eca-field-div,
+.eca-action-display .eca-field-div {
+            padding: 0.25em 1em !important;
+    -webkit-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+       -moz-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+        -ms-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+         -o-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+            box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+}
+
+.eca-event .eca-field-div {
+    background-color: rgba(0,100,0,0.2);
+    border: 1px solid rgba(132,169,14,0.5);
+}
+
+.eca-condition-display .eca-field-div {
+    background-color: rgba(0,0,200,0.1);
+    border: 1px solid rgba(0,134,191,0.5);
+}
+
+.eca-action-display .eca-field-div {
+    background-color: rgba(255,0,0,0.2);
+    border: 1px solid rgba(196,30,30,0.5);
+}
+
+.stage-content .eca-event > div,
 .stage-content .eca-condition-display > div,
 .stage-content .eca-action-display > div {
     display: inline-block;
@@ -737,14 +788,70 @@ div.eca-field-div {
     margin: 0.2em;
 }
 
-.stage-content .eca-action {
-            border: 1px solid #666666;
-            background-color: rgba(255,0,0,0.2);
+.eca-condition-display fieldset,
+.eca-action-display fieldset {
+    display: inline-block;
+    padding: 0 !important;
+    margin: 0 1em !important;
+    background-image: none !important;
+    background-color: transparent !important;
+}
+
+.eca-condition-display fieldset .select-wrapper,
+.eca-action-display fieldset .select-wrapper {
+            display: inline-block;
+            padding: 0;
+            margin: 0;
     -webkit-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
        -moz-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
         -ms-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
          -o-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
             box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+}
+
+.eca-condition-display fieldset .select-wrapper {
+    border: 1px solid rgba(0,134,191,0.5);
+    background-color: rgba(0,0,200,0.2);
+}
+
+.eca-action-display fieldset .select-wrapper {
+    border: 1px solid rgba(196,30,30,0.5);
+    background-color: rgba(255,0,0,0.2);
+}
+
+.eca-condition-display fieldset select,
+.eca-action-display fieldset select {
+    font-size: 0.8em;
+    color: white;
+    min-width: 64%;
+    padding: 0.2em;
+    margin: 0;
+    border: 1px solid #666666;
+    background: transparent;
+}
+
+.stage-content .eca-event,
+.stage-content .eca-condition,
+.stage-content .eca-action {
+            border: 1px solid #666666;
+    -webkit-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+       -moz-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+        -ms-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+         -o-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+            box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+}
+
+.stage-content .eca-condition {
+    background-color: rgba(0,0,200,0.1);
+}
+
+.stage-content .eca-action {
+    background-color: rgba(255,0,0,0.2);
+}
+
+.stage-content .eca-condition button {
+    padding: 0.2em 1em;
+    background-color: rgba(0,0,255,0.2);
 }
 
 .stage-content .eca-action button {

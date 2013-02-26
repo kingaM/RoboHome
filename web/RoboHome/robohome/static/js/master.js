@@ -1147,16 +1147,15 @@ APP.ECARuleManager.prototype.update = function() {
  */
 APP.ECARuleDisplay = function(ruleObj) {
     this.ruleObj = ruleObj;
-    this.eventDisplay = new APP.ECAEventDisplay(ruleObj[APP.API.EVENTS.RULE.EVENT]);
-    this.conditionManager = new APP.ECAConditionManager(ruleObj[APP.API.EVENTS.RULE.CONDITIONS]);
-    this.actionManager = new APP.ECAActionManager(ruleObj[APP.API.EVENTS.RULE.ACTIONS]);
+    this.eventDisplay = new APP.ECAEventDisplay(this.ruleObj[APP.API.EVENTS.RULE.EVENT.EVENT]);
+    this.conditionManager = new APP.ECAConditionManager(this.ruleObj[APP.API.EVENTS.RULE.CONDITIONS]);
+    this.actionManager = new APP.ECAActionManager(this.ruleObj[APP.API.EVENTS.RULE.ACTIONS]);
 };
 
 /**
  *
  */
 APP.ECARuleDisplay.prototype.construct = function() {
-    console.log(this.ruleObj);
     var self = this,
         boundingBox = $('<div></div>').addClass(APP.DOM_HOOK.ECA.RULE),
         titleBox = $('<div></div>').addClass(APP.DOM_HOOK.ECA.RULE_TITLE),
@@ -1273,7 +1272,65 @@ APP.ECAEventDisplay = function(eventObj) {
  *
  */
 APP.ECAEventDisplay.prototype.construct = function() {
-
+    var self = this,
+        bridge1 = $('<div>When</div>'),
+        bridge2 = $('<div></div>'),
+        itemType = this.eventObj[APP.API.EVENTS.RULE.EVENT.ITEM_TYPE],
+        itemTypeField = $('<div></div>').addClass(APP.DOM_HOOK.ECA.FIELD_DIV),
+        bridge3 = $('<div></div>'),
+        scope,
+        scopeField = $('<div></div>').addClass(APP.DOM_HOOK.ECA.FIELD_DIV),
+        bridge4 = $('<div>has state</div>'),
+        itemState = this.eventObj[APP.API.EVENTS.RULE.EVENT.ITEM_STATE],
+        itemStateField = $('<div></div>').addClass(APP.DOM_HOOK.ECA.FIELD_DIV),
+        editButton = $('<button>Edit</button>');
+    
+    function setElements() {
+        switch (self.eventObj[APP.API.EVENTS.RULE.ACTION.SCOPE]) {
+        case 'item':
+            bridge2.html('');
+            bridge3.html('');
+            for(var i = 0; i < APP.data.houseStructure[APP.API.STATE.ROOMS].length; i++) {
+                for(var j = 0; j < APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ITEMS].length; j++) {
+                    if(self.eventObj[APP.API.EVENTS.RULE.EVENT.ID] === APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ITEMS][j][APP.API.STATE.ROOM.ITEM.ID]) {
+                        scopeField.html(APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ITEMS][j][APP.API.STATE.ROOM.ITEM.NAME]);
+                        break;
+                    }
+                }
+            }
+            break;
+        case 'room':
+            bridge2.html('any');
+            bridge3.html('in');
+            for(var i = 0; i < APP.data.houseStructure[APP.API.STATE.ROOMS].length; i++) {
+                if(self.eventObj[APP.API.EVENTS.RULE.EVENT.ID] === APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ID]) {
+                    scope = APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.NAME];
+                    break;
+                }
+            }
+            break;
+        case 'house':
+            bridge2.html('any');
+            bridge3.html('in');
+            scopeField = 'the house';
+            break;
+        }
+        itemTypeField.html(itemType);
+        scopeField.html(scope);
+        itemStateField.html(itemState);
+        
+    }
+    
+    setElements();
+    this.context.append(bridge1);
+    this.context.append(bridge2);
+    this.context.append(itemTypeField);
+    this.context.append(bridge3);
+    this.context.append(scopeField);
+    this.context.append(bridge4);
+    this.context.append(itemStateField);
+    this.context.append(editButton);
+    return this.context;
 };
 
 /**
@@ -1288,6 +1345,11 @@ APP.ECAEventDisplay.prototype.update = function() {
  */
 APP.ECAConditionManager = function(conditionArray) {
     this.conditionArray = conditionArray;
+    this.conditionDisplays = [];
+    for(var i = 0; i < this.conditionArray.length; i++) {
+        this.conditionDisplays.push(new APP.ECAConditionDisplay(conditionArray[i]));
+    }
+    this.newConditionDisplay = new APP.ECANewConditionDisplay();
     this.context = $('<div></div>').addClass(APP.DOM_HOOK.ECA.CONDITION);
 };
 
@@ -1295,7 +1357,12 @@ APP.ECAConditionManager = function(conditionArray) {
  *
  */
 APP.ECAConditionManager.prototype.construct = function() {
-
+    for(var i = 0; i < this.conditionArray.length; i++) {
+        this.conditionDisplays.push(new APP.ECAConditionDisplay(this.conditionArray[i]));
+        this.context.append(this.conditionDisplays[i].construct());
+    }
+    this.context.append(this.newConditionDisplay.construct());
+    return this.context;
 };
 
 /**
@@ -1304,13 +1371,48 @@ APP.ECAConditionManager.prototype.construct = function() {
  */
 APP.ECAConditionDisplay = function(conditionObj) {
     this.conditionObj = conditionObj;
+    this.context = $('<div></div>').addClass(APP.DOM_HOOK.ECA.CONDITION_DISPLAY); 
 };
 
 /**
  *
  */
 APP.ECAConditionDisplay.prototype.construct = function() {
-
+    var self = this,
+        bridge1 = $('<div>If</div>'),
+        itemName,
+        itemNameField = $('<div></div>').addClass(APP.DOM_HOOK.ECA.FIELD_DIV),
+        equivalence = 'equals', // change when we implement equivalences
+        equivalenceField = $('<div></div>').addClass(APP.DOM_HOOK.ECA.FIELD_DIV),
+        state,
+        stateField = $('<div></div>').addClass(APP.DOM_HOOK.ECA.FIELD_DIV),
+        editButton = $('<button>Edit</button>'),
+        deleteButton = $('<button>Delete</button>').addClass(APP.DOM_HOOK.ECA.DELETE);
+        
+        for(var i = 0; i < APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][this.conditionObj[APP.API.EVENTS.RULE.CONDITION.ITEM_TYPE]][APP.API.VERSION.SUPPORTED_TYPE.STATES].length; i++) {
+            if(this.conditionObj[APP.API.EVENTS.RULE.CONDITION.VALUE] === APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][this.conditionObj[APP.API.EVENTS.RULE.CONDITION.ITEM_TYPE]][APP.API.VERSION.SUPPORTED_TYPE.STATES][i][APP.API.VERSION.SUPPORTED_TYPE.STATE.ID]) {
+                state = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][this.conditionObj[APP.API.EVENTS.RULE.CONDITION.ITEM_TYPE]][APP.API.VERSION.SUPPORTED_TYPE.STATES][i][APP.API.VERSION.SUPPORTED_TYPE.STATE.NAME];
+                break;
+            }
+        }
+        
+        for(var i = 0; i < APP.data.houseStructure[APP.API.STATE.ROOMS].length; i++) {
+            for(var j = 0; j < APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ITEMS].length; j++) {
+                if(this.conditionObj[APP.API.EVENTS.RULE.CONDITION.ITEM_ID] === APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ITEMS][j][APP.API.STATE.ROOM.ITEM.ID]) {
+                    itemName = APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ITEMS][j][APP.API.STATE.ROOM.ITEM.NAME];
+                    break;
+                }
+            }
+        }
+    
+    this.context.append(bridge1);
+    this.context.append(itemNameField.append(itemName));
+    this.context.append(equivalenceField.append(equivalence));
+    this.context.append(stateField.append(state));
+    this.context.append(editButton);
+    this.context.append(deleteButton);
+    
+    return this.context;
 };
 
 /**
@@ -1324,7 +1426,7 @@ APP.ECAConditionManager.prototype.update = function() {
  *
  */
 APP.ECANewConditionDisplay = function() {
-    
+    this.context = $('<div></div>').addClass(APP.DOM_HOOK.ECA.CONDITION_DISPLAY);
 };
 
 /**
@@ -1332,9 +1434,60 @@ APP.ECANewConditionDisplay = function() {
  */
 APP.ECANewConditionDisplay.prototype.construct = function() {
     var self = this,
-        context = $('<div></div>').addClass(APP.DOM_HOOK.ECA.CONDITION_DISPLAY);
+        bridge1,
+        itemFieldset,
+        itemWrapper,
+        itemField,
+        equivalenceFieldset,
+        equivalenceWrapper,
+        equivalenceField,
+        stateFieldset,
+        stateWrapper,
+        stateField,
+        addButton,
+        cancelButton,
+        saveButton;
     
-    return context;
+    function setElements() {
+        bridge1 = $('<div>If</div>'),
+        itemFieldset = $('<fieldset><legend>Step 1 - Set item</legend></fieldset>'),
+        itemWrapper = $('<div></div>').addClass('select-wrapper'),
+        itemField = $('<select></select>'),
+        equivalenceFieldset = $('<fieldset><legend>Step 2 - Set equiv</legend></fieldset>'),
+        equivalenceWrapper = $('<div></div>').addClass('select-wrapper'),
+        equivalenceField = $('<select></select>'),
+        stateFieldset = $('<fieldset><legend>Step 3 - Set state</legend></fieldset>'),
+        stateWrapper = $('<div></div>').addClass('select-wrapper')
+        stateField = $('<select></select>'),
+        addButton = $('<button>Add new action</button>'),
+        cancelButton = $('<button>Cancel</button>'),
+        saveButton = $('<button>Save</button>');
+        
+        addButton.click(function() {
+            setElements();
+            self.context.html('');
+            self.context.append(bridge1);
+            self.context.append(itemFieldset.append(itemWrapper.append(itemField)));
+            self.context.append(equivalenceFieldset.append(equivalenceWrapper.append(equivalenceField)));
+            self.context.append(stateFieldset.append(stateWrapper.append(stateField)));
+            self.context.append(cancelButton);
+            self.context.append(saveButton);
+        });
+        
+        cancelButton.click(function() {
+            setElements();
+            self.context.html('');
+            self.context.append(addButton);
+        });
+        
+        saveButton.click(function() {
+            // TODO
+        });
+    }
+    
+    setElements();
+    this.context.append(addButton);
+    return this.context;
 };
 
 /**
@@ -1379,6 +1532,7 @@ APP.ECAActionManager.prototype.update = function() {
  */
 APP.ECAActionDisplay = function(actionObj) {
     this.actionObj = actionObj;
+    this.context = $('<div></div>').addClass(APP.DOM_HOOK.ECA.ACTION_DISPLAY);
 };
 
 /**
@@ -1386,33 +1540,20 @@ APP.ECAActionDisplay = function(actionObj) {
  */
 APP.ECAActionDisplay.prototype.construct = function() {
     var self = this,
-        context = $('<div></div>').addClass(APP.DOM_HOOK.ECA.ACTION_DISPLAY),
+        methodName,
+        methodField = $('<div></div>').addClass(APP.DOM_HOOK.ECA.FIELD_DIV),
         bridge1 = $('<div>all</div>'),
         itemType,
         itemTypeField = $('<div></div>').addClass(APP.DOM_HOOK.ECA.FIELD_DIV),
         bridge2 = $('<div>s&nbsp;&nbsp;in</div>'),
         scopeName,
         scopeField = $('<div></div>').addClass(APP.DOM_HOOK.ECA.FIELD_DIV),
-        methodName,
-        methodField = $('<div></div>').addClass(APP.DOM_HOOK.ECA.FIELD_DIV),
         editButton = $('<button>Edit</button>'),
         deleteButton = $('<button>Delete</button>').addClass(APP.DOM_HOOK.ECA.DELETE);
     // scope === house / room,
     // Method (all) itemType (in) scope
     // scope === specific item,
     // Method itemType itemName
-    
-    methodField.click(function() {
-        
-    });
-    
-    itemTypeField.click(function() {
-        
-    });
-    
-    scopeField.click(function() {
-        
-    });
     
     // methodField
     methodField.html(this.actionObj[APP.API.EVENTS.RULE.ACTION.METHOD]);
@@ -1448,15 +1589,15 @@ APP.ECAActionDisplay.prototype.construct = function() {
         break;
     }
     
-    context.append(methodField);
-    context.append(bridge1);
-    context.append(itemTypeField);
-    context.append(bridge2);
-    context.append(scopeField);
-    context.append(editButton);
-    context.append(deleteButton);
+    this.context.append(methodField);
+    this.context.append(bridge1);
+    this.context.append(itemTypeField);
+    this.context.append(bridge2);
+    this.context.append(scopeField);
+    this.context.append(editButton);
+    this.context.append(deleteButton);
     
-    return context;
+    return this.context;
 };
 
 /**
@@ -1470,7 +1611,7 @@ APP.ECAActionDisplay.prototype.update = function() {
  *
  */
 APP.ECANewActionDisplay = function() {
-
+    this.context = $('<div></div>').addClass(APP.DOM_HOOK.ECA.ACTION_DISPLAY);
 };
 
 /**
@@ -1478,9 +1619,64 @@ APP.ECANewActionDisplay = function() {
  */
 APP.ECANewActionDisplay.prototype.construct = function() {
     var self = this,
-        context = $('<div></div>').addClass(APP.DOM_HOOK.ECA.ACTION_DISPLAY);
+        methodFieldset,
+        methodWrapper,
+        methodField,
+        bridge1,
+        itemTypeFieldset,
+        itemTypeWrapper,
+        itemTypeField,
+        bridge2,
+        scopeFieldset,
+        scopeWrapper,
+        scopeField,
+        addButton,
+        cancelButton,
+        saveButton;
     
-    return context;
+    function setElements() {
+        methodFieldset = $('<fieldset><legend>Step 3 - Set method</legend></fieldset>'),
+        methodWrapper = $('<div></div>').addClass('select-wrapper'),
+        methodField = $('<select></select>'),
+        bridge1 = $('<div></div>'),
+        itemTypeFieldset = $('<fieldset><legend>Step 1 - Set type</legend></fieldset>'),
+        itemTypeWrapper = $('<div></div>').addClass('select-wrapper'),
+        itemTypeField = $('<select></select>'),
+        bridge2 = $('<div></div>'),
+        scopeFieldset = $('<fieldset><legend>Step 2 - Set scope</legend></fieldset>'),
+        scopeWrapper = $('<div></div>').addClass('select-wrapper')
+        scopeField = $('<select></select>'),
+        addButton = $('<button>Add new action</button>'),
+        cancelButton = $('<button>Cancel</button>'),
+        saveButton = $('<button>Save</button>');
+        
+        addButton.click(function() {
+            setElements();
+            self.context.html('');
+            self.context.append(methodFieldset.append(methodWrapper.append(methodField)));
+            self.context.append(bridge1);
+            self.context.append(itemTypeFieldset.append(itemTypeWrapper.append(itemTypeField)));
+            self.context.append(bridge2);
+            self.context.append(scopeFieldset.append(scopeWrapper.append(scopeField)));
+            self.context.append(cancelButton);
+            self.context.append(saveButton);
+        });
+        
+        cancelButton.click(function() {
+            setElements();
+            self.context.html('');
+            self.context.append(addButton);
+        });
+        
+        saveButton.click(function() {
+            // TODO
+        });
+        
+    }
+    
+    setElements();
+    this.context.append(addButton);
+    return this.context;
 };
 
 /**
