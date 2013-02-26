@@ -1356,7 +1356,6 @@ APP.ECAActionManager = function(actionArray) {
  */
 APP.ECAActionManager.prototype.construct = function() {
     for(var i = 0; i < this.actionArray.length; i++) {
-        $('#debug').append(i);
         this.actionDisplays.push(new APP.ECAActionDisplay(this.actionArray[i]));
         this.context.append(this.actionDisplays[i].construct());
     }
@@ -1721,7 +1720,6 @@ APP.StageManager = function() {
             button.click(function() {
                 var dis = $(this),
                     roomName = input.val();
-                $('#debug').append(/\s+/.test(roomName));
                 if(roomName === '' || /\s+/.test(roomName) === true) {
                     warning.html('Name cannot be undefined or entirely whitespace.');
                 } else {
