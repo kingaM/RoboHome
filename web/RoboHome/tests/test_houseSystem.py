@@ -175,12 +175,12 @@ class MockEventsTable:
 
 class MockConditionsTable:
     def getConditionsForEvent(self, event):
-        return ((1, 1, "mockSignature", "=", 1),)
+        return ((1, 1, "mockSignature", "mockNiceMethodName", "=", 1),)
 
 
 class MockActionsTable:
     def getActionsForEvent(self, event):
-        return ((1, 1, None, "mockSignature", "mockType"),)
+        return ((1, 1, None, "mockSignature", "mockNiceMethodName", "mockType"),)
 
 
 class MockDatabase:

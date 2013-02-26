@@ -45,7 +45,7 @@ class House(object):
         for e in self.events:
             conditions = self.database.conditions.getConditionsForEvent(e)
             for c in conditions:
-                e.conditions.append(eca.Condition(c[0], self.getItemById(c[1]), c[2], c[3], c[4]))
+                e.conditions.append(eca.Condition(c[0], self.getItemById(c[1]), c[2], c[3], c[4], c[5]))
 
             actions = self.database.actions.getActionsForEvent(e)
             for a in actions:
@@ -53,7 +53,7 @@ class House(object):
                     tempRoom = self.rooms[a[2]]
                 else:
                     tempRoom = None
-                e.actions.append(eca.Action(a[0], self.getItemById(a[1]), tempRoom, a[3], a[4]))
+                e.actions.append(eca.Action(a[0], self.getItemById(a[1]), tempRoom, a[3], a[4], a[5]))
 
     def addRoom(self, name):
         """
@@ -272,13 +272,13 @@ class House(object):
             ruleJSON["conditions"] = conditionsJSON
 
             for c in event.conditions:
-                conditionsJSON.append({"conditionId": c.id, "itemId": c.item._id, "itemType": c.item._type, "method": c.method, "equivalence": c.equivalence, "value": c.value})
+                conditionsJSON.append({"conditionId": c.id, "itemId": c.item._id, "itemType": c.item._type, "method": c.methodName, "equivalence": c.equivalence, "value": c.value})
 
             actionsJSON = []
             ruleJSON["actions"] = actionsJSON
 
             for a in event.actions:
-                actionJSON = {"actionId": a.id, "method": a.method, "itemType": a.type}
+                actionJSON = {"actionId": a.id, "method": a.methodName, "itemType": a.type}
 
                 if not a.item is None:
                     actionJSON["id"] = a.item._id
