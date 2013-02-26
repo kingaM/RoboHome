@@ -154,5 +154,6 @@ char MyServer::readClient(WiFiClient client) {
       bufindex++;
   }
   bufindex = 0;
+  buffer = (char**)realloc(buffer, sizeof(char *) * STRING_BUFFER_SIZE + 1);
   return c;
 }
