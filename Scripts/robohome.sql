@@ -41,11 +41,11 @@ INSERT INTO robohome.`methods` (name, signature, type, typeId) VALUES ('Open', '
 INSERT INTO robohome.`methods` (name, signature, type, typeId) VALUES ('Close', 'close', 'action', 8);
 INSERT INTO robohome.`methods` (name, signature, type, typeId) VALUES ('Open By', 'setOpen', 'action', 8);
 INSERT INTO robohome.`methods` (name, signature, type, typeId) VALUES ('On', 'getState', 'state', 9);
-INSERT INTO robohome.`methods` (name, signature, type, typeId) VALUES ('On', 'on', 'action', 9);
-INSERT INTO robohome.`methods` (name, signature, type, typeId) VALUES ('Off', 'off', 'action', 9);
+INSERT INTO robohome.`methods` (name, signature, type, typeId) VALUES ('Turn On', 'on', 'action', 9);
+INSERT INTO robohome.`methods` (name, signature, type, typeId) VALUES ('Turn Off', 'off', 'action', 9);
 INSERT INTO robohome.`methods` (name, signature, type, typeId) VALUES ('Lights on', 'getState', 'state', 10);
-INSERT INTO robohome.`methods` (name, signature, type, typeId) VALUES ('On', 'on', 'action', 10);
-INSERT INTO robohome.`methods` (name, signature, type, typeId) VALUES ('Off', 'off', 'action', 10);
+INSERT INTO robohome.`methods` (name, signature, type, typeId) VALUES ('Turn On', 'on', 'action', 10);
+INSERT INTO robohome.`methods` (name, signature, type, typeId) VALUES ('Turn Off', 'off', 'action', 10);
 INSERT INTO robohome.`methods` (name, signature, type, typeId) VALUES ('Temperature in Degrees', 'getState', 'state', 11);
 INSERT INTO robohome.`methods` (name, signature, type, typeId) VALUES ('Set Temperature', 'setTemperature', 'state', 11);
 
