@@ -166,6 +166,9 @@ class WhitelistTable(DatabaseHelper):
         else:
             return True
 
+    def deleteEmail(self, email):
+        super(WhitelistTable, self).removeEntry(self.tablename, "email='" + email + "'")
+
 class Database(DatabaseHelper):
 
     def __init__(self):

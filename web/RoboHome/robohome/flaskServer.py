@@ -182,30 +182,22 @@ def events_eventId(version, eventId):
         pass
 
 
-
-MOCK_WHITELIST = {
-    'emails': [
-        'foo@bar.com',
-        'bar@foo.com'
-    ]
-}
-
 @app.route('/version/<string:version>/whitelist/', methods=['GET', 'POST', 'DELETE'])
 def whitelist(version):
     if g.user is None and not isIpOnLocalNetwork():
         return redirect(url_for('login'))
         
     if request.method == 'GET':
-        return jsonify(pack(MOCK_WHITELIST))
+        return jsonify(pack({'emails' : [emails[0] for emails in db.whitelist.getEmails()]}))
     
     if request.method == 'POST':
         args = request.args.to_dict()
-        MOCK_WHITELIST['emails'].append(args['email'])
+        db.whitelist.addEntry(args['email'])
         return jsonify(pack('success'))
     
     if request.method == 'DELETE':
         args = request.args.to_dict()
-        MOCK_WHITELIST['emails'] = filter(lambda email : email != args['email'], MOCK_WHITELIST['emails'])
+        db.whitelist.deleteEmail(args['email'])
         return jsonify(pack('success'))
         
 
