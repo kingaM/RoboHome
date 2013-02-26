@@ -526,10 +526,6 @@ class TestHouse(unittest.TestCase):
 
     def test_getRules(self):
         h = MockHouse()
-        #self.event1 = MockEvent(1, "mockType1", self.item1, None, "mockTrigger", 1)
-        #self.event2 = MockEvent(2, "mockType2", self.item2, None, "mockTrigger", 1)
-        #self.event3 = MockEvent(3, "mockType2", self.item2, None, "mockTrigger2", 1)
-        #self.event4 = MockEvent(4, "mockType1", self.item1, None, "mockTrigger", 1)
 
         rule1JSON = {"ruleId": 1, "ruleName": "Rule1", "enabled": True, "event": {"id": 1, "itemType": "mockType1", "scope": "item", "itemState": "mockTrigger"}, "conditions": [], "actions": []}
         rule2JSON = {"ruleId": 2, "ruleName": "Rule2", "enabled": True, "event": {"id": 2, "itemType": "mockType2", "scope": "item", "itemState": "mockTrigger"}, "conditions": [], "actions": []}
