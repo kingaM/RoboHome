@@ -626,7 +626,7 @@ div.stage {
 }
 
 .stage-content .eca-rule-title div {
-    margin: 0 1em;
+    margin: 0.2em 0.2em 0.2em 1em;
     min-width: 15%;
     padding: 0.2em;
 }
@@ -673,6 +673,10 @@ div.eca-field-div {
     content: '+';
 }
 
+.stage-content .eca-enable-disable {
+    margin-left: 1em;
+}
+
 .stage-content .eca-enable-disable:after {
     content: 'Disabled';
 }
@@ -680,15 +684,15 @@ div.eca-field-div {
     content: 'Enabled';
 }
 
-.stage-content .eca-delete-event {
+.stage-content .eca-delete {
     float: right;
 }
-.stage-content button.eca-delete-event {
+.stage-content button.eca-delete {
     margin-left: 1em;
 }
 
 .stage-content .eca-rule fieldset {
-    border: 1px solid #666666;
+    border: 1px solid transparent;
     margin: 0.5em 0 0 3em;
     padding: 0.5em;
     background-image: url('../img/grid.png');
@@ -698,7 +702,6 @@ div.eca-field-div {
 
 .stage-content .eca-rule fieldset > div {
     margin: -1em -0.5em -0.5em -0.5em;
-    padding: 1em 0.5em 0.5em 0.5em;
 }
 
 .stage-content .eca-rule fieldset.eca-event-fieldset {
@@ -713,13 +716,40 @@ div.eca-field-div {
     margin-left: 1em;
 }
 
+.stage-content .eca-action-display {
+    padding: 0.5em;
+}
+.stage-content .eca-action-display:hover {
+            background-color: rgba(255,0,0,0.2);
+    -webkit-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+       -moz-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+        -ms-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+         -o-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+            box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+}
+
 .stage-content .eca-event-display > div,
 .stage-content .eca-condition-display > div,
 .stage-content .eca-action-display > div {
     display: inline-block;
     font-size: 1em;
-    margin: 0 0.5em;
-    padding: 0.5em;
+    padding: 0.2em;
+    margin: 0.2em;
+}
+
+.stage-content .eca-action {
+            border: 1px solid #666666;
+            background-color: rgba(255,0,0,0.2);
+    -webkit-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+       -moz-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+        -ms-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+         -o-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+            box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+}
+
+.stage-content .eca-action button {
+    padding: 0.2em 1em;
+    background-color: rgba(255,0,0,0.3);
 }
 
 #stage-rules-eca .eca-capitalize {
