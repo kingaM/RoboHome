@@ -17,8 +17,7 @@ from flask import *
 from houseSystem import House
 from databaseTables import Database
 from flask_openid import OpenID
-import socket, struct
-
+from IPy import IP
 
 SETTINGS = {
     'LANGUAGE': 'en',
@@ -214,15 +213,6 @@ def whitelist(version):
 # Based upon: https://github.com/mitsuhiko/flask-openid
 # License: https://github.com/mitsuhiko/flask-openid/blob/master/LICENSE
 
-def dottedQuadToNum(ip):
-    return struct.unpack('L',socket.inet_aton(ip))[0]
-
-def networkMask(ip,bits):
-    return dottedQuadToNum(ip) & ((2L<<bits-1) - 1)
-
-def addressInNetwork(ip,net):
-   return dottedQuadToNum(ip) & net == net
-
 @app.before_request
 def before_request():  
     g.user = None
@@ -236,10 +226,10 @@ def getIp():
         return request.headers.getlist("X-Forwarded-For")[0]
 
 def isIpOnLocalNetwork():
-    network10 = networkMask("10.0.0.0",24)
-    network192 = networkMask("192.168.0.0",255)
-    return addressInNetwork(getIp(), network10) or addressInNetwork(getIp(), network192) or getIp() == '127.0.0.1'
-
+    network10 = IP("10.0.0.0/24")
+    network192 = IP("192.168.0.0/24")
+    network127 = IP("127.0.0.0/24")
+    return getIp() in network10 or getIp() in network192 or getIp() in network127
 
 @app.route('/login', methods=['GET', 'POST'])
 @oid.loginhandler
