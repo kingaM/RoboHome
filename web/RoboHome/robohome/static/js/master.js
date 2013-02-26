@@ -49,7 +49,7 @@ APP.DOM_HOOK.ECA.ACTION_DISPLAY = 'eca-action-display';
 APP.DOM_HOOK.ECA.FIELD_DIV = 'eca-field-div';
 APP.DOM_HOOK.ECA.SHOW_HIDE = 'eca-show-hide';
 APP.DOM_HOOK.ECA.ENABLE_DISABLE = 'eca-enable-disable';
-APP.DOM_HOOK.ECA.DELETE_EVENT = 'eca-delete-event';
+APP.DOM_HOOK.ECA.DELETE = 'eca-delete';
 APP.DOM_HOOK.ECA.EVENT_FIELDSET = 'eca-event-fieldset';
 APP.DOM_HOOK.ECA.CAPITALIZE = 'eca-capitalize';
 APP.DOM_HOOK.UPDATING = 'updating';
@@ -133,6 +133,7 @@ APP.API.EVENTS.RULE.ACTIONS = 'actions';
 APP.API.EVENTS.RULE.ACTION = {};
 APP.API.EVENTS.RULE.ACTION.ID = 'id';
 APP.API.EVENTS.RULE.ACTION.SCOPE = 'scope';
+APP.API.EVENTS.RULE.ACTION.ITEM_TYPE = 'itemType';
 APP.API.EVENTS.RULE.ACTION.ACTION_ID = 'actionId';
 APP.API.EVENTS.RULE.ACTION.METHOD = 'method';
 
@@ -1169,8 +1170,9 @@ APP.ECARuleDisplay.prototype.construct = function() {
         showHide = $('<button></button>').addClass(APP.DOM_HOOK.ECA.SHOW_HIDE + ' ' + APP.DOM_HOOK.COLLAPSED),
         ruleName = $('<div>' + this.ruleObj[APP.API.EVENTS.RULE.RULE_NAME] + '</div>').addClass(APP.DOM_HOOK.ECA.FIELD_DIV),
         enableDisable = $('<button></button>').addClass(APP.DOM_HOOK.ECA.ENABLE_DISABLE),
-        deleteEventInput = $('<input></input>').attr({class: APP.DOM_HOOK.ECA.DELETE_EVENT, placeholder: 'Confirm event name'}),
-        deleteEventButton = $('<button>Delete</button>').addClass(APP.DOM_HOOK.ECA.DELETE_EVENT);
+        editName = $('<button>Edit</button>'),
+        deleteEventInput = $('<input></input>').attr({class: APP.DOM_HOOK.ECA.DELETE, placeholder: 'Confirm event name'}),
+        deleteEventButton = $('<button>Delete</button>').addClass(APP.DOM_HOOK.ECA.DELETE);
     
     showHide.click(function() {
         $(this).toggleClass(APP.DOM_HOOK.COLLAPSED);
@@ -1196,6 +1198,7 @@ APP.ECARuleDisplay.prototype.construct = function() {
     }
     titleBox.append(showHide);
     titleBox.append(ruleName);
+    titleBox.append(editName);
     titleBox.append(enableDisable);
     titleBox.append(deleteEventButton);
     titleBox.append(deleteEventInput);
@@ -1387,11 +1390,13 @@ APP.ECAActionDisplay.prototype.construct = function() {
         bridge1 = $('<div>all</div>'),
         itemType,
         itemTypeField = $('<div></div>').addClass(APP.DOM_HOOK.ECA.FIELD_DIV),
-        bridge2 = $('<div>s in</div>'),
+        bridge2 = $('<div>s&nbsp;&nbsp;in</div>'),
         scopeName,
         scopeField = $('<div></div>').addClass(APP.DOM_HOOK.ECA.FIELD_DIV),
         methodName,
-        methodField = $('<div></div>').addClass(APP.DOM_HOOK.ECA.FIELD_DIV);
+        methodField = $('<div></div>').addClass(APP.DOM_HOOK.ECA.FIELD_DIV),
+        editButton = $('<button>Edit</button>'),
+        deleteButton = $('<button>Delete</button>').addClass(APP.DOM_HOOK.ECA.DELETE);
     // scope === house / room,
     // Method (all) itemType (in) scope
     // scope === specific item,
@@ -1412,40 +1417,44 @@ APP.ECAActionDisplay.prototype.construct = function() {
     // methodField
     methodField.html(this.actionObj[APP.API.EVENTS.RULE.ACTION.METHOD]);
     
-    // nameField
-    /*
-    switch (actionObj[APP.API.EVENTS.RULE.ACTION.SCOPE]) {
+    // itemTypeField
+    itemType = this.actionObj[APP.API.EVENTS.RULE.ACTION.ITEM_TYPE];
+    itemTypeField.html(itemType);
+    
+    // scopeField
+    switch (this.actionObj[APP.API.EVENTS.RULE.ACTION.SCOPE]) {
     case 'item':
         for(var i = 0; i < APP.data.houseStructure[APP.API.STATE.ROOMS].length; i++) {
             for(var j = 0; j < APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ITEMS].length; j++) {
                 if(actionObj[APP.API.EVENTS.RULE.ACTION.ID] === APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ITEMS][j][APP.API.STATE.ROOM.ITEM.ID]) {
-                    nameField.html(APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ITEMS][j][APP.API.STATE.ROOM.ITEM.NAME]);
+                    scopeField.html(APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ITEMS][j][APP.API.STATE.ROOM.ITEM.NAME]);
                     break;
                 }
             }
         }
+        bridge1.html('');
+        bridge2.html('');
         break;
     case 'room':
         for(var i = 0; i < APP.data.houseStructure[APP.API.STATE.ROOMS].length; i++) {
-            if(actionObj[APP.API.EVENTS.RULE.ACTION.ID] === APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ID]) {
-                nameField.html(APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.NAME]);
+            if(this.actionObj[APP.API.EVENTS.RULE.ACTION.ID] === APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ID]) {
+                scopeField.html(APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.NAME]);
                 break;
             }
         }
+        break;
     case 'house':
-        nameField
+        scopeField.html('the house');
         break;
     }
-    */
-    
-    // scopeField
-    
     
     context.append(methodField);
     context.append(bridge1);
     context.append(itemTypeField);
     context.append(bridge2);
     context.append(scopeField);
+    context.append(editButton);
+    context.append(deleteButton);
     
     return context;
 };
@@ -1468,7 +1477,10 @@ APP.ECANewActionDisplay = function() {
  *
  */
 APP.ECANewActionDisplay.prototype.construct = function() {
-
+    var self = this,
+        context = $('<div></div>').addClass(APP.DOM_HOOK.ECA.ACTION_DISPLAY);
+    
+    return context;
 };
 
 /**
