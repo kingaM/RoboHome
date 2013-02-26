@@ -278,7 +278,7 @@ class House(object):
             ruleJSON["actions"] = actionsJSON
 
             for a in event.actions:
-                actionJSON = {"actionId": a.id, "method": a.method, "itemType": a.item._type}
+                actionJSON = {"actionId": a.id, "method": a.method, "itemType": a.type}
 
                 if not a.item is None:
                     actionJSON["id"] = a.item._id
