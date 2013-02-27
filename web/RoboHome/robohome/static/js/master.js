@@ -1728,7 +1728,7 @@ APP.ECANewActionDisplay.prototype.construct = function() {
         itemTypeList.push($('<option>(Not set)</option>').attr({value: 'undefined'}));
         for(var type in APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES]) {
             if(APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES].hasOwnProperty(type)) {
-                itemType = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][type];
+                itemType = type;
                 itemTypeName = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][type][APP.API.VERSION.SUPPORTED_TYPE.NAME];
                 itemTypeList.push($('<option>' + itemTypeName + '</option>').attr({value: itemType}));
             }
@@ -1737,11 +1737,85 @@ APP.ECANewActionDisplay.prototype.construct = function() {
     }
     
     function getScopes(itemType) {
+        var itemType = itemTypeField.children('option:selected').val(),
+            scopeList = [],
+            roomList = [],
+            itemList = [],
+            isInRoom = false,
+            item,
+            itemName,
+            itemId,
+            room;
         
+        scopeList.push($('<option>(Not set)</option>').attr({value: 'undefined'}));
+        if(itemType !== 'undefined') {
+            for(var i = 0; i < APP.data.houseStructure[APP.API.STATE.ROOMS].length; i++) {
+                room = APP.data.houseStructure[APP.API.STATE.ROOMS][i];
+                for(var j = 0; j < room[APP.API.STATE.ROOM.ITEMS].length; j++) {
+                    item = room[APP.API.STATE.ROOM.ITEMS][j];
+                    if(itemType === item[APP.API.STATE.ROOM.ITEM.ITEM_TYPE]) {
+                        isInRoom = true;
+                        itemId = item[APP.API.STATE.ROOM.ITEM.ID];
+                        itemName = item[APP.API.STATE.ROOM.ITEM.NAME];
+                        itemIP = item[APP.API.STATE.ROOM.ITEM.IP];
+                        itemList.push($('<option>' + itemName + ' (' + itemIP + ')' + '</option>').attr({value: 'item', 'data-id': itemId}));
+                    }
+                }
+                if(isInRoom === true) {
+                    roomName = room[APP.API.STATE.ROOM.NAME];
+                    roomId = room[APP.API.STATE.ROOM.ID];
+                    roomList.push($('<option>' + roomName + '</option>').attr({value: 'room', 'data-id': roomId})); 
+                }
+                isInRoom = false;
+            }
+            
+            if(itemList.length !== 0) {
+                var items = $('<optgroup></optgroup>').attr({label: 'Items'});
+                console.log(itemList);
+                for(var i = 0; i < itemList.length; i++) {
+                    items.append(itemList[i]);
+                }
+                scopeList.push(items);
+            }
+            console.log(scopeList);
+            
+            if(roomList.length !== 0) {
+                var rooms = $('<optgroup></optgroup>').attr({label: 'Rooms'});
+                for(var i = 0; i < roomList.length; i++) {
+                    rooms.append(roomList[i]);
+                }
+                scopeList.push(rooms);
+            }
+            
+            (function() {
+                var house = $('<optgroup></optgroup>').attr({label: 'House'});
+                house.append($('<option>the house</option>').attr({value: 'house', 'data-id': 'undefined'}));
+                scopeList.push(house);
+            })();
+            
+        }
+        console.log(scopeList);
+        return scopeList;
     }
     
     function getMethods(itemType) {
-        
+        var itemType = itemTypeField.children('option:selected').val(),
+            methodList = [],
+            method;
+        methodField.html('');
+        methodList.push($('<option>(Not set)</option>').attr({val: 'undefined'}));
+        if(itemType !== 'undefined') {
+            for(var type in APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES]) {
+                if(APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES].hasOwnProperty(type) && type === itemType) {
+                    for(var i = 0; i < APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][type][APP.API.VERSION.SUPPORTED_TYPE.METHODS].length; i++) {
+                        method = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][type][APP.API.VERSION.SUPPORTED_TYPE.METHODS][i];
+                        methodList.push($('<option>' + method + '</option>').attr({value: method}));
+                    }
+                    break;
+                }
+            }
+        }
+        return methodList;
     }
     
     function populateItemTypeField() {
@@ -1753,18 +1827,21 @@ APP.ECANewActionDisplay.prototype.construct = function() {
     }
     
     function populateScopeField() {
-        var itemType = itemField.children('option:selected').val(),
-            options;
+        var itemType = itemTypeField.children('option:selected').val(),
+            options = getScopes(itemType);
         scopeField.html('');
-        
+        for(var i = 0; i < options.length; i++) {
+            scopeField.append(options[i]);
+        }
     }
     
     function populateMethodField() {
-        var itemType = itemField.children('option:selected').val(),
-            options;
+        var itemType = itemTypeField.children('option:selected').val(),
+            options = getMethods(itemType);
         methodField.html('');
-        
-        
+        for(var i = 0; i < options.length; i++) {
+            methodField.append(options[i]);
+        }
     }
     
     function setElements() {
@@ -1786,9 +1863,24 @@ APP.ECANewActionDisplay.prototype.construct = function() {
         populateItemTypeField();
         
         itemTypeField.click(function() {
+            bridge1.html('');
+            bridge2.html('');
             populateScopeField();
             populateMethodField();
         });
+        
+        scopeField.click(function() {
+            var scope = $(this).find('option:selected').val();
+            if(scope === 'room' || scope === 'house') {
+                bridge1.html('all');
+                bridge2.html('s&nbsp;&nbsp;in');
+            } else if(scope === 'item') {
+                bridge1.html('the');
+                bridge2.html('');
+            }
+        });
+        
+        
         
         addButton.click(function() {
             setElements();
