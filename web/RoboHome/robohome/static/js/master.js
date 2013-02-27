@@ -1455,16 +1455,52 @@ APP.ECANewConditionDisplay.prototype.construct = function() {
         var itemList = [],
             itemId,
             itemIP,
-            itemName;
+            itemName,
+            itemType;
+        
+        itemList.push($('<option>(Not set)</option>').attr({value: 'undefined', 'data-itemType': 'undefined'}));
         for(var i = 0; i < APP.data.houseStructure[APP.API.STATE.ROOMS].length; i++) {
             for(var j = 0; j < APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ITEMS].length; j++) {
                 itemId = APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ITEMS][j][APP.API.STATE.ROOM.ITEM.ID];
                 itemIP = APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ITEMS][j][APP.API.STATE.ROOM.ITEM.IP];
                 itemName = APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ITEMS][j][APP.API.STATE.ROOM.ITEM.NAME];
-                itemList.push($('<option>' + itemName + ' (' + itemIP + ')' + '</option>').attr({val: itemId}));
+                itemType = APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ITEMS][j][APP.API.STATE.ROOM.ITEM.ITEM_TYPE]
+                itemList.push($('<option>' + itemName + ' (' + itemIP + ')' + '</option>').attr({value: itemId, 'data-itemtype': itemType}));
             }
         }
         return itemList;
+    }
+    
+    function getItemEquiv() {
+        var itemId = itemField.children('option:selected').val(),
+            equivList = [],
+            equiv;
+        
+        equivList.push($('<option>(Not set)</option>').attr({value: 'undefined'}));
+        if(itemId !== 'undefined') {
+            equiv = 'is';
+            // redo when we implement equivalences
+            equivList.push($('<option>' + equiv + '</option>').attr({value: equiv}));
+        }
+        return equivList;
+    }
+    
+    function getItemState() {
+        var itemId = itemField.children('option:selected').val(),
+            itemType = itemField.find('option[value=' + itemId + ']').attr('data-itemtype'),
+            stateName,
+            stateId,
+            stateList = [];
+        
+        stateList.push($('<option>(Not set)</option>').attr({value: 'undefined'}));
+        if(itemType !== 'undefined') {
+            for(var i = 0; i < APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][itemType][APP.API.VERSION.SUPPORTED_TYPE.STATES].length; i++) {
+                stateName = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][itemType][APP.API.VERSION.SUPPORTED_TYPE.STATES][i][APP.API.VERSION.SUPPORTED_TYPE.STATE.NAME];
+                stateId = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][itemType][APP.API.VERSION.SUPPORTED_TYPE.STATES][i][APP.API.VERSION.SUPPORTED_TYPE.STATE.ID];
+                stateList.push($('<option>' + stateName + '</option>').attr({value: stateId}));
+            }
+        }
+        return stateList;
     }
     
     function populateItemField() {
@@ -1476,13 +1512,19 @@ APP.ECANewConditionDisplay.prototype.construct = function() {
     }
     
     function populateEquivalenceField() {
+        var options = getItemEquiv();
         equivalenceField.html('');
-        
+        for(var i= 0; i < options.length; i++) {
+            equivalenceField.append(options[i]);
+        }
     }
     
     function populateStateField() {
+        var options = getItemState();
         stateField.html('');
-        
+        for(var i = 0; i < options.length; i++) {
+            stateField.append(options[i]);
+        }
     }
     
     function setElements() {
@@ -1500,7 +1542,13 @@ APP.ECANewConditionDisplay.prototype.construct = function() {
         cancelButton = $('<button>Cancel</button>'),
         saveButton = $('<button>Save</button>');
         
+        itemField.click(function() {
+            populateEquivalenceField();
+            populateStateField();
+        });
+        
         addButton.click(function() {
+            setElements();
             self.context.html('');
             self.context.append(bridge1);
             populateItemField();
@@ -1512,6 +1560,7 @@ APP.ECANewConditionDisplay.prototype.construct = function() {
         });
         
         cancelButton.click(function() {
+            setElements();
             self.context.html('');
             self.context.append(addButton);
         });
@@ -1519,6 +1568,7 @@ APP.ECANewConditionDisplay.prototype.construct = function() {
         saveButton.click(function() {
             // TODO
         });
+        
     }
     
     setElements();
@@ -1609,7 +1659,7 @@ APP.ECAActionDisplay.prototype.construct = function() {
                 }
             }
         }
-        bridge1.html('');
+        bridge1.html('the');
         bridge2.html('');
         break;
     case 'room':
@@ -1670,6 +1720,53 @@ APP.ECANewActionDisplay.prototype.construct = function() {
         cancelButton,
         saveButton;
     
+    function getAllTypes() {
+        var itemTypeList = [],
+            itemType,
+            itemTypeName;
+            
+        itemTypeList.push($('<option>(Not set)</option>').attr({value: 'undefined'}));
+        for(var type in APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES]) {
+            if(APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES].hasOwnProperty(type)) {
+                itemType = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][type];
+                itemTypeName = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][type][APP.API.VERSION.SUPPORTED_TYPE.NAME];
+                itemTypeList.push($('<option>' + itemTypeName + '</option>').attr({value: itemType}));
+            }
+        }
+        return itemTypeList;
+    }
+    
+    function getScopes(itemType) {
+        
+    }
+    
+    function getMethods(itemType) {
+        
+    }
+    
+    function populateItemTypeField() {
+        var options = getAllTypes();
+        itemTypeField.html('');
+        for(var i = 0; i < options.length; i++) {
+            itemTypeField.append(options[i]);
+        }
+    }
+    
+    function populateScopeField() {
+        var itemType = itemField.children('option:selected').val(),
+            options;
+        scopeField.html('');
+        
+    }
+    
+    function populateMethodField() {
+        var itemType = itemField.children('option:selected').val(),
+            options;
+        methodField.html('');
+        
+        
+    }
+    
     function setElements() {
         methodFieldset = $('<fieldset><legend>Step 3 - Set method</legend></fieldset>'),
         methodWrapper = $('<div></div>').addClass('select-wrapper'),
@@ -1686,7 +1783,15 @@ APP.ECANewActionDisplay.prototype.construct = function() {
         cancelButton = $('<button>Cancel</button>'),
         saveButton = $('<button>Save</button>');
         
+        populateItemTypeField();
+        
+        itemTypeField.click(function() {
+            populateScopeField();
+            populateMethodField();
+        });
+        
         addButton.click(function() {
+            setElements();
             self.context.html('');
             self.context.append(methodFieldset.append(methodWrapper.append(methodField)));
             self.context.append(bridge1);
@@ -1698,6 +1803,7 @@ APP.ECANewActionDisplay.prototype.construct = function() {
         });
         
         cancelButton.click(function() {
+            setElements();
             self.context.html('');
             self.context.append(addButton);
         });
