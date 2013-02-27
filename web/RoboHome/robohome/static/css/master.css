@@ -864,6 +864,10 @@ div.eca-field-div {
     background-color: rgba(255,0,0,0.3);
 }
 
+#stage-rules-eca option {
+    color: #000000;
+}
+
 #stage-rules-eca .eca-capitalize {
     text-transform: capitalize;
 }

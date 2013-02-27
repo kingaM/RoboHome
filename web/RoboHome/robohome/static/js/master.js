@@ -1237,6 +1237,7 @@ APP.ECARuleDisplay.prototype.update = function() {
  *
  */
 APP.ECANewRuleDisplay = function() {
+    
 };
 
 /**
@@ -1382,13 +1383,14 @@ APP.ECAConditionDisplay.prototype.construct = function() {
         bridge1 = $('<div>If</div>'),
         itemName,
         itemNameField = $('<div></div>').addClass(APP.DOM_HOOK.ECA.FIELD_DIV),
-        equivalence = 'equals', // change when we implement equivalences
+        equivalence = 'is', // change when we implement equivalences
         equivalenceField = $('<div></div>').addClass(APP.DOM_HOOK.ECA.FIELD_DIV),
         state,
         stateField = $('<div></div>').addClass(APP.DOM_HOOK.ECA.FIELD_DIV),
         editButton = $('<button>Edit</button>'),
         deleteButton = $('<button>Delete</button>').addClass(APP.DOM_HOOK.ECA.DELETE);
         
+        // state display
         for(var i = 0; i < APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][this.conditionObj[APP.API.EVENTS.RULE.CONDITION.ITEM_TYPE]][APP.API.VERSION.SUPPORTED_TYPE.STATES].length; i++) {
             if(this.conditionObj[APP.API.EVENTS.RULE.CONDITION.VALUE] === APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][this.conditionObj[APP.API.EVENTS.RULE.CONDITION.ITEM_TYPE]][APP.API.VERSION.SUPPORTED_TYPE.STATES][i][APP.API.VERSION.SUPPORTED_TYPE.STATE.ID]) {
                 state = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][this.conditionObj[APP.API.EVENTS.RULE.CONDITION.ITEM_TYPE]][APP.API.VERSION.SUPPORTED_TYPE.STATES][i][APP.API.VERSION.SUPPORTED_TYPE.STATE.NAME];
@@ -1396,6 +1398,7 @@ APP.ECAConditionDisplay.prototype.construct = function() {
             }
         }
         
+        // itemName display
         for(var i = 0; i < APP.data.houseStructure[APP.API.STATE.ROOMS].length; i++) {
             for(var j = 0; j < APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ITEMS].length; j++) {
                 if(this.conditionObj[APP.API.EVENTS.RULE.CONDITION.ITEM_ID] === APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ITEMS][j][APP.API.STATE.ROOM.ITEM.ID]) {
@@ -1448,6 +1451,40 @@ APP.ECANewConditionDisplay.prototype.construct = function() {
         cancelButton,
         saveButton;
     
+    function getAllItems() {
+        var itemList = [],
+            itemId,
+            itemIP,
+            itemName;
+        for(var i = 0; i < APP.data.houseStructure[APP.API.STATE.ROOMS].length; i++) {
+            for(var j = 0; j < APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ITEMS].length; j++) {
+                itemId = APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ITEMS][j][APP.API.STATE.ROOM.ITEM.ID];
+                itemIP = APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ITEMS][j][APP.API.STATE.ROOM.ITEM.IP];
+                itemName = APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ITEMS][j][APP.API.STATE.ROOM.ITEM.NAME];
+                itemList.push($('<option>' + itemName + ' (' + itemIP + ')' + '</option>').attr({val: itemId}));
+            }
+        }
+        return itemList;
+    }
+    
+    function populateItemField() {
+        var options = getAllItems();
+        itemField.html('');
+        for(var i = 0; i < options.length; i++) {
+            itemField.append(options[i]);
+        }
+    }
+    
+    function populateEquivalenceField() {
+        equivalenceField.html('');
+        
+    }
+    
+    function populateStateField() {
+        stateField.html('');
+        
+    }
+    
     function setElements() {
         bridge1 = $('<div>If</div>'),
         itemFieldset = $('<fieldset><legend>Step 1 - Set item</legend></fieldset>'),
@@ -1464,9 +1501,9 @@ APP.ECANewConditionDisplay.prototype.construct = function() {
         saveButton = $('<button>Save</button>');
         
         addButton.click(function() {
-            setElements();
             self.context.html('');
             self.context.append(bridge1);
+            populateItemField();
             self.context.append(itemFieldset.append(itemWrapper.append(itemField)));
             self.context.append(equivalenceFieldset.append(equivalenceWrapper.append(equivalenceField)));
             self.context.append(stateFieldset.append(stateWrapper.append(stateField)));
@@ -1475,7 +1512,6 @@ APP.ECANewConditionDisplay.prototype.construct = function() {
         });
         
         cancelButton.click(function() {
-            setElements();
             self.context.html('');
             self.context.append(addButton);
         });
@@ -1562,7 +1598,7 @@ APP.ECAActionDisplay.prototype.construct = function() {
     itemType = this.actionObj[APP.API.EVENTS.RULE.ACTION.ITEM_TYPE];
     itemTypeField.html(itemType);
     
-    // scopeField
+    // scopeField, bridges
     switch (this.actionObj[APP.API.EVENTS.RULE.ACTION.SCOPE]) {
     case 'item':
         for(var i = 0; i < APP.data.houseStructure[APP.API.STATE.ROOMS].length; i++) {
@@ -1651,7 +1687,6 @@ APP.ECANewActionDisplay.prototype.construct = function() {
         saveButton = $('<button>Save</button>');
         
         addButton.click(function() {
-            setElements();
             self.context.html('');
             self.context.append(methodFieldset.append(methodWrapper.append(methodField)));
             self.context.append(bridge1);
@@ -1663,7 +1698,6 @@ APP.ECANewActionDisplay.prototype.construct = function() {
         });
         
         cancelButton.click(function() {
-            setElements();
             self.context.html('');
             self.context.append(addButton);
         });
