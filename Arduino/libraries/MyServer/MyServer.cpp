@@ -4,7 +4,6 @@
   Based on: http://www.jotschi.de/Technik/2012/04/21/arduino-ethernet-shield-simple-rest-api-example.html
   and: http://arduino.cc/en/Tutorial/WiFiWebServer
 */
-
 #include <WiFi.h>
 #include "MyServer.h"
 #include "Arduino.h"
@@ -143,10 +142,11 @@ int MyServer::countSegments() {
 char MyServer::readClient(WiFiClient client) {
   char c;
   int bufindex = 0; 
+  memset(buffer, 0, 128);
   buffer[0] = client.read();
   buffer[1] = client.read();
   bufindex = 2;
-  while (buffer[bufindex-2] != '\r' && buffer[bufindex-1] != '\n') { 
+  while (buffer[bufindex-1] != '\n') { 
       c = client.read();
       if (bufindex<STRING_BUFFER_SIZE) {
         buffer[bufindex] = c;
@@ -154,6 +154,6 @@ char MyServer::readClient(WiFiClient client) {
       bufindex++;
   }
   bufindex = 0;
-  buffer = (char**)realloc(buffer, sizeof(char *) * STRING_BUFFER_SIZE + 1);
+  
   return c;
 }
