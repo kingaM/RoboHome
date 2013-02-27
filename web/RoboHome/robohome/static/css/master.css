@@ -320,7 +320,8 @@ body {
 #context-menu optgroup,
 #context-menu option {
     color: #000000;
-    font-size: 1.2em;
+    font-size: 1em;
+    background-color: #FFFFFF;
 }
 
 #context-menu select:hover {
@@ -866,6 +867,7 @@ div.eca-field-div {
 
 #stage-rules-eca option {
     color: #000000;
+    background-color: #FFFFFF;
 }
 
 #stage-rules-eca .eca-capitalize {
