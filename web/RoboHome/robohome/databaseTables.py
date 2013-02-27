@@ -89,8 +89,32 @@ class EventsTable(DatabaseHelper):
     def addTable(self):
         super(EventsTable, self).addTable(self.tablename, "id INT PRIMARY KEY AUTO_INCREMENT NOT NULL, typeId INT NOT NULL, itemId INT, roomId INT, `trigger` VARCHAR(45) NOT NULL, enabled INT NOT NULL, FOREIGN KEY (typeId) REFERENCES types(id) ON DELETE CASCADE ON UPDATE CASCADE, FOREIGN KEY (itemId) REFERENCES items(id) ON DELETE CASCADE ON UPDATE CASCADE, FOREIGN KEY (roomId) REFERENCES rooms(id) ON DELETE CASCADE ON UPDATE CASCADE")
 
-    def addEntry(self, name, typeId, itemId, roomId, trigger, enabled):
-        return super(EventsTable, self).addEntry(self.tablename, "name, typeId, itemId, roomId, `trigger`, enabled", "'" + str(name) + "'," + "'" + str(typeId) + "'," + "'" + str(itemId) + "'," +"'" + str(roomId) + "'," +"'" + trigger + "'," +"'" + enabled + "'")
+    def addEntry(self, event):
+        typeId = self.retriveData("SELECT id FROM types WHERE name=\'" + event.type + "';")[0][0]
+        if event.item is None:
+            itemId = "null"
+        else:
+            itemId = event.item._id
+        if event.room is None:
+            roomId = "null"
+        else:
+            roomId = event.room._id
+        event.id =  super(EventsTable, self).addEntry(self.tablename, "name, typeId, itemId, roomId, `trigger`, enabled", "'" + str(event.name) + "'," + "'" + str(typeId) + "'," + str(itemId) + "," + str(roomId) + "," +"'" + str(event.trigger) + "'," +"'" + str(event.enabled) + "'")
+
+    def removeEntry(self, event):
+        self.executeQuery("DELETE FROM events WHERE id=" + str(event.id) + ";")
+
+    def updateEntry(self, event):
+        typeId = self.retriveData("SELECT id FROM types WHERE name=\'" + event.type + "';")[0][0]
+        if event.item is None:
+            itemId = "null"
+        else:
+            itemId = event.item._id
+        if event.room is None:
+            roomId = "null"
+        else:
+            roomId = event.room._id
+        super(EventsTable, self).updateEntry(self.tablename, "id='" + str(event.id) + "'", "name='" + str(event.name) + "', typeId='" + str(typeId) + "', itemId=" + str(itemId) + ", roomId=" + str(roomId) + ", `trigger`='" + str(event.trigger) + "', enabled='" + str(event.enabled) + "'")
 
     def getEvents(self):
         return super(EventsTable, self).retriveData("SELECT events.id, events.name, types.name, itemId, roomId, `trigger`, enabled FROM events, types WHERE events.typeId = types.id")
