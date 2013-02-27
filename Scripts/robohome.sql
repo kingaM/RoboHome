@@ -81,6 +81,7 @@ INSERT INTO `robohome`.`events` (`name`, `typeId`, `itemId`, `roomId`, `trigger`
 INSERT INTO `robohome`.`events` (`name`, `typeId`, `itemId`, `roomId`, `trigger`, `enabled`) VALUES ('Event5', 1, NULL, 4, 'Motion Detected', 1);
 
 INSERT INTO `robohome`.`conditions` (`itemId`, `methodId`, `equivalence`, `value`, `eventId`) VALUES (2, 14, '=', 1, 1);
-INSERT INTO `robohome`.`conditions` (`itemId`, `methodId`, `equivalence`, `value`, `eventId`) VALUES (3, 1, '=', 1, 1);
+INSERT INTO `robohome`.`conditions` (`itemId`, `methodId`, `equivalence`, `value`, `eventId`) VALUES (4, 21, '=', 1, 1);
 
 INSERT INTO `robohome`.`actions` (`itemId`, `roomId`, `eventId`, `methodId`) VALUES (NULL, 4, 1, 22);
+INSERT INTO `robohome`.`actions` (`itemId`, `roomId`, `eventId`, `methodId`) VALUES (2, NULL, 1, 16);
