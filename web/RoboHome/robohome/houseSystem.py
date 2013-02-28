@@ -323,7 +323,7 @@ class House(object):
         self.events.append(event)
         self.database.events.addEntry(event)
 
-    def updateEvent(self, self, name, _type, _id, scope, trigger, enabled, eventId):
+    def updateEvent(self, name, _type, _id, scope, trigger, enabled, eventId):
         """
         Updates an event to the house and database
 
