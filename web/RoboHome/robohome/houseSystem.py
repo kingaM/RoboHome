@@ -71,7 +71,7 @@ class House(object):
     def updateRoom(self, roomId, name):
         """
         Updates a specific room
-`
+
         Arguments:
         roomId -- the id of the room
         name -- new name for the given room

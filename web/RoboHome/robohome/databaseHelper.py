@@ -19,7 +19,7 @@ class DatabaseHelper(object):
 
     def executeQuery(self, query):
         cursor = DatabaseHelper.con.cursor()
-        print query
+        #print query
         cursor.execute(query)
         id = cursor.lastrowid
         cursor.close()
@@ -44,7 +44,7 @@ class DatabaseHelper(object):
 
     def retriveData(self, query):
         cursor = DatabaseHelper.con.cursor()
-        print query
+        #print query
         cursor.execute(query)
         rows = cursor.fetchall()
         cursor.close()

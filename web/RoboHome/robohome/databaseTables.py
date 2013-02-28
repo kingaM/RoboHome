@@ -80,14 +80,12 @@ class MethodsTable(DatabaseHelper):
     def addEntry(self, name, signiture, type, typeId):
         return  super(ItemsTable, self).addEntry(self.tablename, "name, signiture, type, typeId", "'" + name + "'," + "'" + signiture + "'," +"'" + type + "'," +"'" + str(typeId) + "'")
 
+
 class EventsTable(DatabaseHelper):
 
     def __init__(self):
         self.tablename = "events"
         super(EventsTable, self).__init__()
-
-    def addTable(self):
-        super(EventsTable, self).addTable(self.tablename, "id INT PRIMARY KEY AUTO_INCREMENT NOT NULL, typeId INT NOT NULL, itemId INT, roomId INT, `trigger` VARCHAR(45) NOT NULL, enabled INT NOT NULL, FOREIGN KEY (typeId) REFERENCES types(id) ON DELETE CASCADE ON UPDATE CASCADE, FOREIGN KEY (itemId) REFERENCES items(id) ON DELETE CASCADE ON UPDATE CASCADE, FOREIGN KEY (roomId) REFERENCES rooms(id) ON DELETE CASCADE ON UPDATE CASCADE")
 
     def addEntry(self, event):
         typeId = self.retriveData("SELECT id FROM types WHERE name=\'" + event.type + "';")[0][0]
@@ -99,7 +97,7 @@ class EventsTable(DatabaseHelper):
             roomId = "null"
         else:
             roomId = event.room._id
-        event.id =  super(EventsTable, self).addEntry(self.tablename, "name, typeId, itemId, roomId, `trigger`, enabled", "'" + str(event.name) + "'," + "'" + str(typeId) + "'," + str(itemId) + "," + str(roomId) + "," +"'" + str(event.trigger) + "'," +"'" + str(event.enabled) + "'")
+        event.id = super(EventsTable, self).addEntry(self.tablename, "name, typeId, itemId, roomId, `trigger`, enabled", "'%s', '%s', %s, %s, '%s', '%s'" % (event.name, typeId, itemId, roomId, event.trigger, event.enabled))
 
     def removeEntry(self, event):
         self.executeQuery("DELETE FROM events WHERE id=" + str(event.id) + ";")
@@ -114,10 +112,11 @@ class EventsTable(DatabaseHelper):
             roomId = "null"
         else:
             roomId = event.room._id
-        super(EventsTable, self).updateEntry(self.tablename, "id='" + str(event.id) + "'", "name='" + str(event.name) + "', typeId='" + str(typeId) + "', itemId=" + str(itemId) + ", roomId=" + str(roomId) + ", `trigger`='" + str(event.trigger) + "', enabled='" + str(event.enabled) + "'")
+        super(EventsTable, self).updateEntry(self.tablename, "id='" + str(event.id) + "'", "name='%s', typeId='%s', itemId=%s, roomId=%s, `trigger`='%s', enabled='%s'" % (event.name, typeId, itemId, roomId, event.trigger, event.enabled))
 
     def getEvents(self):
         return super(EventsTable, self).retriveData("SELECT events.id, events.name, types.name, itemId, roomId, `trigger`, enabled FROM events, types WHERE events.typeId = types.id")
+
 
 class ConditionsTable(DatabaseHelper):
 
@@ -125,32 +124,61 @@ class ConditionsTable(DatabaseHelper):
         self.tablename = "conditions"
         DatabaseHelper.__init__(self)
 
-    def addTable(self):
-        super(ConditionsTable, self).addTable(self.tablename, "id INT PRIMARY KEY AUTO_INCREMENT NOT NULL, itemId INT NOT NULL, methodId INT NOT NULL, equivalence VARCHAR(45) NOT NULL, value VARCHAR(45) NOT NULL, eventId INT NOT NULL, typeId INT, FOREIGN KEY (typeId) REFERENCES types(id) ON DELETE CASCADE ON UPDATE CASCADE, FOREIGN KEY (itemId) REFERENCES items(id) ON DELETE CASCADE ON UPDATE CASCADE, FOREIGN KEY (methodId) REFERENCES methods(id) ON DELETE CASCADE ON UPDATE CASCADE, FOREIGN KEY (eventId) REFERENCES events(id) ON DELETE CASCADE ON UPDATE CASCADE")
+    def addEntry(self, condition, eventId):
+        typeId = self.retriveData("SELECT id FROM types WHERE name=\'" + str(condition.item._type) + "';")[0][0]
+        methodId = self.retriveData("SELECT id FROM methods WHERE signature=\'" + str(condition.method) + "' AND typeId =" + str(typeId))[0][0]
+        condition.id = super(ConditionsTable, self).addEntry(self.tablename, "itemId, methodId, equivalence, value, eventId", "'%s', '%s', '%s', '%s', '%s'" % (condition.item._id, methodId, condition.equivalence, condition.value, eventId))
 
-    def addEntry(self, itemId, methodId, equivalence, value, eventId, typeId):
-        return super(ConditionsTable, self).addEntry(self.tablename, "itemId, methodId, equivalence, value, eventId, typeId", "'" + str(itemId) + "'," + "'" + str(methodId) + "'," +"'" + equivalence + "'," +"'" + value + "'," +"'" + str(eventId) + "'," +"'" + str(typeId) + "'")
+    def removeEntry(self, condition):
+        self.executeQuery("DELETE FROM conditions WHERE id=" + str(condition.id) + ";")
+
+    def updateEntry(self, condition, eventId):
+        typeId = self.retriveData("SELECT id FROM types WHERE name=\'" + str(condition.item._type) + "';")[0][0]
+        methodId = self.retriveData("SELECT id FROM methods WHERE signature=\'" + str(condition.method) + "' AND typeId =" + str(typeId))[0][0]
+        super(ConditionsTable, self).updateEntry(self.tablename, "id='" + str(condition.id) + "'", "itemId=%s, methodId=%s, equivalence='%s', value='%s', eventId=%s" % (condition.item._id, methodId, condition.equivalence, condition.value, eventId))
 
     def getConditionsForEvent(self, event):
         return super(ConditionsTable, self).retriveData("SELECT conditions.id, itemId, signature, methods.name, equivalence, value FROM conditions, methods WHERE conditions.methodId = methods.Id AND eventId=" + str(event.id))
 
-    #def retrieveForRoomId(self, roomId):
-    #    return super(ItemsTable, self).retriveData("SELECT * FROM " + self.tablename + " WHERE roomId=" + str(roomId))
 
 class ActionsTable(DatabaseHelper):
 
     def __init__(self):
         self.tablename = "actions"
-        super(ActionsTable, self)
+        super(ActionsTable, self).__init__()
 
-    def addTable(self):
-        super(ActionsTable, self).addTable(self.tablename, "id INT PRIMARY KEY AUTO_INCREMENT NOT NULL, itemId INT, roomId INT, eventId INT NOT NULL, methodId INT NOT NULL, FOREIGN KEY (itemId) REFERENCES items(id) ON DELETE CASCADE ON UPDATE CASCADE, FOREIGN KEY (roomId) REFERENCES rooms(id) ON DELETE CASCADE ON UPDATE CASCADE, FOREIGN KEY (methodId) REFERENCES methods(id) ON DELETE CASCADE ON UPDATE CASCADE, FOREIGN KEY (eventId) REFERENCES events(id) ON DELETE CASCADE ON UPDATE CASCADE")
+    def addEntry(self, action, eventId):
+        typeId = self.retriveData("SELECT id FROM types WHERE name=\'" + str(action.type) + "';")[0][0]
+        methodId = self.retriveData("SELECT id FROM methods WHERE signature=\'" + str(action.method) + "' AND typeId =" + str(typeId))[0][0]
+        if action.item is None:
+            itemId = "null"
+        else:
+            itemId = action.item._id
+        if action.room is None:
+            roomId = "null"
+        else:
+            roomId = action.room._id
+        action.id = super(ActionsTable, self).addEntry(self.tablename, "itemId, roomId, methodId, eventId", "%s, %s, %s, %s" % (itemId, roomId, methodId, eventId))
 
-    def addEntry(self, itemId, roomId, eventId, methodId):
-        return super(ActionsTable, self).addEntry(self.tablename, "itemId, roomId, eventId, methodId, eventId, typeId", "'" + str(itemId) + "'," + "'" + str(roomId) + "'," +"'" + str(eventId) + "'," +"'" + str(methodId) + "'")
+    def removeEntry(self, action):
+        self.executeQuery("DELETE FROM actions WHERE id=" + str(action.id) + ";")
+
+    def updateEntry(self, action, eventId):
+        typeId = self.retriveData("SELECT id FROM types WHERE name=\'" + str(action.type) + "';")[0][0]
+        methodId = self.retriveData("SELECT id FROM methods WHERE signature=\'" + str(action.method) + "' AND typeId =" + str(typeId))[0][0]
+        if action.item is None:
+            itemId = "null"
+        else:
+            itemId = action.item._id
+        if action.room is None:
+            roomId = "null"
+        else:
+            roomId = action.room._id
+        super(ActionsTable, self).updateEntry(self.tablename, "id='" + str(action.id) + "'", "itemId=%s, roomId=%s, methodId=%s, eventId=%s" % (itemId, roomId, methodId, eventId))
 
     def getActionsForEvent(self, event):
         return super(ActionsTable, self).retriveData("SELECT actions.id, itemId, roomId, signature, methods.name, types.name FROM actions, methods, types WHERE actions.methodId = methods.id AND methods.typeId = types.Id AND eventId=" + str(event.id))
+
 
 class UsersTable(DatabaseHelper):
 
