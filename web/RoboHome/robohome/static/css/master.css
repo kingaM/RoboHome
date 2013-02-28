@@ -662,6 +662,7 @@ div.eca-field-div {
             box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
 }
 
+.stage-content .eca-rule select:hover,
 .stage-content .eca-rule button:hover {
     border: 1px solid rgb(229, 151, 0);
 }
