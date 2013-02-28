@@ -161,8 +161,9 @@ def events(version):
         return jsonify(pack(house.getRules()))
 
     if request.method == 'POST':
-        # Create a new event
-        pass
+        args = request.args.to_dict()
+        house.addEvent(args["ruleName"], args["itemType"], args["id"], args["scope"], args["itemState"], args["enabled"])
+        return jsonify(pack('success'))
 
 
 @app.route('/version/<string:version>/events/<int:eventId>/', methods=['GET', 'PUT', 'DELETE'])
@@ -175,11 +176,14 @@ def events_eventId(version, eventId):
 
     if request.method == 'PUT':
         # Update event
-        pass
+        args = request.args.to_dict()
+        house.updateEvent(args["ruleName"], args["itemType"], args["id"], args["scope"], args["itemState"], args["enabled"], eventId)
+        return jsonify(pack('success'))
 
     if request.method == 'DELETE':
-        # Remove event
-        pass
+        # Delete event
+        house.deleteEvent(eventId)
+        return jsonify(pack('success'))
 
 
 @app.route('/version/<string:version>/whitelist/', methods=['GET', 'POST', 'DELETE'])

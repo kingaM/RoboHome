@@ -296,6 +296,89 @@ class House(object):
 
         return {"rules": rules}
 
+    def addEvent(self, name, _type, _id, scope, trigger, enabled):
+        """
+        Adds an event to the house and database
+
+        Arguments:
+        name -- the name of the rule
+        _type -- the type of the item the event concerns
+        _id -- the id of the item/room which depends on scope
+        scope -- the scope of the event ("item"/"room"/"house")
+        trigger -- the triggering state of the item
+        enabled -- whether the rule is enabled (1/0)
+        """
+        if scope == "item":
+            item = self.getItemById(_id)
+            room = None
+        elif scope == "room":
+            item = None
+            room = self.rooms[_id]
+        elif scope == "house":
+            item = None
+            room = None
+        else:
+            raise Exception("Invalid scope parameter")
+        event = eca.Event(name, _type, item, room, trigger, enabled)
+        self.events.append(event)
+        self.database.events.addEntry(event)
+
+    def updateEvent(self, self, name, _type, _id, scope, trigger, enabled, eventId):
+        """
+        Updates an event to the house and database
+
+        Arguments:
+        name -- the name of the rule
+        _type -- the type of the item the event concerns
+        _id -- the id of the item/room which depends on scope
+        scope -- the scope of the event ("item"/"room"/"house")
+        trigger -- the triggering state of the item
+        enabled -- whether the rule is enabled (1/0)
+        """
+        if scope == "item":
+            item = self.getItemById(_id)
+            room = None
+        elif scope == "room":
+            item = None
+            room = self.rooms[_id]
+        elif scope == "house":
+            item = None
+            room = None
+        else:
+            raise Exception("Invalid scope parameter")
+        e = None
+        for event in self.events:
+            if event.id == eventId:
+                event.name = name
+                event.type = _type
+                event.item = item
+                event.room = room
+                event.trigger = trigger
+                event.enabled = enabled
+                e = event
+                break
+        if e is None:
+            raise Exception("Invalid event ID")
+        self.database.events.updateEvent(e)
+
+    def deleteEvent(self, eventId):
+        """
+        Deletes an event from the house and database
+
+        Arguments:
+        eventId -- the id of the event to be deleted
+        """
+        e = None
+        for event in self.events:
+            if event.id == eventId:
+                e = event
+                self.events.remove(e)
+                break
+        if e is None:
+            raise Exception("Invalid event ID")
+        self.database.events.removeEntry(e)
+        # Conditions and Actions for this event will also be deleted by the database
+
     def getEventsForTrigger(self, item, trigger):
         """
         Returns the possible events relating to an item trigger
