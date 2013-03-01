@@ -765,38 +765,27 @@ class upnp:
 
 conn = upnp()
 
-conn.ENUM_HOSTS[0] = {
-                    'name' : '192.168.11.2:49152',
-                    'dataComplete' : False,
-                    'proto' : 'http://',
-                    'xmlFile' : 'http://192.168.11.2:49152/setup.xml',
-                    'serverType' : None,
-                    'upnpServer' : 'Linux/2.6.21, UPnP/1.0, Portable SDK for UPnP devices/1.6.6',
-                    'deviceList' : {}
-                }
-
-SWITCHES = []
-
-# populate all the host info, for every upnp device on the network
-for index in conn.ENUM_HOSTS:
-    hostInfo = conn.ENUM_HOSTS[index]
-    if hostInfo['dataComplete'] == False:
-        xmlHeaders, xmlData = conn.getXML(hostInfo['xmlFile'])
-        conn.getHostInfo(xmlData,xmlHeaders,index)
-
-
-for index in conn.ENUM_HOSTS:
-    try:
-        if conn.ENUM_HOSTS[index]['deviceList']['controllee']['modelName'] == 'Socket':
-            SWITCHES = [index]
-    except KeyError:
-        pass
-
+def start(ip):
+    #Config the IP Address here
+    conn.ENUM_HOSTS[0] = {
+                        'name' : ip + ':49153',
+                        'dataComplete' : False,
+                        'proto' : 'http://',
+                        'xmlFile' : 'http://' + ip + ':49153/setup.xml',
+                        'serverType' : None,
+                        'upnpServer' : 'Linux/2.6.21, UPnP/1.0, Portable SDK for UPnP devices/1.6.6',
+                        'deviceList' : {}
+                    }
 
 def _send(action, args=None):
     if not args:
         args = {}
-    host_info = conn.ENUM_HOSTS[SWITCHES[0]]
+
+    hostInfo = conn.ENUM_HOSTS[0]
+    xmlHeaders, xmlData = conn.getXML(hostInfo['xmlFile'])
+    conn.getHostInfo(xmlData,xmlHeaders,0)
+
+    host_info = conn.ENUM_HOSTS[0]
     device_name = 'controllee'
     service_name = 'basicevent'
     controlURL = host_info['proto'] + host_info['name']
@@ -816,7 +805,7 @@ def _send(action, args=None):
 
 def get():
     """
-    Gets the value of the first switch that it finds
+    Gets the value of the switch it connected
     """
     resp = _send('GetBinaryState')
     tagValue = conn.extractSingleTag(resp, 'BinaryState')
