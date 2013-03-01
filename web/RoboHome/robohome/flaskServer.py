@@ -18,6 +18,7 @@ from houseSystem import House
 from databaseTables import Database
 from flask_openid import OpenID
 from IPy import IP
+import blueprint
 
 SETTINGS = {
     'LANGUAGE': 'en',
@@ -47,6 +48,7 @@ app.config.update(
     SECRET_KEY = 'development key',
     DEBUG = True
 )
+app.register_blueprint(blueprint.bp)
 
 db = Database()
 house = House(db)
