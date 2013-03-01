@@ -949,6 +949,11 @@ div.eca-field-div {
     text-align: left;
     width: 60%;
 }
+.whitelist-display input::-webkit-input-placeholder { color: rgba(255,233,21,0.5); }
+.whitelist-display input::-moz-placeholder { #color: rgba(255,233,21,0.5); }
+.whitelist-display input:-moz-placeholder { #color: rgba(255,233,21,0.5); }
+.whitelist-display input:ms-input-placeholder { #color: rgba(255,233,21,0.5); }
+
 
 /* ----- pretty borders -----
  * 
