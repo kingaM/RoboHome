@@ -3,7 +3,7 @@
 require 'config/functions.php';
 require 'google-open/openid.php';
 // callback URL
-define('CALLBACK_URL', 'http://robohome.azurewebsites.net/getGoogleData.php');
+define('CALLBACK_URL', 'http://robohome.co.uk/getGoogleData.php');
 
 
 // calling login functions
