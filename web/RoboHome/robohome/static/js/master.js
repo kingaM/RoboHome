@@ -568,8 +568,79 @@ APP.ajax_get_events = function(callback, error) {
 /**
  *
  */
-APP.ajax_put_events_eventId_conditions_conditionId = function(eventId, conditionId, callback, error) {
-    APP.ajax('PUT', APP.URL.EVENTS_EVENTID_CONDITIONS_CONDITIONID(eventId, conditionId), '',
+APP.ajax_post_events_eventId_conditions = function(eventId, itemId, itemType, method, equivalence, value, callback, error) {
+    APP.ajax('POST', APP.URL.EVENTS_EVENTID_CONDITIONS(eventId) + '?' + 
+    APP.API.EVENTS.RULE.CONDITION.ITEM_ID + '=' + itemId + '&' + 
+    APP.API.EVENTS.RULE.CONDITION.ITEM_TYPE + '=' + itemType + '&' + 
+    APP.API.EVENTS.RULE.CONDITION.METHOD + '=' + method + '&' + 
+    APP.API.EVENTS.RULE.CONDITION.EQUIVALENCE + '=' + equivalence + '&' + 
+    APP.API.EVENTS.RULE.CONDITION.VALUE + '=' + value,
+    '',
+    callback,
+    error
+    );
+};
+
+/**
+ *
+ */
+APP.ajax_put_events_eventId_conditions_conditionId = function(eventId, conditionId, itemId, itemType, method, equivalence, value, callback, error) {
+    APP.ajax('PUT', APP.URL.EVENTS_EVENTID_CONDITIONS_CONDITIONID(eventId, conditionId) + '?' + 
+    APP.API.EVENTS.RULE.CONDITION.ITEM_ID + '=' + itemId + '&' + 
+    APP.API.EVENTS.RULE.CONDITION.CONDITION_ID + '=' + conditionId + '&' + 
+    APP.API.EVENTS.RULE.CONDITION.ITEM_TYPE + '=' + itemType + '&' + 
+    APP.API.EVENTS.RULE.CONDITION.METHOD + '=' + method + '&' + 
+    APP.API.EVENTS.RULE.CONDITION.EQUIVALENCE + '=' + equivalence + '&' + 
+    APP.API.EVENTS.RULE.CONDITION.VALUE + '=' + value,
+    '',
+    callback,
+    error
+    );
+};
+
+/**
+ *
+ */
+APP.ajax_delete_events_eventId_conditions_conditionId = function(eventId, conditionId, callback, error) {
+    APP.ajax('DELETE', APP.URL.EVENTS_EVENTID_CONDITIONS_CONDITIONID(eventId, conditionId),
+    callback,
+    error
+    );
+}
+
+/**
+ *
+ */
+APP.ajax_post_events_eventId_actions = function(eventId, scope, itemType, method, callback, error) {
+    APP.ajax('POST', APP.URL.EVENTS_EVENTID_ACTIONS(eventId) + '?' + 
+    APP.API.EVENTS.RULE.ACTION.SCOPE + '=' + scope + 
+    APP.API.EVENTS.RULE.ACTION.ITEM_TYPE + '=' + itemType + 
+    APP.API.EVENTS.RULE.ACTION.METHOD + '=' + method,
+    '',
+    callback,
+    error
+    );
+};
+
+/**
+ *
+ */
+APP.ajax_put_events_eventId_actions_actionId = function(eventId, actionId, scope, itemType, method, callback, error) {
+    APP.ajax('PUT', APP.URL.EVENTS_EVENTID_ACTIONS_ACTIONID(eventId, actionId) + '?' + 
+    APP.API.EVENTS.RULE.ACTION.SCOPE + '=' + scope + 
+    APP.API.EVENTS.RULE.ACTION.ITEM_TYPE + '=' + itemType + 
+    APP.API.EVENTS.RULE.ACTION.METHOD + '=' + method,
+    '',
+    callback,
+    error
+    );
+};
+
+/**
+ *
+ */
+APP.ajax_delete_events_eventId_actions_actionId = function(eventId, actionId, callback, error) {
+    APP.ajax('DELETE', APP.URL.EVENTS_EVENTID_ACTIONS_ACTIONID(eventId, atctionId),
     callback,
     error
     );
@@ -1844,7 +1915,17 @@ APP.ECAConditionDisplay = function(ruleId, conditionObj) {
             });
             
             self.deleteButton.click(function() {
-                // TODO
+                var dis = $(this);
+                dis.parent().addClass(APP.DOM_HOOK.UPDATING);
+                APP.ajax_delete_events_eventId_conditions_conditionId(self.ruleId, self.conditionObj[APP.API.EVENTS.RULE.CONDITION.CONDITION_ID],
+                    function() {
+                        dis.parent().removeClass(APP.DOM_HOOK.UPDATING);
+                        // TODO
+                    },
+                    function() {
+                        // do nothing
+                    }
+                );
             });
             
             self.context.append(self.bridge1);
@@ -1887,9 +1968,17 @@ APP.ECAConditionDisplay = function(ruleId, conditionObj) {
             });
             
             self.saveButton.click(function() {
+                var dis = $(this);
+                dis.parent().addClass(APP.DOM_HOOK.UPDATING);
                 APP.ajax_put_events_eventId_conditions_conditionId(self.ruleId, self.conditionObj[APP.API.EVENTS.RULE.CONDITION.CONDITION_ID],
+                    '', // itemId
+                    '', // itemType
+                    '', // method
+                    '', // equivalence
+                    '', // value
                     function() {
-                        
+                        dis.parent().removeClass(APP.DOM_HOOK.UPDATING);
+                        setToDisplayMode();
                     },
                     function() {
                         // do nothing
@@ -1988,7 +2077,22 @@ APP.ECANewConditionDisplay = function(ruleId) {
             });
             
             self.saveButton.click(function() {
-                // TODO
+                var dis = $(this);
+                dis.parent().addClass(APP.DOM_HOOK.UPDATING);
+                APP.ajax_post_events_eventId_conditions(self.ruleId,
+                    '', // itemId
+                    '', // itemType
+                    '', // method
+                    '', // equivalence
+                    '', // value
+                    function() {
+                        dis.parent().removeClass(APP.DOM_HOOK.UPDATING);
+                        // TODO
+                    },
+                    function() {
+                        // do nothing
+                    }
+                );
             });
             
             self.context.append(self.bridge1);
@@ -2128,7 +2232,17 @@ APP.ECAActionDisplay = function(ruleId, actionObj) {
             });
             
             self.deleteButton.click(function() {
-            
+                var dis = $(this);
+                dis.parent().addClass(APP.DOM_HOOK.UPDATING);
+                APP.ajax_delete_events_eventId_conditions_conditionId(self.ruleId, self.actionObj[APP.API.EVENTS.RULE.ACTION.ACTION_ID],
+                    function() {
+                        dis.parent().removeClass(APP.DOM_HOOK.UPDATING);
+                        // TODO
+                    },
+                    function() {
+                        // do nothing
+                    }
+                );
             });
             
             getMethodField();
@@ -2194,7 +2308,20 @@ APP.ECAActionDisplay = function(ruleId, actionObj) {
             });
             
             self.saveButton.click(function() {
-                // TODO
+                var dis = $(this);
+                dis.parent().addClass(APP.DOM_HOOK.UPDATING);
+                APP.ajax_put_events_eventId_actions_actionId(self.ruleId, self.actionObj[APP.API.EVENTS.RULE.ACTION.ACTION_ID],
+                    '', // scope
+                    '', // itemType
+                    '', // method
+                    function() {
+                        dis.parent().removeClass(APP.DOM_HOOK.UPDATING);
+                        setToDisplayMode();
+                    },
+                    function() {
+                        // do nothing
+                    }
+                )
             });
         
             self.context.append(self.methodFieldset.append(self.methodWrapper.append(self.methodField)));
@@ -2302,7 +2429,19 @@ APP.ECANewActionDisplay = function(ruleId) {
             });
             
             self.saveButton.click(function() {
-                // TODO
+                var dis = $(this);
+                dis.parent().addClass(APP.DOM_HOOK.UPDATING);
+                APP.ajax_post_events_eventId_actions(self.ruleId,
+                    '', // scope
+                    '', // itemType
+                    '', // method
+                    function() {
+                        dis.parent().removeClass(APP.DOM_HOOK.UPDATING);
+                    },
+                    function() {
+                        // do nothing
+                    }
+                )
             });
         
             self.context.append(self.methodFieldset.append(self.methodWrapper.append(self.methodField)));
