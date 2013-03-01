@@ -186,6 +186,60 @@ def events_eventId(version, eventId):
         return jsonify(pack('success'))
 
 
+@app.route('/version/<string:version>/events/<int:eventId>/actions/', methods=['GET', 'POST'])
+def events_eventId_actions(version, eventId):
+    if g.user is None and not isIpOnLocalNetwork():
+        return redirect(url_for('login'))
+        
+    if request.method == 'GET':
+        pass
+    
+    if request.method == 'POST':
+        return(jsonify(pack('success')))
+        
+
+@app.route('/version/<string:version>/events/<int:eventId>/actions/<int:actionId>/', methods=['GET', 'PUT', 'DELETE'])
+def events_eventId_actions_actionId(version, eventId, actionId):
+    if g.user is None and not isIpOnLocalNetwork():
+        return redirect(url_for('login'))
+        
+    if request.method == 'GET':
+        pass
+    
+    if request.method == 'PUT':
+        return(jsonify(pack('success')))
+        
+    if request.method == 'DELETE':
+        return(jsonify(pack('success')))
+
+
+@app.route('/version/<string:version>/events/<int:eventId>/conditions/', methods=['GET', 'POST'])
+def events_eventId_conditions(version, eventId):
+    if g.user is None and not isIpOnLocalNetwork():
+        return redirect(url_for('login'))
+        
+    if request.method == 'GET':
+        pass
+    
+    if request.method == 'POST':
+        return(jsonify(pack('success')))
+        
+
+@app.route('/version/<string:version>/events/<int:eventId>/conditions/<int:conditionId>/', methods=['GET', 'PUT', 'DELETE'])
+def events_eventId_conditions_conditionId(version, eventId, conditionId):
+    if g.user is None and not isIpOnLocalNetwork():
+        return redirect(url_for('login'))
+        
+    if request.method == 'GET':
+        pass
+    
+    if request.method == 'PUT':
+        return(jsonify(pack('success')))
+        
+    if request.method == 'DELETE':
+        return(jsonify(pack('success')))
+
+        
 @app.route('/version/<string:version>/whitelist/', methods=['GET', 'POST', 'DELETE'])
 def whitelist(version):
     if g.user is None and not isIpOnLocalNetwork():

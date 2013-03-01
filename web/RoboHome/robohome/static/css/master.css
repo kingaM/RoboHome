@@ -714,6 +714,10 @@ div.eca-field-div {
     margin-left: 0;
 }
 
+.stage-content .eca-rule > div > fieldset.eca-action-fieldset {
+    margin-bottom: 0.5em;
+}
+
 .stage-content .eca-rule legend {
     font-size: 0.8em;
 }
@@ -853,7 +857,6 @@ div.eca-field-div {
 
 .stage-content .eca-action {
     background-color: rgba(200,0,0,0.2);
-    margin-bottom: 0.5em;
 }
 
 .stage-content .eca-condition button {

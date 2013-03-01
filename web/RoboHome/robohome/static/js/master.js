@@ -51,6 +51,8 @@ APP.DOM_HOOK.ECA.SHOW_HIDE = 'eca-show-hide';
 APP.DOM_HOOK.ECA.ENABLE_DISABLE = 'eca-enable-disable';
 APP.DOM_HOOK.ECA.DELETE = 'eca-delete';
 APP.DOM_HOOK.ECA.EVENT_FIELDSET = 'eca-event-fieldset';
+APP.DOM_HOOK.ECA.CONDITION_FIELDSET = 'eca-condition-fieldset';
+APP.DOM_HOOK.ECA.ACTION_FIELDSET = 'eca-action-fieldset';
 APP.DOM_HOOK.ECA.CAPITALIZE = 'eca-capitalize';
 APP.DOM_HOOK.UPDATING = 'updating';
 APP.DOM_HOOK.ERROR_MESSAGE_DISPLAY = 'error-message-display';
@@ -163,6 +165,18 @@ APP.URL.ROOMS_ROOMID_ITEMS_ITEMID_CMD = function(roomId, itemId, cmd) {
 APP.URL.EVENTS = '/version/' + APP.CONSTANTS.VERSION + '/events/';
 APP.URL.EVENTS_EVENTID = function(eventId) {
     return '/version/' + APP.CONSTANTS.VERSION + '/events/' + eventId + '/';
+};
+APP.URL.EVENTS_EVENTID_CONDITIONS = function(eventId, conditionId) {
+    return '/version/' + APP.CONSTANTS.VERSION + '/events/' + eventId + '/conditions/';
+};
+APP.URL.EVENTS_EVENTID_CONDITIONS_CONDITIONID = function(eventId, conditionId) {
+    return '/version/' + APP.CONSTANTS.VERSION + '/events/' + eventId + '/conditions/' + conditionId + '/';
+};
+APP.URL.EVENTS_EVENTID_ACTIONS = function(eventId) {
+    return '/version/' + APP.CONSTANTS.VERSION + '/events/' + eventId + '/actions/';
+};
+APP.URL.EVENTS_EVENTID_ACTIONS_ACTIONID = function(eventId, actionId) {
+    return '/version/' + APP.CONSTANTS.VERSION + '/events/' + eventId + '/actions/' + actionId + '/';
 };
 APP.URL.WHITELIST = '/version/' + APP.CONSTANTS.VERSION + '/whitelist/';
 
@@ -548,6 +562,16 @@ APP.ajax_get_events = function(callback, error) {
             callback();
         },
         error
+    );
+};
+
+/**
+ *
+ */
+APP.ajax_put_events_eventId_conditions_conditionId = function(eventId, conditionId, callback, error) {
+    APP.ajax('PUT', APP.URL.EVENTS_EVENTID_CONDITIONS_CONDITIONID(eventId, conditionId), '',
+    callback,
+    error
     );
 };
 
@@ -1154,10 +1178,20 @@ APP.ECARuleManager.prototype.update = function() {
  *
  */
 APP.ECARuleDisplay = function(ruleObj) {
+    var ruleId,
+        eventObj,
+        conditionArray,
+        actionArray;
+        
+    ruleId = ruleObj[APP.API.EVENTS.RULE.RULE_ID];
+    eventObj = ruleObj[APP.API.EVENTS.RULE.EVENT.EVENT];
+    conditionArray = ruleObj[APP.API.EVENTS.RULE.CONDITIONS];
+    actionArray = ruleObj[APP.API.EVENTS.RULE.ACTIONS];
+    
     this.ruleObj = ruleObj;
-    this.eventDisplay = new APP.ECAEventDisplay(this.ruleObj[APP.API.EVENTS.RULE.EVENT.EVENT]);
-    this.conditionManager = new APP.ECAConditionManager(this.ruleObj[APP.API.EVENTS.RULE.CONDITIONS]);
-    this.actionManager = new APP.ECAActionManager(this.ruleObj[APP.API.EVENTS.RULE.ACTIONS]);
+    this.eventDisplay = new APP.ECAEventDisplay(ruleId, eventObj);
+    this.conditionManager = new APP.ECAConditionManager(ruleId, conditionArray);
+    this.actionManager = new APP.ECAActionManager(ruleId, actionArray);
 };
 
 /**
@@ -1170,9 +1204,9 @@ APP.ECARuleDisplay.prototype.construct = function() {
         contentBox = $('<div></div>'),
         eventFieldset = $('<fieldset></fieldset>').addClass(APP.DOM_HOOK.ECA.EVENT_FIELDSET),
         eventBox = $('<div></div>'),
-        conditionsFieldset = $('<fieldset></fieldset>'),
+        conditionsFieldset = $('<fieldset></fieldset>').addClass(APP.DOM_HOOK.ECA.CONDITION_FIELDSET),
         conditionsBox= $('<div></div>'),
-        actionsFieldset = $('<fieldset></fieldset>'),
+        actionsFieldset = $('<fieldset></fieldset>').addClass(APP.DOM_HOOK.ECA.ACTION_FIELDSET),
         actionsBox = $('<div></div>'),
         showHide = $('<button></button>').addClass(APP.DOM_HOOK.ECA.SHOW_HIDE + ' ' + APP.DOM_HOOK.COLLAPSED),
         ruleName = $('<div>' + this.ruleObj[APP.API.EVENTS.RULE.RULE_NAME] + '</div>').addClass(APP.DOM_HOOK.ECA.FIELD_DIV),
@@ -1272,87 +1306,427 @@ APP.ECANewRuleDisplay.prototype.construct = function() {
  * @class APP.ECAEventDisplay
  * @constructor
  */
-APP.ECAEventDisplay = function(eventObj) {
+APP.ECAEventDisplay = function(ruleId, eventObj) {
+    this.ruleId = ruleId;
     this.eventObj = eventObj;
-    this.bridge1 = $('<div>When</div>');
-    this.bridge2 = $('<div></div>');
-    this.itemTypeField = $('<div></div>').addClass(APP.DOM_HOOK.ECA.FIELD_DIV);
-    this.bridge3 = $('<div></div>');
-    this.scopeField = $('<div></div>').addClass(APP.DOM_HOOK.ECA.FIELD_DIV);
-    this.bridge4 = $('<div>is</div>');
-    this.itemStateField = $('<div></div>').addClass(APP.DOM_HOOK.ECA.FIELD_DIV);
-    this.editButton = $('<button>Edit</button>');
+    this.bridge1;
+    this.bridge2;
+    this.itemTypeFieldset;
+    this.itemTypeWrapper;
+    this.itemTypeField;
+    this.bridge3;
+    this.scopeFieldset;
+    this.scopeWrapper;
+    this.scopeField;
+    this.bridge4;
+    this.stateFieldset;
+    this.stateWrapper;
+    this.stateField;
+    this.editButton;
+    this.cancelButton;
+    this.saveButton;
     this.context = $('<div></div>').addClass(APP.DOM_HOOK.ECA.EVENT);
-};
-
-/**
- *
- */
-APP.ECAEventDisplay.prototype.construct = function() {
-    var self = this,
-        itemType = this.eventObj[APP.API.EVENTS.RULE.EVENT.ITEM_TYPE],
-        itemState = this.eventObj[APP.API.EVENTS.RULE.EVENT.ITEM_STATE],
-        scope;
-        
-    function setToDisplayMode() {
     
-        switch (self.eventObj[APP.API.EVENTS.RULE.ACTION.SCOPE]) {
-        case 'item':
-            self.bridge2.html('');
-            self.bridge3.html('');
-            for(var i = 0; i < APP.data.houseStructure[APP.API.STATE.ROOMS].length; i++) {
-                for(var j = 0; j < APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ITEMS].length; j++) {
-                    if(self.eventObj[APP.API.EVENTS.RULE.EVENT.ID] === APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ITEMS][j][APP.API.STATE.ROOM.ITEM.ID]) {
-                        scopeField.html(APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ITEMS][j][APP.API.STATE.ROOM.ITEM.NAME]);
-                        break;
-                    }
-                }
+    this.construct = function() {
+        var self = this,
+            itemId = this.eventObj[APP.API.EVENTS.RULE.EVENT.ID],
+            itemType = this.eventObj[APP.API.EVENTS.RULE.EVENT.ITEM_TYPE],
+            itemState = this.eventObj[APP.API.EVENTS.RULE.EVENT.ITEM_STATE],
+            scope,
+            equivalence;
+            
+        function setToDisplayMode() {
+        
+            function getEquivalence() {
+                equivalence = 'is'; // change when we implement equivalences
             }
-            break;
-        case 'room':
-            self.bridge2.html('any');
-            self.bridge3.html('in');
-            for(var i = 0; i < APP.data.houseStructure[APP.API.STATE.ROOMS].length; i++) {
-                if(self.eventObj[APP.API.EVENTS.RULE.EVENT.ID] === APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ID]) {
-                    scope = APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.NAME];
+            
+            function getScopeAndBridges() {
+                switch (self.eventObj[APP.API.EVENTS.RULE.ACTION.SCOPE]) {
+                case 'item':
+                    self.bridge2.html('');
+                    self.bridge3.html('');
+                    for(var i = 0; i < APP.data.houseStructure[APP.API.STATE.ROOMS].length; i++) {
+                        for(var j = 0; j < APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ITEMS].length; j++) {
+                            if(self.eventObj[APP.API.EVENTS.RULE.EVENT.ID] === APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ITEMS][j][APP.API.STATE.ROOM.ITEM.ID]) {
+                                scopeField.html(APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ITEMS][j][APP.API.STATE.ROOM.ITEM.NAME]);
+                                break;
+                            }
+                        }
+                    }
+                    break;
+                case 'room':
+                    self.bridge2.html('any');
+                    self.bridge3.html('in');
+                    for(var i = 0; i < APP.data.houseStructure[APP.API.STATE.ROOMS].length; i++) {
+                        if(self.eventObj[APP.API.EVENTS.RULE.EVENT.ID] === APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ID]) {
+                            scope = APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.NAME];
+                            break;
+                        }
+                    }
+                    break;
+                case 'house':
+                    self.bridge2.html('any');
+                    self.bridge3.html('in');
+                    scopeField = 'the house';
                     break;
                 }
             }
-            break;
-        case 'house':
-            self.bridge2.html('any');
-            self.bridge3.html('in');
-            scopeField = 'the house';
-            break;
+            
+            self.bridge1 = $('<div>When</div>');
+            self.bridge2 = $('<div></div>');
+            self.itemTypeField = $('<div></div>').addClass(APP.DOM_HOOK.ECA.FIELD_DIV);
+            self.bridge3 = $('<div></div>');
+            self.scopeField = $('<div></div>').addClass(APP.DOM_HOOK.ECA.FIELD_DIV);
+            self.bridge4 = $('<div>is</div>');
+            self.stateField = $('<div></div>').addClass(APP.DOM_HOOK.ECA.FIELD_DIV);
+            self.editButton = $('<button>Edit</button>');
+            
+            getEquivalence();
+            getScopeAndBridges();
+            self.itemTypeField.html(itemType);
+            self.scopeField.html(scope);
+            self.stateField.html(itemState);
+            
+            self.editButton.click(function() {
+                setToFormMode();
+            });
+            
+            self.context.append(self.bridge1);
+            self.context.append(self.bridge2);
+            self.context.append(self.itemTypeField);
+            self.context.append(self.bridge3);
+            self.context.append(self.scopeField);
+            self.context.append(self.bridge4);
+            self.context.append(self.stateField);
+            self.context.append(self.editButton);
         }
-        console.log(self);
-        self.itemTypeField.html(itemType);
-        self.scopeField.html(scope);
-        self.itemStateField.html(itemState);
+        
+        function setToFormMode() {
+            self.bridge1 = $('<div>If</div>'),
+            self.itemTypeFieldset = $('<fieldset><legend>Step 1 - Set item</legend></fieldset>'),
+            self.itemTypeWrapper = $('<div></div>').addClass('select-wrapper'),
+            self.itemTypeField = $('<select></select>'),
+            self.equivalenceFieldset = $('<fieldset><legend>Step 2 - Set equiv</legend></fieldset>'),
+            self.equivalenceWrapper = $('<div></div>').addClass('select-wrapper'),
+            self.equivalenceField = $('<select></select>'),
+            self.stateFieldset = $('<fieldset><legend>Step 3 - Set state</legend></fieldset>'),
+            self.stateWrapper = $('<div></div>').addClass('select-wrapper')
+            self.stateField = $('<select></select>'),
+            self.editButton = $('<button>Add new condition</button>'),
+            self.cancelButton = $('<button>Cancel</button>'),
+            self.saveButton = $('<button>Save</button>');
+            
+            self.context.html('');
+            
+            self.populateItemTypeField(itemType);
+            self.populateScopeField(itemId, scope);
+            // FIX itemState
+            self.populateStateField(itemType, itemState);
+            
+            self.itemField.click(function() {
+                self.populateScopeField(itemId, scope);
+                // FIX itemState
+                self.populateStateField(itemType, itemState);
+            });
+            
+            self.cancelButton.click(function() {
+                setToDisplayMode();
+            });
+            
+            self.saveButton.click(function() {
+                // TODO
+            });
+            
+            self.context.append(self.bridge1);
+            self.context.append(self.itemFieldset.append(self.itemWrapper.append(self.itemField)));
+            self.context.append(self.equivalenceFieldset.append(self.equivalenceWrapper.append(self.equivalenceField)));
+            self.context.append(self.stateFieldset.append(self.stateWrapper.append(self.stateField)));
+            self.context.append(self.cancelButton);
+            self.context.append(self.saveButton);
+        }
+        
+        setToDisplayMode();
+        return this.context;
+    };
     
-        self.context.append(self.bridge1);
-        self.context.append(self.bridge2);
-        self.context.append(self.itemTypeField);
-        self.context.append(self.bridge3);
-        self.context.append(self.scopeField);
-        self.context.append(self.bridge4);
-        self.context.append(self.itemStateField);
-        self.context.append(self.editButton);
-    }
+    this.update = function() {
     
-    function setToFormMode() {
+    };
     
-    }
+    this.delete = function() {
     
-    setToDisplayMode();
-    return this.context;
+    };
+    
 };
 
 /**
  *
  */
-APP.ECAEventDisplay.prototype.update = function() {
+APP.ECAEventDisplay.prototype.populateItemTypeField = function(selectedItemType) {
+    var options;
+    
+    function getAllTypes(selectedItemType) {
+        var itemTypeList = [],
+            itemType,
+            itemTypeName;
+            
+        itemTypeList.push($('<option>(Not set)</option>').attr({value: 'undefined'}));
+        for(var type in APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES]) {
+            if(APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES].hasOwnProperty(type)) {
+                itemType = type;
+                itemTypeName = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][type][APP.API.VERSION.SUPPORTED_TYPE.NAME];
+                if(itemType === selectedItemType) {
+                    itemTypeList.push($('<option>' + itemTypeName + '</option>').attr({value: itemType, selected: 'selected'}));
+                } else {
+                    itemTypeList.push($('<option>' + itemTypeName + '</option>').attr({value: itemType}));
+                }
+            }
+        }
+        return itemTypeList;
+    }
 
+    options = getAllTypes(selectedItemType);
+    this.itemTypeField.html('');
+    for(var i = 0; i < options.length; i++) {
+        this.itemTypeField.append(options[i]);
+    }
+};
+
+/**
+ *
+ */
+APP.ECAEventDisplay.prototype.populateScopeField = function(selectedId, selectedScope) {
+    var self = this,
+        options;
+    
+    function getScopes(selectedId, selectedScope) {
+        var itemType = self.itemTypeField.children('option:selected').val(),
+            scopeList = [],
+            roomList = [],
+            itemList = [],
+            isInRoom = false,
+            item,
+            itemName,
+            itemId,
+            room;
+        
+        scopeList.push($('<option>(Not set)</option>').attr({value: 'undefined'}));
+        if(itemType !== 'undefined') {
+            for(var i = 0; i < APP.data.houseStructure[APP.API.STATE.ROOMS].length; i++) {
+                room = APP.data.houseStructure[APP.API.STATE.ROOMS][i];
+                for(var j = 0; j < room[APP.API.STATE.ROOM.ITEMS].length; j++) {
+                    item = room[APP.API.STATE.ROOM.ITEMS][j];
+                    if(itemType === item[APP.API.STATE.ROOM.ITEM.ITEM_TYPE]) {
+                        isInRoom = true;
+                        itemId = item[APP.API.STATE.ROOM.ITEM.ID];
+                        itemName = item[APP.API.STATE.ROOM.ITEM.NAME];
+                        itemIP = item[APP.API.STATE.ROOM.ITEM.IP];
+                        if(selectedId === itemId && selectedScope === 'item') {
+                            itemList.push($('<option>' + itemName + ' (' + itemIP + ')' + '</option>').attr({value: 'item', 'data-id': itemId, selected: 'selected'}));
+                        } else {
+                            itemList.push($('<option>' + itemName + ' (' + itemIP + ')' + '</option>').attr({value: 'item', 'data-id': itemId}));
+                        }
+                    }
+                }
+                if(isInRoom === true) {
+                    roomName = room[APP.API.STATE.ROOM.NAME];
+                    roomId = room[APP.API.STATE.ROOM.ID];
+                    if(selectedId === roomId && selectedScope === 'room') {
+                        roomList.push($('<option>' + roomName + '</option>').attr({value: 'room', 'data-id': roomId, selected: 'selected'}));
+                    } else {
+                        roomList.push($('<option>' + roomName + '</option>').attr({value: 'room', 'data-id': roomId}));
+                    }
+                }
+                isInRoom = false;
+            }
+            
+            if(itemList.length !== 0) {
+                var items = $('<optgroup></optgroup>').attr({label: 'Items'});
+                for(var i = 0; i < itemList.length; i++) {
+                    items.append(itemList[i]);
+                }
+                scopeList.push(items);
+            }
+            
+            if(roomList.length !== 0) {
+                var rooms = $('<optgroup></optgroup>').attr({label: 'Rooms'});
+                for(var i = 0; i < roomList.length; i++) {
+                    rooms.append(roomList[i]);
+                }
+                scopeList.push(rooms);
+            }
+            
+            (function() {
+                var house = $('<optgroup></optgroup>').attr({label: 'House'});
+                if(selectedScope === 'house') {
+                    house.append($('<option>the house</option>').attr({value: 'house', 'data-id': 'undefined', selected: 'selected'}));
+                } else {
+                    house.append($('<option>the house</option>').attr({value: 'house', 'data-id': 'undefined'}));
+                }
+                scopeList.push(house);
+            })();
+            
+        }
+        return scopeList;
+    }
+
+    var options = getScopes(selectedId, selectedScope);
+    this.scopeField.html('');
+    for(var i = 0; i < options.length; i++) {
+        this.scopeField.append(options[i]);
+    }
+};
+
+/**
+ *
+ */
+APP.ECAEventDisplay.prototype.populateMethodField = function(selectedItemType) {
+    var self = this,
+        options;
+    
+    function getMethods(selectedMethod) {
+        var itemType = self.itemTypeField.children('option:selected').val(),
+            methodList = [],
+            method;
+        self.methodField.html('');
+        methodList.push($('<option>(Not set)</option>').attr({val: 'undefined'}));
+        if(itemType !== 'undefined') {
+            for(var type in APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES]) {
+                if(APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES].hasOwnProperty(type) && type === itemType) {
+                    for(var i = 0; i < APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][type][APP.API.VERSION.SUPPORTED_TYPE.METHODS].length; i++) {
+                        method = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][type][APP.API.VERSION.SUPPORTED_TYPE.METHODS][i];
+                        if(method === selectedMethod) {
+                            methodList.push($('<option>' + method + '</option>').attr({value: method, selected: 'selected'}));
+                        } else {
+                            methodList.push($('<option>' + method + '</option>').attr({value: method}));
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        return methodList;
+    }
+
+    options = getMethods(selectedItemType);
+    this.methodField.html('');
+    for(var i = 0; i < options.length; i++) {
+        this.methodField.append(options[i]);
+    }
+};
+
+/**
+ *
+ */
+APP.ECAEventDisplay.prototype.populateItemField = function(selectedItemId) {
+    var self = this,
+        options;
+        
+    function getAllItems(selectedItemId) {
+        var itemList = [],
+            rooms,
+            item,
+            itemId,
+            itemIP,
+            itemName,
+            itemType;
+        
+        itemList.push($('<option>(Not set)</option>').attr({value: 'undefined', 'data-itemType': 'undefined'}));
+        rooms = APP.data.houseStructure[APP.API.STATE.ROOMS];
+        for(var i = 0; i < rooms.length; i++) {
+            items = rooms[i][APP.API.STATE.ROOM.ITEMS];
+            for(var j = 0; j < items.length; j++) {
+                itemId = items[j][APP.API.STATE.ROOM.ITEM.ID];
+                itemIP = items[j][APP.API.STATE.ROOM.ITEM.IP];
+                itemName = items[j][APP.API.STATE.ROOM.ITEM.NAME];
+                itemType = items[j][APP.API.STATE.ROOM.ITEM.ITEM_TYPE];
+                if(itemId === selectedItemId) {
+                    itemList.push($('<option>' + itemName + ' (' + itemIP + ')' + '</option>').attr({value: itemId, 'data-itemtype': itemType, selected: 'selected'}));
+                } else {
+                    itemList.push($('<option>' + itemName + ' (' + itemIP + ')' + '</option>').attr({value: itemId, 'data-itemtype': itemType}));
+                }
+            }
+        }
+        return itemList;
+    }
+
+    options = getAllItems(selectedItemId);
+    this.itemField.html('');
+    for(var i = 0; i < options.length; i++) {
+        this.itemField.append(options[i]);
+    }
+};
+
+/**
+ *
+ */
+APP.ECAEventDisplay.prototype.populateEquivalenceField = function(selectedItemType, selectedEquiv) {
+    var self = this,
+        options;
+
+    function getItemEquiv(selectedItemType, selectedEquiv) {
+        var itemId = self.itemField.children('option:selected').val(),
+            equivList = [],
+            equiv;
+        
+        equivList.push($('<option>(Not set)</option>').attr({value: 'undefined'}));
+        if(itemId !== 'undefined') {
+            equiv = 'is';
+            // redo when we implement equivalences
+            
+            if(equiv === selectedEquiv) {
+                equivList.push($('<option>' + equiv + '</option>').attr({value: equiv, selected: 'selected'}));
+            } else {
+                equivList.push($('<option>' + equiv + '</option>').attr({value: equiv}));
+            }
+        }
+        return equivList;
+    }
+        
+    options = getItemEquiv(selectedItemType, selectedEquiv);
+    this.equivalenceField.html('');
+    for(var i= 0; i < options.length; i++) {
+        this.equivalenceField.append(options[i]);
+    }
+};
+
+/**
+ *
+ */
+APP.ECAEventDisplay.prototype.populateStateField = function(selectedItemType, selectedStateId) {
+    var self = this,
+        options;
+
+    function getItemState(selectedItemType, selectedStateId) {
+        var itemId = self.itemField.children('option:selected').val(),
+            itemType = self.itemField.find('option[value=' + itemId + ']').attr('data-itemtype'),
+            states,
+            stateName,
+            stateId,
+            stateList = [];
+        
+        stateList.push($('<option>(Not set)</option>').attr({value: 'undefined'}));
+        if(itemType !== 'undefined') {
+            states = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][itemType][APP.API.VERSION.SUPPORTED_TYPE.STATES];
+            for(var i = 0; i < states.length; i++) {
+                stateName = states[i][APP.API.VERSION.SUPPORTED_TYPE.STATE.NAME];
+                stateId = states[i][APP.API.VERSION.SUPPORTED_TYPE.STATE.ID];
+                if(stateId === selectedStateId && itemType === selectedItemType) {
+                    stateList.push($('<option>' + stateName + '</option>').attr({value: stateId, selected: 'selected'}));
+                } else {
+                    stateList.push($('<option>' + stateName + '</option>').attr({value: stateId}));
+                }
+            }
+        }
+        return stateList;
+    }
+        
+    options = getItemState(selectedItemType, selectedStateId);
+    this.stateField.html('');
+    for(var i = 0; i < options.length; i++) {
+        this.stateField.append(options[i]);
+    }
 };
 
 
@@ -1360,13 +1734,14 @@ APP.ECAEventDisplay.prototype.update = function() {
 /**
  *
  */
-APP.ECAConditionManager = function(conditionArray) {
+APP.ECAConditionManager = function(ruleId, conditionArray) {
+    this.ruleId = ruleId;
     this.conditionArray = conditionArray;
     this.conditionDisplays = [];
     for(var i = 0; i < this.conditionArray.length; i++) {
-        this.conditionDisplays.push(new APP.ECAConditionDisplay(conditionArray[i]));
+        this.conditionDisplays.push(new APP.ECAConditionDisplay(ruleId, conditionArray[i]));
     }
-    this.newConditionDisplay = new APP.ECANewConditionDisplay();
+    this.newConditionDisplay = new APP.ECANewConditionDisplay(ruleId);
     this.context = $('<div></div>').addClass(APP.DOM_HOOK.ECA.CONDITION);
 };
 
@@ -1374,8 +1749,7 @@ APP.ECAConditionManager = function(conditionArray) {
  *
  */
 APP.ECAConditionManager.prototype.construct = function() {
-    for(var i = 0; i < this.conditionArray.length; i++) {
-        this.conditionDisplays.push(new APP.ECAConditionDisplay(this.conditionArray[i]));
+    for(var i = 0; i < this.conditionDisplays.length; i++) {
         this.context.append(this.conditionDisplays[i].construct());
     }
     this.context.append(this.newConditionDisplay.construct());
@@ -1393,10 +1767,11 @@ APP.ECAConditionManager.prototype.update = function() {
  * @class APP.ECAConditionNode
  * @constructor
  */
-APP.ECAConditionDisplay = function(conditionObj) {
+APP.ECAConditionDisplay = function(ruleId, conditionObj) {
 
     var self = this;
     
+    this.ruleId = ruleId;
     this.conditionObj = conditionObj;
     this.bridge1;
     this.itemFieldset;
@@ -1512,7 +1887,14 @@ APP.ECAConditionDisplay = function(conditionObj) {
             });
             
             self.saveButton.click(function() {
-                // TODO
+                APP.ajax_put_events_eventId_conditions_conditionId(self.ruleId, self.conditionObj[APP.API.EVENTS.RULE.CONDITION.CONDITION_ID],
+                    function() {
+                        
+                    },
+                    function() {
+                        // do nothing
+                    }
+                );
             });
             
             self.context.append(self.bridge1);
@@ -1537,127 +1919,16 @@ APP.ECAConditionDisplay = function(conditionObj) {
     };
     
 };
+APP.inherit(APP.ECAConditionDisplay, APP.ECAEventDisplay);
 
 /**
  *
  */
-APP.ECAConditionDisplay.prototype.getAllItems = function(selectedItemId) {
-    var itemList = [],
-        rooms,
-        item,
-        itemId,
-        itemIP,
-        itemName,
-        itemType;
-    
-    itemList.push($('<option>(Not set)</option>').attr({value: 'undefined', 'data-itemType': 'undefined'}));
-    rooms = APP.data.houseStructure[APP.API.STATE.ROOMS];
-    for(var i = 0; i < rooms.length; i++) {
-        items = rooms[i][APP.API.STATE.ROOM.ITEMS];
-        for(var j = 0; j < items.length; j++) {
-            itemId = items[j][APP.API.STATE.ROOM.ITEM.ID];
-            itemIP = items[j][APP.API.STATE.ROOM.ITEM.IP];
-            itemName = items[j][APP.API.STATE.ROOM.ITEM.NAME];
-            itemType = items[j][APP.API.STATE.ROOM.ITEM.ITEM_TYPE];
-            if(itemId === selectedItemId) {
-                itemList.push($('<option>' + itemName + ' (' + itemIP + ')' + '</option>').attr({value: itemId, 'data-itemtype': itemType, selected: 'selected'}));
-            } else {
-                itemList.push($('<option>' + itemName + ' (' + itemIP + ')' + '</option>').attr({value: itemId, 'data-itemtype': itemType}));
-            }
-        }
-    }
-    return itemList;
-};
-
-/**
- *
- */
-APP.ECAConditionDisplay.prototype.getItemEquiv = function(selectedItemType, selectedEquiv) {
-    var itemId = this.itemField.children('option:selected').val(),
-        equivList = [],
-        equiv;
-    
-    equivList.push($('<option>(Not set)</option>').attr({value: 'undefined'}));
-    if(itemId !== 'undefined') {
-        equiv = 'is';
-        // redo when we implement equivalences
-        
-        if(equiv === selectedEquiv) {
-            equivList.push($('<option>' + equiv + '</option>').attr({value: equiv, selected: 'selected'}));
-        } else {
-            equivList.push($('<option>' + equiv + '</option>').attr({value: equiv}));
-        }
-    }
-    return equivList;
-};
-
-/**
- *
- */
-APP.ECAConditionDisplay.prototype.getItemState = function(selectedItemType, selectedStateId) {
-    var itemId = this.itemField.children('option:selected').val(),
-        itemType = this.itemField.find('option[value=' + itemId + ']').attr('data-itemtype'),
-        states,
-        stateName,
-        stateId,
-        stateList = [];
-    
-    stateList.push($('<option>(Not set)</option>').attr({value: 'undefined'}));
-    if(itemType !== 'undefined') {
-        states = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][itemType][APP.API.VERSION.SUPPORTED_TYPE.STATES];
-        for(var i = 0; i < states.length; i++) {
-            stateName = states[i][APP.API.VERSION.SUPPORTED_TYPE.STATE.NAME];
-            stateId = states[i][APP.API.VERSION.SUPPORTED_TYPE.STATE.ID];
-            if(stateId === selectedStateId && itemType === selectedItemType) {
-                stateList.push($('<option>' + stateName + '</option>').attr({value: stateId, selected: 'selected'}));
-            } else {
-                stateList.push($('<option>' + stateName + '</option>').attr({value: stateId}));
-            }
-        }
-    }
-    return stateList;
-};
-
-/**
- *
- */
-APP.ECAConditionDisplay.prototype.populateItemField = function(selectedItemId) {
-    var options = this.getAllItems(selectedItemId);
-    this.itemField.html('');
-    for(var i = 0; i < options.length; i++) {
-        this.itemField.append(options[i]);
-    }
-};
-
-/**
- *
- */
-APP.ECAConditionDisplay.prototype.populateEquivalenceField = function(selectedItemType, selectedEquiv) {
-    var options = this.getItemEquiv(selectedItemType, selectedEquiv);
-    this.equivalenceField.html('');
-    for(var i= 0; i < options.length; i++) {
-        this.equivalenceField.append(options[i]);
-    }
-};
-
-/**
- *
- */
-APP.ECAConditionDisplay.prototype.populateStateField = function(selectedItemType, selectedStateId) {
-    var options = this.getItemState(selectedItemType, selectedStateId);
-    this.stateField.html('');
-    for(var i = 0; i < options.length; i++) {
-        this.stateField.append(options[i]);
-    }
-};
-
-/**
- *
- */
-APP.ECANewConditionDisplay = function() {
+APP.ECANewConditionDisplay = function(ruleId) {
 
     var self = this;
     
+    this.ruleId = ruleId;
     this.bridge1;
     this.itemFieldset;
     this.itemWrapper;
@@ -1738,17 +2009,21 @@ APP.ECANewConditionDisplay = function() {
     };
     
 };
-APP.inherit(APP.ECANewConditionDisplay, APP.ECAConditionDisplay);
+APP.inherit(APP.ECANewConditionDisplay, APP.ECAEventDisplay);
 
 
 
 /**
  *
  */
-APP.ECAActionManager = function(actionArray) {
+APP.ECAActionManager = function(ruleId, actionArray) {
+    this.ruleId = ruleId;
     this.actionArray = actionArray;
     this.actionDisplays = [];
-    this.newActionDisplay = new APP.ECANewActionDisplay();
+    for(var i = 0; i < this.actionArray.length; i++) {
+        this.actionDisplays.push(new APP.ECAActionDisplay(ruleId, this.actionArray[i]));
+    }
+    this.newActionDisplay = new APP.ECANewActionDisplay(ruleId);
     this.context = $('<div></div>').addClass(APP.DOM_HOOK.ECA.ACTION);
 };
 
@@ -1757,7 +2032,6 @@ APP.ECAActionManager = function(actionArray) {
  */
 APP.ECAActionManager.prototype.construct = function() {
     for(var i = 0; i < this.actionArray.length; i++) {
-        this.actionDisplays.push(new APP.ECAActionDisplay(this.actionArray[i]));
         this.context.append(this.actionDisplays[i].construct());
     }
     this.context.append(this.newActionDisplay.construct());
@@ -1775,10 +2049,11 @@ APP.ECAActionManager.prototype.update = function() {
  * @class APP.ECAActionNode
  * @constructor
  */
-APP.ECAActionDisplay = function(actionObj) {
+APP.ECAActionDisplay = function(ruleId, actionObj) {
     
     var self = this;
     
+    this.ruleId = ruleId;
     this.actionObj = actionObj;
     this.methodFieldset;
     this.methodWrapper;
@@ -1944,171 +2219,16 @@ APP.ECAActionDisplay = function(actionObj) {
     };
     
 };
+APP.inherit(APP.ECAActionDisplay, APP.ECAEventDisplay);
 
 /**
  *
  */
-APP.ECAActionDisplay.prototype.getAllTypes = function(selectedItemType) {
-    var itemTypeList = [],
-        itemType,
-        itemTypeName;
-        
-    itemTypeList.push($('<option>(Not set)</option>').attr({value: 'undefined'}));
-    for(var type in APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES]) {
-        if(APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES].hasOwnProperty(type)) {
-            itemType = type;
-            itemTypeName = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][type][APP.API.VERSION.SUPPORTED_TYPE.NAME];
-            if(itemType === selectedItemType) {
-                itemTypeList.push($('<option>' + itemTypeName + '</option>').attr({value: itemType, selected: 'selected'}));
-            } else {
-                itemTypeList.push($('<option>' + itemTypeName + '</option>').attr({value: itemType}));
-            }
-        }
-    }
-    return itemTypeList;
-};
-
-/**
- *
- */
-APP.ECAActionDisplay.prototype.getScopes = function(selectedId, selectedScope) {
-    var itemType = this.itemTypeField.children('option:selected').val(),
-        scopeList = [],
-        roomList = [],
-        itemList = [],
-        isInRoom = false,
-        item,
-        itemName,
-        itemId,
-        room;
-    
-    scopeList.push($('<option>(Not set)</option>').attr({value: 'undefined'}));
-    if(itemType !== 'undefined') {
-        for(var i = 0; i < APP.data.houseStructure[APP.API.STATE.ROOMS].length; i++) {
-            room = APP.data.houseStructure[APP.API.STATE.ROOMS][i];
-            for(var j = 0; j < room[APP.API.STATE.ROOM.ITEMS].length; j++) {
-                item = room[APP.API.STATE.ROOM.ITEMS][j];
-                if(itemType === item[APP.API.STATE.ROOM.ITEM.ITEM_TYPE]) {
-                    isInRoom = true;
-                    itemId = item[APP.API.STATE.ROOM.ITEM.ID];
-                    itemName = item[APP.API.STATE.ROOM.ITEM.NAME];
-                    itemIP = item[APP.API.STATE.ROOM.ITEM.IP];
-                    if(selectedId === itemId && selectedScope === 'item') {
-                        itemList.push($('<option>' + itemName + ' (' + itemIP + ')' + '</option>').attr({value: 'item', 'data-id': itemId, selected: 'selected'}));
-                    } else {
-                        itemList.push($('<option>' + itemName + ' (' + itemIP + ')' + '</option>').attr({value: 'item', 'data-id': itemId}));
-                    }
-                }
-            }
-            if(isInRoom === true) {
-                roomName = room[APP.API.STATE.ROOM.NAME];
-                roomId = room[APP.API.STATE.ROOM.ID];
-                if(selectedId === roomId && selectedScope === 'room') {
-                    roomList.push($('<option>' + roomName + '</option>').attr({value: 'room', 'data-id': roomId, selected: 'selected'}));
-                } else {
-                    roomList.push($('<option>' + roomName + '</option>').attr({value: 'room', 'data-id': roomId}));
-                }
-            }
-            isInRoom = false;
-        }
-        
-        if(itemList.length !== 0) {
-            var items = $('<optgroup></optgroup>').attr({label: 'Items'});
-            for(var i = 0; i < itemList.length; i++) {
-                items.append(itemList[i]);
-            }
-            scopeList.push(items);
-        }
-        
-        if(roomList.length !== 0) {
-            var rooms = $('<optgroup></optgroup>').attr({label: 'Rooms'});
-            for(var i = 0; i < roomList.length; i++) {
-                rooms.append(roomList[i]);
-            }
-            scopeList.push(rooms);
-        }
-        
-        (function() {
-            var house = $('<optgroup></optgroup>').attr({label: 'House'});
-            if(selectedScope === 'house') {
-                house.append($('<option>the house</option>').attr({value: 'house', 'data-id': 'undefined', selected: 'selected'}));
-            } else {
-                house.append($('<option>the house</option>').attr({value: 'house', 'data-id': 'undefined'}));
-            }
-            scopeList.push(house);
-        })();
-        
-    }
-    return scopeList;
-};
-
-/**
- *
- */
-APP.ECAActionDisplay.prototype.getMethods = function(selectedMethod) {
-    var itemType = this.itemTypeField.children('option:selected').val(),
-        methodList = [],
-        method;
-    this.methodField.html('');
-    methodList.push($('<option>(Not set)</option>').attr({val: 'undefined'}));
-    if(itemType !== 'undefined') {
-        for(var type in APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES]) {
-            if(APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES].hasOwnProperty(type) && type === itemType) {
-                for(var i = 0; i < APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][type][APP.API.VERSION.SUPPORTED_TYPE.METHODS].length; i++) {
-                    method = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][type][APP.API.VERSION.SUPPORTED_TYPE.METHODS][i];
-                    if(method === selectedMethod) {
-                        methodList.push($('<option>' + method + '</option>').attr({value: method, selected: 'selected'}));
-                    } else {
-                        methodList.push($('<option>' + method + '</option>').attr({value: method}));
-                    }
-                }
-                break;
-            }
-        }
-    }
-    return methodList;
-};
-
-/**
- *
- */
-APP.ECAActionDisplay.prototype.populateItemTypeField = function(selectedItemType) {
-    var options = this.getAllTypes(selectedItemType);
-    this.itemTypeField.html('');
-    for(var i = 0; i < options.length; i++) {
-        this.itemTypeField.append(options[i]);
-    }
-};
-
-/**
- *
- */
-APP.ECAActionDisplay.prototype.populateScopeField = function(selectedId, selectedScope) {
-    var options = this.getScopes(selectedId, selectedScope);
-    this.scopeField.html('');
-    for(var i = 0; i < options.length; i++) {
-        this.scopeField.append(options[i]);
-    }
-};
-
-/**
- *
- */
-APP.ECAActionDisplay.prototype.populateMethodField = function(selectedItemType) {
-    var options = this.getMethods(selectedItemType);
-    this.methodField.html('');
-    for(var i = 0; i < options.length; i++) {
-        this.methodField.append(options[i]);
-    }
-};
-
-/**
- *
- */
-APP.ECANewActionDisplay = function() {
+APP.ECANewActionDisplay = function(ruleId) {
     
     var self = this;
     
+    this.ruleId = ruleId;
     this.methodFieldset;
     this.methodWrapper;
     this.methodField;
@@ -2207,7 +2327,7 @@ APP.ECANewActionDisplay = function() {
     };
     
 };
-APP.inherit(APP.ECANewActionDisplay, APP.ECAActionDisplay);
+APP.inherit(APP.ECANewActionDisplay, APP.ECAEventDisplay);
 
 
 
