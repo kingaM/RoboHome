@@ -11,7 +11,7 @@
 class MyServer
 {
 public:
-    MyServer(char* name, char* password);
+    MyServer(char* name, char* password, int* _ip, int port);
     void setupWifi();
     void printWifiStatus();
     void send404(WiFiClient client);
@@ -19,9 +19,12 @@ public:
     char** parse();
     int countSegments();
     char readClient(WiFiClient client);
+    int postToServer(int);
 private:
     char* ssid;   
-    char* pass;  
+    char* pass;
+    int* ip;  
+    int port;
     int keyIndex;                
     char cmd[15];
     char param1[15];

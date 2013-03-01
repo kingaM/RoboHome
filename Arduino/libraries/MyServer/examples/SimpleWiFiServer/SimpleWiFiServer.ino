@@ -3,7 +3,9 @@
 
 WiFiServer server(80);
 
-MyServer myServer("name", "pass");
+int ip[] = {192,168,0,101};
+
+MyServer myServer("comp2007group7", "michaelb", ip, 9090);
 
 void handleCommand(WiFiClient client, char* cmd) {
     if (strcmp(cmd, "status") == 0) {
@@ -25,6 +27,7 @@ void setup() {
 }
 
 void loop() {
+  myServer.postToServer(1);
   WiFiClient client = server.available();
   if (client) {
     boolean currentLineIsBlank = true;
@@ -35,13 +38,12 @@ void loop() {
         int nSegments = myServer.countSegments();
         char **pathsegments = myServer.parse();
 
-        if (c == '\n' && currentLineIsBlank) {
-          handleCommand(client, pathsegments[0]);     
-        }
-        if (c == '\n') {
-          currentLineIsBlank = true;
-        } else if (c != '\r') {
-          currentLineIsBlank = false;
+        if (c == '\n' && nSegments > 0) {
+          handleCommand(client, pathsegments[0]);
+          while(client.available()) {
+            c = client.read();
+          }
+          break;     
         }
       }
     }

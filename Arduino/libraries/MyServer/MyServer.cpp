@@ -14,9 +14,11 @@
   * name -- name of the network to connect to
   * password -- password of the network
   */
-MyServer::MyServer(char* name, char* password) {
+MyServer::MyServer(char* name, char* password, int* _ip, int _port) {
   ssid = name;
   pass = password;
+  ip = _ip;
+  port = port;
   status = WL_IDLE_STATUS;
   systemArmed = true;
   keyIndex = 0;
@@ -156,4 +158,36 @@ char MyServer::readClient(WiFiClient client) {
   bufindex = 0;
   
   return c;
+}
+
+/**
+  * Posts to ip:port/arduino/status/<int:status>/
+  * Args:
+  * status - the current state of the module
+  */
+int MyServer::postToServer(int status) {
+  IPAddress server(ip[0], ip[1], ip[2], ip[3]);
+  WiFiClient client;
+  Serial.println("\nStarting connection to server...");
+  if (client.connect(server, port)) {
+    Serial.println("connected to server");
+    client.print("GET /arduino/status/");
+    client.print(status);
+    client.println("/ HTTP/1.1");
+    client.println("Host: FLask Server");
+    client.println("Connection: close");
+    client.println();
+  }
+
+  while (client.available()) {
+    char c = client.read();
+    Serial.write(c);
+  }
+
+  if (!client.connected()) {
+    Serial.println();
+    Serial.println("disconnecting from server.");
+    client.stop();
+  }
+  return 200;
 }
