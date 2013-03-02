@@ -256,8 +256,7 @@ class House(object):
 
             eventJSON = {"itemType": event.type}
 
-            print "TRIGGER: " + str(event.trigger)
-
+            value = None
             for state in data.states[event.type]:
                 if state["name"] == event.trigger:
                     value = state["id"]

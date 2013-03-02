@@ -54,10 +54,10 @@ class MockHouse(House):
 
         self.rooms = {1: self.room1, 2: self.room2}
 
-        self.event1 = MockEvent(1, "Rule1", "mockType1", self.item1, None, "mockTrigger", 1)
-        self.event2 = MockEvent(2, "Rule2", "mockType2", self.item2, None, "mockTrigger", 1)
-        self.event3 = MockEvent(3, "Rule3", "mockType2", self.item2, None, "mockTrigger2", 1)
-        self.event4 = MockEvent(4, "Rule4", "mockType1", self.item1, None, "mockTrigger", 1)
+        self.event1 = MockEvent(1, "Rule1", "door", self.item1, None, "mockTrigger", 1)
+        self.event2 = MockEvent(2, "Rule2", "window", self.item2, None, "mockTrigger", 1)
+        self.event3 = MockEvent(3, "Rule3", "window", self.item2, None, "mockTrigger2", 1)
+        self.event4 = MockEvent(4, "Rule4", "door", self.item1, None, "mockTrigger", 1)
 
         self.events = [self.event1, self.event2, self.event3, self.event4]
 
@@ -527,10 +527,10 @@ class TestHouse(unittest.TestCase):
     def test_getRules(self):
         h = MockHouse()
 
-        rule1JSON = {"ruleId": 1, "ruleName": "Rule1", "enabled": True, "event": {"id": 1, "itemType": "mockType1", "scope": "item", "itemState": "mockTrigger"}, "conditions": [], "actions": []}
-        rule2JSON = {"ruleId": 2, "ruleName": "Rule2", "enabled": True, "event": {"id": 2, "itemType": "mockType2", "scope": "item", "itemState": "mockTrigger"}, "conditions": [], "actions": []}
-        rule3JSON = {"ruleId": 3, "ruleName": "Rule3", "enabled": True, "event": {"id": 2, "itemType": "mockType2", "scope": "item", "itemState": "mockTrigger2"}, "conditions": [], "actions": []}
-        rule4JSON = {"ruleId": 4, "ruleName": "Rule4", "enabled": True, "event": {"id": 1, "itemType": "mockType1", "scope": "item", "itemState": "mockTrigger"}, "conditions": [], "actions": []}
+        rule1JSON = {"ruleId": 1, "ruleName": "Rule1", "enabled": True, "event": {"id": 1, "itemType": "door", "scope": "item", "value": None}, "conditions": [], "actions": []}
+        rule2JSON = {"ruleId": 2, "ruleName": "Rule2", "enabled": True, "event": {"id": 2, "itemType": "window", "scope": "item", "value": None}, "conditions": [], "actions": []}
+        rule3JSON = {"ruleId": 3, "ruleName": "Rule3", "enabled": True, "event": {"id": 2, "itemType": "window", "scope": "item", "value": None}, "conditions": [], "actions": []}
+        rule4JSON = {"ruleId": 4, "ruleName": "Rule4", "enabled": True, "event": {"id": 1, "itemType": "door", "scope": "item", "value": None}, "conditions": [], "actions": []}
 
         rulesJSON = {"rules": [rule1JSON, rule2JSON, rule3JSON, rule4JSON]}
 
