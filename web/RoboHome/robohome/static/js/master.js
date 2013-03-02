@@ -1048,10 +1048,36 @@ APP.Stage.prototype.setPollFunction = function(frequency, func) {
  * @param {Object} roomData Object with room data specified according to API
  * This class handles the controlling of all items contained within one room
  */
-APP.ItemTypeDisplay = function(stage, itemType, room) {
+APP.ItemTypeDisplay = function(stage, itemType, roomObj) {
     this.stage = stage;
     this.itemType = itemType;
-    this.room = room;
+    this.roomObj = roomObj;
+    
+    this.itemDisplays = [];
+    
+    this.panel;
+    this.infoBar;
+};
+
+/**
+ *
+ */
+APP.ItemTypeDisplay.prototype.addItemDisplay = function(itemObj) {
+    var itemDisplay = new APP.ItemDisplay(this.roomObj[APP.API.STATE.ROOM.ID], itemObj);
+    this.itemDisplays.push(itemDisplay);
+    this.panel.append(itemDisplay.construct());
+};
+
+/**
+ *
+ */
+APP.ItemTypeDisplay.prototype.removeItemDisplay = function(itemId) {
+    for(var i = 0; i < this.itemDisplays.length; i++) {
+        if(this.itemDisplays.itemObj[APP.API.STATE.ROOM.ITEM.ID] === itemId) {
+            this.itemDisplays[i].panel.remove();
+            this.itemDisplays = this.itemDisplays.splice(i, 1);
+        }
+    }
 };
 
 /**
@@ -1060,95 +1086,29 @@ APP.ItemTypeDisplay = function(stage, itemType, room) {
  * Constructs the representation of this object on the stage
  */
 APP.ItemTypeDisplay.prototype.construct = function() {
-    var self = this;
-
-    function constructItemPanels(items) {
-        
-        var itemPanel,
-            infoBar,
-            attachmentsSelf,
-            itemPanels = [];
-        
-        for(var i = 0; i < items.length; i++) {
-            if(items[i][APP.API.STATE.ROOM.ITEM.ITEM_TYPE] === self.itemType) {
-                itemPanel = $('<div></div>').attr({
-                    class: 'entity-display ' + APP.DOM_HOOK.ENTITY.ITEM,
-                    'data-id': items[i][APP.API.STATE.ROOM.ITEM.ID], // currently used
-                    'data-ip': items[i][APP.API.STATE.ROOM.ITEM.IP],
-                    'data-name': items[i][APP.API.STATE.ROOM.ITEM.NAME],
-                    'data-brand': items[i][APP.API.STATE.ROOM.ITEM.BRAND],
-                    'data-itemtype': items[i][APP.API.STATE.ROOM.ITEM.ITEM_TYPE] // currently used
-                });
-                
-                itemPanel.click(function() {
-                    if(items[0].state !== undefined) { // if state information has been retrieved
-                        var itemId = $(this).attr('data-id'),
-                            itemType = $(this).attr('data-itemtype'),
-                            states = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][itemType][APP.API.VERSION.SUPPORTED_TYPE.STATES];
-                            
-                        $(this).addClass(APP.DOM_HOOK.UPDATING);
-                        function getNextState(itemId) {
-                            for(var j = 0; j < self.room.items.length; j++) {
-                                if(self.room.items[j][APP.API.STATE.ROOM.ITEM.ID] === parseInt(itemId)) {
-                                    for(var k = 0; k < states.length; k++) {
-                                        if(self.room.items[j][APP.API.STATE.STATE] === states[k][APP.API.VERSION.SUPPORTED_TYPE.STATE.ID]) {
-                                            return APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][itemType][APP.API.VERSION.SUPPORTED_TYPE.STATES][(k + 1) % states.length][APP.API.VERSION.SUPPORTED_TYPE.STATE.METHOD];
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        
-                        APP.ajax_put_rooms_roomId_items_itemId_cmd(
-                            self.stage.data.roomId,
-                            itemId,
-                            getNextState(itemId),
-                            function() {
-                                self.update();
-                            }
-                        )
-                    }
-                });
-                
-                infoBar = $('<div></div>').addClass('info-bar');
-                infoBar.append($('<h1>' + items[i][APP.API.STATE.ROOM.ITEM.NAME] + '</h1>').addClass('entity-name'));
-                infoBar.append($('<span>' + items[i][APP.API.STATE.ROOM.ITEM.IP] + '</span>').addClass('entity-ip'));
-                itemPanel.append(infoBar);
-                
-                attachmentsSelf = $('<div></div>').addClass('attachments self');
-                attachmentsSelf.append($('<div><img src="../static/img/ajax-loader.gif"></img></div>').addClass('status'));
-                itemPanel.append(attachmentsSelf);
-                
-                itemPanels.push(itemPanel);
-            }
-        }
-        return itemPanels;
-    }
-    
-    var itemTypePanel,
-        infoBar,
-        itemPanels,
+    var self = this,
+        itemObjs,
         displayedName;
     
-    itemPanels = constructItemPanels(this.room.items);
-    itemTypePanel = $('<div></div>').attr({
+    this.panel = $('<div></div>').attr({
         class: 'entity-display ' + APP.DOM_HOOK.ENTITY.ITEM_TYPE,
         'data-name': this.itemType
     });
     
-    infoBar = $('<div></div>').addClass('info-bar');
+    this.infoBar = $('<div></div>').addClass('info-bar');
     displayedName = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][this.itemType][APP.API.VERSION.SUPPORTED_TYPE.NAME];
-    if(displayedName === undefined) {
-        displayedName === this.itemType;
-    }
-    infoBar.append($('<h1>' + displayedName + '</h1>').addClass('entity-name'));
-    itemTypePanel.append(infoBar);
+    if(displayedName === undefined) { displayedName = this.itemType; }
+    this.infoBar.append($('<h1>' + displayedName + '</h1>').addClass('entity-name'));
+    this.panel.append(this.infoBar);
     
-    for(var j = 0; j < itemPanels.length; j++) {
-        itemTypePanel.append(itemPanels[j]);
+    itemObjs = this.roomObj[APP.API.STATE.ROOM.ITEMS];
+    for(var i = 0; i < itemObjs.length; i++) {
+        if(itemObjs[i][APP.API.STATE.ROOM.ITEM.ITEM_TYPE] === this.itemType) {
+            this.addItemDisplay(itemObjs[i]);
+        }
     }
     
-    this.stage.getContext().append(itemTypePanel);
+    this.stage.getContext().append(this.panel);
             
 };
 
@@ -1157,33 +1117,61 @@ APP.ItemTypeDisplay.prototype.construct = function() {
  * @method update
  * Updates the representation of this object on the stage
  */
-APP.ItemTypeDisplay.prototype.update = function(room) {
-    var roomId = this.room[APP.API.STATE.ROOM.ID],
+APP.ItemTypeDisplay.prototype.update = function() {
+    var self = this,
+        roomId = this.roomObj[APP.API.STATE.ROOM.ID],
         stateList = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][this.itemType][APP.API.VERSION.SUPPORTED_TYPE.STATES],
+        itemObjs,
         itemPanel,
         statePanel;
     
-    for (var i = 0; i < APP.data.houseStructure[APP.API.STATE.ROOMS].length; i++) {
-        if(APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ID] === this.room[APP.API.STATE.ROOM.ID]) {
-            this.room = APP.data.houseStructure[APP.API.STATE.ROOMS][i];
+    function updateRoomObj() {
+        for(var i = 0; i < APP.data.houseStructure[APP.API.STATE.ROOMS].length; i++) {
+            if(APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ID] === self.roomObj[APP.API.STATE.ROOM.ID]) {
+                self.roomObj = APP.data.houseStructure[APP.API.STATE.ROOMS][i];
+            }
         }
     }
     
-    // for every item of type
-    for(var i = 0; i < this.room.items.length; i++) {
-        if(this.room.items[i][APP.API.STATE.ROOM.ITEM.ITEM_TYPE] === this.itemType) {
-            // update UI
-            for(var k = 0; k < stateList.length; k++) {
-                if(stateList[k][APP.API.VERSION.SUPPORTED_TYPE.STATE.ID] === this.room.items[i].state) {
-                    itemPanel = $('.entity-display.item[data-id = ' + this.room.items[i][APP.API.STATE.ROOM.ITEM.ID] + ']');
-                    statePanel = $('.entity-display.item[data-id = ' + this.room.items[i][APP.API.STATE.ROOM.ITEM.ID] + '] .status');
-                    itemPanel.removeClass(APP.DOM_HOOK.CONNECTION_ERROR + ' ' + APP.DOM_HOOK.UPDATING + ' ' + APP.DOM_HOOK.UPDATING);
-                    statePanel.html(stateList[k][APP.API.VERSION.SUPPORTED_TYPE.STATE.NAME]);
+    function updateItemDisplays() {
+        var items = self.roomObj[APP.API.STATE.ROOM.ITEMS],
+            itemsCopy = items.slice(0),
+            itemsCopyLength = itemsCopy.length,
+            itemDisplays = self.itemDisplays,
+            itemDisplaysCopy = itemDisplays.slice(0),
+            itemDisplaysCopyLength = itemDisplaysCopy.length;
+        
+        for(var i = 0; i < itemDisplaysCopyLength; i++) {
+            for(var j = 0; j < itemsCopyLength; j++) {
+                if(itemDisplaysCopy[i].itemObj[APP.API.STATE.ROOM.ITEM.ID] === itemsCopy[j][APP.API.STATE.ROOM.ITEM.ID]) {
+                    itemDisplaysCopy[i].update(itemsCopy[j]);
+                    itemsCopy.splice(i, 1);
+                    itemDisplaysCopy.splice(i, 1);
+                    itemsCopyLength = itemsCopy.length;
+                    itemDisplaysCopyLength = itemDisplaysCopy.length;
+                    i--;
+                    j--;
                     break;
                 }
             }
         }
+        
+        // If there are any unmatched itemDisplays, it means they need to be removed
+        for(var i = 0; i < itemDisplaysCopy.length; i++) {
+            self.removeItemDisplay(itemDisplaysCopy[i].itemObj[APP.API.STATE.ROOM.ITEM.ID]);
+        }
+        
+        // If there are any unmatched items, it means they need to be added, as long as they are the correct type
+        for(var i = 0; i < itemsCopy.length; i++) {
+            if(itemsCopy[i][APP.API.STATE.ROOM.ITEM.ITEM_TYPE] === this.itemType) {
+                self.addItemDisplay(itemsCopy[i]);
+            }
+        }
+        
     }
+    
+    updateRoomObj();
+    updateItemDisplays();
 };
 
 /**
@@ -1192,24 +1180,171 @@ APP.ItemTypeDisplay.prototype.update = function(room) {
  * Updates the representation to show that an error has occured in fetching the latest state data
  */
 APP.ItemTypeDisplay.prototype.updateError = function() {
-    var roomId = this.room[APP.API.STATE.ROOM.ID],
+    var self = this,
+        roomId = this.roomObj[APP.API.STATE.ROOM.ID],
         stateList = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][this.itemType][APP.API.VERSION.SUPPORTED_TYPE.STATES],
+        itemObjs,
         itemPanel,
         statePanel;
     
-    for(var i = 0; i < this.room.items.length; i++) {
-        if(this.room.items[i][APP.API.STATE.ROOM.ITEM.ITEM_TYPE] === this.itemType) {
-            if(APP.data.houseStructure) { // if client has old state data
-                for(var k = 0; k < stateList.length; k++) {
-                    if(stateList[k][APP.API.VERSION.SUPPORTED_TYPE.STATE.ID] === this.room.items[i].state) {
-                        itemPanel = $('.entity-display.item[data-id = ' + this.room.items[i][APP.API.STATE.ROOM.ITEM.ID] + ']');
-                        statePanel = $('.entity-display.item[data-id = ' + this.room.items[i][APP.API.STATE.ROOM.ITEM.ID] + '] .status');
-                        itemPanel.addClass(APP.DOM_HOOK.CONNECTION_ERROR);
-                        statePanel.html(stateList[k][APP.API.VERSION.SUPPORTED_TYPE.STATE.NAME]);
-                        break;
-                    }
+    function updateRoomObj() {
+        for(var i = 0; i < APP.data.houseStructure[APP.API.STATE.ROOMS].length; i++) {
+            if(APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ID] === self.roomObj[APP.API.STATE.ROOM.ID]) {
+                self.roomObj = APP.data.houseStructure[APP.API.STATE.ROOMS][i];
+            }
+        }
+    }
+    
+    function updateItemDisplays() {
+        var items = self.roomObj[APP.API.STATE.ROOM.ITEMS],
+            itemsCopy = items.slice(0),
+            itemsCopyLength = itemsCopy.length,
+            itemDisplays = self.itemDisplays,
+            itemDisplaysCopy = itemDisplays.slice(0),
+            itemDisplaysCopyLength = itemDisplaysCopy.length;
+        
+        for(var i = 0; i < itemDisplaysCopyLength; i++) {
+            for(var j = 0; j < itemsCopyLength; j++) {
+                if(itemDisplaysCopy[i].itemObj[APP.API.STATE.ROOM.ITEM.ID] === itemsCopy[j][APP.API.STATE.ROOM.ITEM.ID]) {
+                    itemDisplaysCopy[i].updateError(itemsCopy[j]);
+                    itemsCopy.splice(i, 1);
+                    itemDisplaysCopy.splice(i, 1);
+                    itemsCopyLength = itemsCopy.length;
+                    itemDisplaysCopyLength = itemDisplaysCopy.length;
+                    i--;
+                    j--;
+                    break;
                 }
             }
+        }
+        
+        // If there are any unmatched itemDisplays, it means they need to be removed
+        for(var i = 0; i < itemDisplaysCopy.length; i++) {
+            self.removeItemDisplay(itemDisplaysCopy[i].itemObj[APP.API.STATE.ROOM.ITEM.ID]);
+        }
+        
+        // If there are any unmatched items, it means they need to be added, as long as they are the correct type
+        for(var i = 0; i < itemsCopy.length; i++) {
+            if(itemsCopy[i][APP.API.STATE.ROOM.ITEM.ITEM_TYPE] === this.itemType) {
+                self.addItemDisplay(itemsCopy[i]);
+            }
+        }
+        
+    }
+    
+    updateRoomObj();
+    updateItemDisplays();
+};
+
+/**
+ *
+ */
+APP.ItemDisplay = function(roomId, itemObj) {
+    this.roomId = roomId;
+    this.itemObj = itemObj;
+    
+    this.panel;
+    this.infoBar;
+    this.attachmentsSelf;
+    this.statusPane;
+};
+
+/**
+ *
+ */
+APP.ItemDisplay.prototype.construct = function() {
+    var self = this;
+        
+    this.panel = $('<div></div>').attr({
+        class: 'entity-display ' + APP.DOM_HOOK.ENTITY.ITEM,
+        'data-id': this.itemObj[APP.API.STATE.ROOM.ITEM.ID], // currently used
+        'data-ip': this.itemObj[APP.API.STATE.ROOM.ITEM.IP],
+        'data-name': this.itemObj[APP.API.STATE.ROOM.ITEM.NAME],
+        'data-brand': this.itemObj[APP.API.STATE.ROOM.ITEM.BRAND],
+        'data-itemtype': this.itemObj[APP.API.STATE.ROOM.ITEM.ITEM_TYPE] // currently used
+    });
+    
+    this.panel.click(function() {
+        var dis = $(this),
+            itemId,
+            itemType,
+            nextState,
+            method,
+            state,
+            states;
+        
+        itemId = self.itemObj[APP.API.STATE.ROOM.ITEM.ID];
+        itemType = self.itemObj[APP.API.ITEMS.ITEM_TYPE];
+        state = self.itemObj[APP.API.STATE.STATE];
+        states = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][itemType][APP.API.VERSION.SUPPORTED_TYPE.STATES];
+        
+        for(var i = 0; i < states.length; i++) {
+            if(state === states[i][APP.API.VERSION.SUPPORTED_TYPE.STATE.ID]) {
+                nextState = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][itemType][APP.API.VERSION.SUPPORTED_TYPE.STATES][(i + 1) % states.length];
+                method = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][itemType][APP.API.VERSION.SUPPORTED_TYPE.STATES][(i + 1) % states.length][APP.API.VERSION.SUPPORTED_TYPE.STATE.METHOD];
+                break;
+            }
+        }
+        
+        dis.addClass(APP.DOM_HOOK.UPDATING);
+        APP.ajax_put_rooms_roomId_items_itemId_cmd(self.roomId, itemId, method,
+            function() {
+                self.itemObj[APP.API.STATE.STATE] = nextState;
+                self.update(self.itemObj);
+            },
+            function() {
+                // do nothing
+            }
+        );
+    });
+    
+    this.infoBar = $('<div></div>').addClass('info-bar');
+    this.infoBar.append($('<h1>' + this.itemObj[APP.API.STATE.ROOM.ITEM.NAME] + '</h1>').addClass('entity-name'));
+    this.infoBar.append($('<span>' + this.itemObj[APP.API.STATE.ROOM.ITEM.IP] + '</span>').addClass('entity-ip'));
+    this.panel.append(this.infoBar);
+    
+    this.attachmentsSelf = $('<div></div>').addClass('attachments self');
+    this.statusPane = $('<div><img src="../static/img/ajax-loader.gif"></img></div>').addClass('status');
+    this.attachmentsSelf.append(this.statusPane);
+    this.panel.append(this.attachmentsSelf);
+    
+    return this.panel;
+};
+
+/**
+ *
+ */
+APP.ItemDisplay.prototype.update = function(itemObj) {
+    var state,
+        states;
+    
+    this.itemObj = itemObj;
+    states = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][this.itemObj[APP.API.ITEMS.ITEM_TYPE]][APP.API.VERSION.SUPPORTED_TYPE.STATES];
+    state = this.itemObj[APP.API.STATE.STATE];
+    this.panel.removeClass(APP.DOM_HOOK.CONNECTION_ERROR + ' ' + APP.DOM_HOOK.UPDATING);
+    for(var i = 0; i < states.length; i++) {
+        if(state === states[i][APP.API.VERSION.SUPPORTED_TYPE.STATE.ID]) {
+            this.statusPane.html(states[i][APP.API.VERSION.SUPPORTED_TYPE.STATE.NAME]);
+            break;
+        }
+    }
+};
+
+/**
+ *
+ */
+APP.ItemDisplay.prototype.updateError = function(itemObj) {
+    var state,
+        states;
+    
+    this.itemObj = itemObj;
+    states = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][this.itemObj[APP.API.ITEMS.ITEM_TYPE]][APP.API.VERSION.SUPPORTED_TYPE.STATES];
+    state = this.itemObj[APP.API.STATE.STATE];
+    this.panel.addClass(APP.DOM_HOOK.CONNECTION_ERROR);
+    for(var i = 0; i < states.length; i++) {
+        if(state === states[i][APP.API.VERSION.SUPPORTED_TYPE.STATE.ID]) {
+            this.statusPane.html(states[i][APP.API.VERSION.SUPPORTED_TYPE.STATE.NAME]);
+            break;
         }
     }
 };
@@ -1482,7 +1617,7 @@ APP.ECAEventDisplay = function(ruleId, eventObj) {
             self.equivalenceWrapper = $('<div></div>').addClass('select-wrapper'),
             self.equivalenceField = $('<select></select>'),
             self.stateFieldset = $('<fieldset><legend>Step 3 - Set state</legend></fieldset>'),
-            self.stateWrapper = $('<div></div>').addClass('select-wrapper')
+            self.stateWrapper = $('<div></div>').addClass('select-wrapper'),
             self.stateField = $('<select></select>'),
             self.editButton = $('<button>Add new condition</button>'),
             self.cancelButton = $('<button>Cancel</button>'),
@@ -2976,7 +3111,7 @@ APP.StageManager = function() {
                         duplicateIP = false;
                     
                     targetName = $('#' + addInputNameSelector).val();
-                    if(targetName === '' || /\s+/.test(addRoomName) === true) {
+                    if(targetName === '' || /\s+/.test(targetName) === true) {
                         addWarningName.html('Name cannot be undefined or entirely whitespace.');
                     } else {
                         addWarningName.html('');
