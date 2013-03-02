@@ -254,7 +254,16 @@ class House(object):
         for event in self.events:
             ruleJSON = {"ruleId": event.id, "ruleName": event.name, "enabled": bool(event.enabled)}
 
-            eventJSON = {"itemType": event.type, "itemState": event.trigger}
+            eventJSON = {"itemType": event.type}
+
+            print "TRIGGER: " + str(event.trigger)
+
+            for state in data.states[event.type]:
+                if state["name"] == event.trigger:
+                    value = state["id"]
+                    break
+
+            eventJSON["value"] = value
 
             if not event.item is None:
                 eventJSON["id"] = event.item._id

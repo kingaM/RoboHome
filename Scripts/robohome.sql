@@ -74,11 +74,11 @@ INSERT INTO `robohome`.`items` (`name`, `brand`, `ip`, `roomId`, `typeId`) VALUE
 INSERT INTO `robohome`.`items` (`name`, `brand`, `ip`, `roomId`, `typeId`) VALUES ('Office Plug', 'arduino', '192.168.0.113', 6, 9);
 INSERT INTO `robohome`.`items` (`name`, `brand`, `ip`, `roomId`, `typeId`) VALUES ('Office Plug', 'arduino', '192.168.0.114', 6, 9);
 
-INSERT INTO `robohome`.`events` (`name`, `typeId`, `itemId`, `roomId`, `trigger`, `enabled`) VALUES ('Event1', 6, NULL, 1, 'Opened', 1);
-INSERT INTO `robohome`.`events` (`name`, `typeId`, `itemId`, `roomId`, `trigger`, `enabled`) VALUES ('Event2', 1, NULL, 1, 'Motion Detected', 1);
-INSERT INTO `robohome`.`events` (`name`, `typeId`, `itemId`, `roomId`, `trigger`, `enabled`) VALUES ('Event3', 7, NULL, 2, 'Opened', 1);
-INSERT INTO `robohome`.`events` (`name`, `typeId`, `itemId`, `roomId`, `trigger`, `enabled`) VALUES ('Event4', 10, NULL, 2, 'On', 1);
-INSERT INTO `robohome`.`events` (`name`, `typeId`, `itemId`, `roomId`, `trigger`, `enabled`) VALUES ('Event5', 1, NULL, 4, 'Motion Detected', 1);
+INSERT INTO `robohome`.`events` (`name`, `typeId`, `itemId`, `roomId`, `trigger`, `enabled`) VALUES ('Event1', 6, NULL, 1, 'opened', 1);
+INSERT INTO `robohome`.`events` (`name`, `typeId`, `itemId`, `roomId`, `trigger`, `enabled`) VALUES ('Event2', 1, NULL, 1, 'motion detected', 1);
+INSERT INTO `robohome`.`events` (`name`, `typeId`, `itemId`, `roomId`, `trigger`, `enabled`) VALUES ('Event3', 7, NULL, 2, 'opened', 1);
+INSERT INTO `robohome`.`events` (`name`, `typeId`, `itemId`, `roomId`, `trigger`, `enabled`) VALUES ('Event4', 10, NULL, 2, 'on', 1);
+INSERT INTO `robohome`.`events` (`name`, `typeId`, `itemId`, `roomId`, `trigger`, `enabled`) VALUES ('Event5', 1, NULL, 4, 'motion detected', 1);
 
 INSERT INTO `robohome`.`conditions` (`itemId`, `methodId`, `equivalence`, `value`, `eventId`) VALUES (2, 14, '=', 1, 1);
 INSERT INTO `robohome`.`conditions` (`itemId`, `methodId`, `equivalence`, `value`, `eventId`) VALUES (4, 21, '=', 1, 1);
