@@ -626,9 +626,13 @@ div.stage {
     display: inline-block;
 }
 
+.stage-content .eca-rule-title .error-message-display {
+    display: block;
+}
+
 .stage-content .eca-form-box div {
             margin: 0.2em;
-            min-width: 65%;
+            min-width: 70%;
             padding: 0.25em;
             background: rgba(0,200,0,0.2);
             border: 1px solid rgba(132,169,14,0.5);
@@ -637,6 +641,11 @@ div.stage {
         -ms-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
          -o-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
             box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+}
+
+.stage-content .eca-form-box input {
+    font-size: 0.9em;
+    padding: 0.3em;
 }
 
 div.eca-field-div {
@@ -651,7 +660,7 @@ div.eca-field-div {
             line-height: 1.5em;
             border: 1px solid #666666;
             background: rgba(0,200,0,0.2);
-            padding: 0.2em 1em;
+            padding: 0.175em 1em;
             min-width: 1.5em;
             text-align: center;
             font-family: 'serene';
@@ -677,10 +686,6 @@ div.eca-field-div {
 }
 .stage-content .eca-show-hide.collapsed:after {
     content: '+';
-}
-
-.stage-content .eca-enable-disable {
-    margin-left: 1em;
 }
 
 .stage-content .eca-enable-disable:after {
@@ -847,7 +852,7 @@ div.eca-field-div {
 .eca-event fieldset select,
 .eca-condition-display fieldset select,
 .eca-action-display fieldset select {
-    font-size: 0.8em;
+    font-size: 1em;
     color: white;
     min-width: 64%;
     padding: 0.2em;

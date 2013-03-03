@@ -162,7 +162,7 @@ def events(version):
 
     if request.method == 'POST':
         args = request.args.to_dict()
-        house.addEvent(args["ruleName"], args["itemType"], args["id"], args["scope"], args["itemState"], args["enabled"])
+        house.addEvent(args["ruleName"], args["itemType"], args["id"], args["scope"], args["value"], args["enabled"])
         return jsonify(pack('success'))
 
 
@@ -177,7 +177,7 @@ def events_eventId(version, eventId):
     if request.method == 'PUT':
         # Update event
         args = request.args.to_dict()
-        house.updateEvent(args["ruleName"], args["itemType"], args["id"], args["scope"], args["itemState"], args["enabled"], eventId)
+        # house.updateEvent(args["ruleName"], args["itemType"], args["id"], args["scope"], args["value"], args["enabled"], eventId)
         return jsonify(pack('success'))
 
     if request.method == 'DELETE':

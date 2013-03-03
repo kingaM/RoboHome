@@ -28,8 +28,8 @@ APP.CONSTANTS.VERSION = '0.1';
 
 // DOM classes and ids
 APP.DOM_HOOK = {};
-APP.DOM_HOOK.COLLAPSED = 'collapsed';
 APP.DOM_HOOK.ENABLED = 'enabled';
+APP.DOM_HOOK.COLLAPSED = 'collapsed';
 APP.DOM_HOOK.STAGE_CONTENT = 'stage-content';
 APP.DOM_HOOK.ENTITY = {};
 APP.DOM_HOOK.ENTITY.ITEM_TYPE = 'item-type';
@@ -123,6 +123,8 @@ APP.API.EVENTS.RULE.EVENT = {};
 APP.API.EVENTS.RULE.EVENT.EVENT = 'event';
 APP.API.EVENTS.RULE.EVENT.ID = 'id';
 APP.API.EVENTS.RULE.EVENT.ITEM_TYPE = 'itemType';
+APP.API.EVENTS.RULE.EVENT.SCOPE = 'scope';
+APP.API.EVENTS.RULE.EVENT.EQUIVALENCE = 'equivalence';
 APP.API.EVENTS.RULE.EVENT.VALUE = 'value';
 APP.API.EVENTS.RULE.CONDITIONS = 'conditions';
 APP.API.EVENTS.RULE.CONDITION = {};
@@ -569,11 +571,38 @@ APP.ajax_get_events = function(callback, error) {
 /**
  *
  */
-APP.ajax_post_events_eventId_conditions = function(eventId, itemId, itemType, method, equivalence, value, callback, error) {
+APP.ajax_put_events_eventId = function(eventId, ruleName, enabled, id, itemType, scope, equivalence, value, callback, error) {
+    APP.ajax('PUT', APP.URL.EVENTS_EVENTID(eventId) + '?' + 
+        APP.API.EVENTS.RULE.RULE_NAME + '=' + ruleName + '&' +
+        APP.API.EVENTS.RULE.ENABLED + '=' + enabled + '&' +
+        APP.API.EVENTS.RULE.EVENT.ID + '=' + id + '&' +
+        APP.API.EVENTS.RULE.EVENT.ITEM_TYPE + '=' + itemType + '&' +
+        APP.API.EVENTS.RULE.EVENT.SCOPE + '=' + scope + '&' +
+        APP.API.EVENTS.RULE.EVENT.EQUIVALENCE + '=' + equivalence + '&' +
+        APP.API.EVENTS.RULE.EVENT.VALUE + '=' + value,
+        '',
+        callback,
+        error
+    );
+}
+
+/**
+ *
+ */
+APP.ajax_delete_events_eventId = function(eventId, callback, error) {
+    APP.ajax('DELETE', APP.URL.EVENTS_EVENTID(eventId),
+    '',
+    callback,
+    error
+    );
+}
+
+/**
+ *
+ */
+APP.ajax_post_events_eventId_conditions = function(eventId, itemId, equivalence, value, callback, error) {
     APP.ajax('POST', APP.URL.EVENTS_EVENTID_CONDITIONS(eventId) + '?' + 
     APP.API.EVENTS.RULE.CONDITION.ITEM_ID + '=' + itemId + '&' + 
-    APP.API.EVENTS.RULE.CONDITION.ITEM_TYPE + '=' + itemType + '&' + 
-    APP.API.EVENTS.RULE.CONDITION.METHOD + '=' + method + '&' + 
     APP.API.EVENTS.RULE.CONDITION.EQUIVALENCE + '=' + equivalence + '&' + 
     APP.API.EVENTS.RULE.CONDITION.VALUE + '=' + value,
     '',
@@ -585,12 +614,10 @@ APP.ajax_post_events_eventId_conditions = function(eventId, itemId, itemType, me
 /**
  *
  */
-APP.ajax_put_events_eventId_conditions_conditionId = function(eventId, conditionId, itemId, itemType, method, equivalence, value, callback, error) {
+APP.ajax_put_events_eventId_conditions_conditionId = function(eventId, conditionId, itemId, equivalence, value, callback, error) {
     APP.ajax('PUT', APP.URL.EVENTS_EVENTID_CONDITIONS_CONDITIONID(eventId, conditionId) + '?' + 
     APP.API.EVENTS.RULE.CONDITION.ITEM_ID + '=' + itemId + '&' + 
     APP.API.EVENTS.RULE.CONDITION.CONDITION_ID + '=' + conditionId + '&' + 
-    APP.API.EVENTS.RULE.CONDITION.ITEM_TYPE + '=' + itemType + '&' + 
-    APP.API.EVENTS.RULE.CONDITION.METHOD + '=' + method + '&' + 
     APP.API.EVENTS.RULE.CONDITION.EQUIVALENCE + '=' + equivalence + '&' + 
     APP.API.EVENTS.RULE.CONDITION.VALUE + '=' + value,
     '',
@@ -1165,13 +1192,9 @@ APP.ItemTypeDisplay.prototype.update = function() {
             self.removeItemDisplay(itemDisplaysCopy[i].itemObj[APP.API.STATE.ROOM.ITEM.ID]);
         }
         
-        console.log(self.itemType);
-        console.log(itemsCopy);
-        console.log(itemDisplaysCopy);
         // If there are any unmatched items, it means they need to be added, as long as they are the correct type
         for(var i = 0; i < itemsCopy.length; i++) {
             if(itemsCopy[i][APP.API.STATE.ROOM.ITEM.ITEM_TYPE] === self.itemType) {
-                console.log('foo');
                 self.addItemDisplay(itemsCopy[i]);
             }
         }
@@ -1367,7 +1390,7 @@ APP.ECARuleManager = function(stage) {
     this.ruleDisplays = [];
     
     for(var i = 0; i < APP.data.events.length; i++) {
-        this.ruleDisplays.push(new APP.ECARuleDisplay(APP.data.events[i]));
+        this.ruleDisplays.push(new APP.ECARuleDisplay(APP.data.events[i], this.stage));
     }
 };
 
@@ -1378,7 +1401,7 @@ APP.ECARuleManager.prototype.construct = function() {
     for(var i = 0; i < this.ruleDisplays.length; i++) {
         this.stage.getContext().append(this.ruleDisplays[i].construct());
     }
-    this.stage.getContext().append((new APP.ECANewRuleDisplay()).construct());
+    this.stage.getContext().append((new APP.ECANewRuleDisplay(this.stage)).construct());
 };
 
 /**
@@ -1391,7 +1414,7 @@ APP.ECARuleManager.prototype.update = function() {
 /**
  *
  */
-APP.ECARuleDisplay = function(ruleObj) {
+APP.ECARuleDisplay = function(ruleObj, stage) {
     var ruleId,
         eventObj,
         conditionArray,
@@ -1403,13 +1426,15 @@ APP.ECARuleDisplay = function(ruleObj) {
     actionArray = ruleObj[APP.API.EVENTS.RULE.ACTIONS];
     
     this.ruleObj = ruleObj;
-    this.eventDisplay = new APP.ECAEventDisplay(ruleId, this);
-    this.conditionManager = new APP.ECAConditionManager(ruleId, conditionArray);
-    this.actionManager = new APP.ECAActionManager(ruleId, actionArray);
+    this.stage = stage;
+    this.eventDisplay = new APP.ECAEventDisplay(ruleId, this, this.stage);
+    this.conditionManager = new APP.ECAConditionManager(ruleId, conditionArray, this.stage);
+    this.actionManager = new APP.ECAActionManager(ruleId, actionArray, this.stage);
     
     this.boundingBox;
     this.titleBox;
     this.formBox;
+    this.errorMessage;
     this.contentBox;
     this.eventFieldset;
     this.eventBox;
@@ -1458,7 +1483,31 @@ APP.ECARuleDisplay.prototype.construct = function() {
         });
         
         self.saveButton.click(function() {
-        
+            var eventId     = self.ruleObj[APP.API.EVENTS.RULE.RULE_ID],
+                ruleName    = self.ruleInput.val(),
+                enabled     = self.ruleObj[APP.API.EVENTS.RULE.ENABLED],
+                id          = self.ruleObj[APP.API.EVENTS.RULE.EVENT.EVENT][APP.API.EVENTS.RULE.EVENT.ID],
+                itemType    = self.ruleObj[APP.API.EVENTS.RULE.EVENT.EVENT][APP.API.EVENTS.RULE.EVENT.ITEM_TYPE],
+                scope       = self.ruleObj[APP.API.EVENTS.RULE.EVENT.EVENT][APP.API.EVENTS.RULE.EVENT.SCOPE],
+                equivalence = '=', // TODO change to self.ruleObj[APP.API.EVENTS.RULE.EVENT.EVENT][APP.API.EVENTS.RULE.EVENT.SCOPE]
+                value       = self.ruleObj[APP.API.EVENTS.RULE.EVENT.EVENT][APP.API.EVENTS.RULE.EVENT.VALUE];        
+            
+            if(ruleName === '' || /\s+/.test(ruleName) === true) {
+                self.errorMessage.html('Name cannot be undefined or entirely whitespace.');
+            } else {
+                self.errorMessage.html('');
+                self.titleBox.addClass(APP.DOM_HOOK.UPDATING);
+                APP.ajax_put_events_eventId(eventId, ruleName, enabled, id, itemType, scope, equivalence, value,
+                    function() {
+                        self.titleBox.removeClass(APP.DOM_HOOK.UPDATING);
+                        setToDisplayMode();
+                        self.stage.update();
+                    },
+                    function() {
+                        // do nothing
+                    }
+                );
+            }
         });
         
         self.formBox.html('');
@@ -1472,6 +1521,7 @@ APP.ECARuleDisplay.prototype.construct = function() {
     this.titleBox = $('<div></div>').addClass(APP.DOM_HOOK.ECA.RULE_TITLE),
     this.contentBox = $('<div></div>'),
     this.formBox = $('<div></div>').addClass(APP.DOM_HOOK.ECA.FORM_BOX),
+    this.errorMessage = $('<div></div>').addClass(APP.DOM_HOOK.ERROR_MESSAGE_DISPLAY),
     this.eventFieldset = $('<fieldset></fieldset>').addClass(APP.DOM_HOOK.ECA.EVENT_FIELDSET),
     this.eventBox = $('<div></div>'),
     this.conditionsFieldset = $('<fieldset></fieldset>').addClass(APP.DOM_HOOK.ECA.CONDITION_FIELDSET),
@@ -1484,13 +1534,34 @@ APP.ECARuleDisplay.prototype.construct = function() {
     this.deleteButton = $('<button>Delete</button>').addClass(APP.DOM_HOOK.ECA.DELETE);
     
     this.showHide.click(function() {
-        $(this).toggleClass(APP.DOM_HOOK.COLLAPSED);
         self.contentBox.toggle(100);
+        $(this).toggleClass(APP.DOM_HOOK.COLLAPSED);
     });
     
     this.enableDisable.click(function() {
-        // ajax call
-            $(this).toggleClass(APP.DOM_HOOK.ENABLED);
+        var dis = $(this),
+            eventId     = self.ruleObj[APP.API.EVENTS.RULE.RULE_ID],
+            ruleName    = self.ruleObj[APP.API.EVENTS.RULE.EVENT.EVENT][APP.API.EVENTS.RULE.EVENT.RULE_NAME],
+            enabled     = self.ruleObj[APP.API.EVENTS.RULE.EVENT.EVENT][APP.API.EVENTS.RULE.EVENT.ENABLED],
+            id          = self.ruleObj[APP.API.EVENTS.RULE.EVENT.EVENT][APP.API.EVENTS.RULE.EVENT.ID],
+            itemType    = self.ruleObj[APP.API.EVENTS.RULE.EVENT.EVENT][APP.API.EVENTS.RULE.EVENT.ITEM_TYPE],
+            scope       = self.ruleObj[APP.API.EVENTS.RULE.EVENT.EVENT][APP.API.EVENTS.RULE.EVENT.SCOPE],
+            equivalence = '=', // TODO change to self.ruleObj[APP.API.EVENTS.RULE.EVENT.EVENT][APP.API.EVENTS.RULE.EVENT.SCOPE]
+            value       = self.ruleObj[APP.API.EVENTS.RULE.EVENT.EVENT][APP.API.EVENTS.RULE.EVENT.VALUE];
+        
+        enabled = !enabled;
+        self.titleBox.addClass(APP.DOM_HOOK.UPDATING);
+        APP.ajax_put_events_eventId(eventId, ruleName, enabled, id, itemType, scope, equivalence, value,
+            function() {
+                self.ruleObj[APP.API.EVENTS.RULE.EVENT.EVENT][APP.API.EVENTS.RULE.EVENT.ENABLED];
+                self.titleBox.removeClass(APP.DOM_HOOK.UPDATING);
+                dis.toggleClass(APP.DOM_HOOK.ENABLED);
+                self.stage.update();
+            },
+            function() {
+                // do nothing
+            }
+        );
     });
     
     this.deleteButton.click(function() {
@@ -1501,6 +1572,7 @@ APP.ECARuleDisplay.prototype.construct = function() {
     if(this.ruleObj[APP.API.EVENTS.RULE.ENABLED] === true) {
         this.enableDisable.addClass(APP.DOM_HOOK.ENABLED);
     }
+    this.titleBox.append(this.errorMessage);
     this.titleBox.append(this.showHide);
     this.titleBox.append(setToDisplayMode());
     this.titleBox.append(this.enableDisable);
@@ -1541,8 +1613,8 @@ APP.ECARuleDisplay.prototype.update = function() {
 /**
  *
  */
-APP.ECANewRuleDisplay = function() {
-    
+APP.ECANewRuleDisplay = function(stage) {
+    this.stage = stage;
 };
 
 /**
@@ -1569,9 +1641,11 @@ APP.ECANewRuleDisplay.prototype.construct = function() {
  * @class APP.ECAEventDisplay
  * @constructor
  */
-APP.ECAEventDisplay = function(ruleId, ruleDisplay) {
+APP.ECAEventDisplay = function(ruleId, ruleDisplay, stage) {
     var self = this;
     this.ruleId = ruleId;
+    this.stage = stage;
+    
     this.ruleDisplay = ruleDisplay;
     this.bridge1;
     this.bridge2;
@@ -1685,7 +1759,6 @@ APP.ECAEventDisplay = function(ruleId, ruleDisplay) {
             
             function setBridges() {
                 var scope = self.scopeField.find('option:selected').val();
-                console.log(scope);
                 if(scope === 'room' || scope === 'house') {
                     self.bridge2.html('any');
                     self.bridge3.html('in');
@@ -1950,9 +2023,11 @@ APP.ECAEventDisplay.prototype.populateStateField = function(selectedStateId) {
 /**
  *
  */
-APP.ECAConditionManager = function(ruleId, conditionArray) {
+APP.ECAConditionManager = function(ruleId, conditionArray, stage) {
     this.ruleId = ruleId;
     this.conditionArray = conditionArray;
+    this.stage = stage;
+    
     this.conditionDisplays = [];
     for(var i = 0; i < this.conditionArray.length; i++) {
         this.conditionDisplays.push(new APP.ECAConditionDisplay(ruleId, conditionArray[i]));
@@ -2116,11 +2191,9 @@ APP.ECAConditionDisplay = function(ruleId, conditionObj) {
                 var dis = $(this);
                 dis.parent().addClass(APP.DOM_HOOK.UPDATING);
                 APP.ajax_put_events_eventId_conditions_conditionId(self.ruleId, self.conditionObj[APP.API.EVENTS.RULE.CONDITION.CONDITION_ID],
-                    '', // itemId
-                    '', // itemType
-                    '', // method
-                    '', // equivalence
-                    '', // value
+                    self.itemField.children('option:selected').val(), // itemId
+                    self.equivalenceField.children('option:selected').val(), // equivalence
+                    self.stateField.children('option:selected').val(), // state
                     function() {
                         dis.parent().removeClass(APP.DOM_HOOK.UPDATING);
                         setToDisplayMode();
@@ -2242,11 +2315,12 @@ APP.ECAConditionDisplay.prototype.populateStateField = function(selectedItemType
 /**
  *
  */
-APP.ECANewConditionDisplay = function(ruleId) {
-
+APP.ECANewConditionDisplay = function(ruleId, stage) {
     var self = this;
     
     this.ruleId = ruleId;
+    this.stage = stage;
+    
     this.bridge1;
     this.itemFieldset;
     this.itemWrapper;
@@ -2309,14 +2383,12 @@ APP.ECANewConditionDisplay = function(ruleId) {
                 var dis = $(this);
                 dis.parent().addClass(APP.DOM_HOOK.UPDATING);
                 APP.ajax_post_events_eventId_conditions(self.ruleId,
-                    '', // itemId
-                    '', // itemType
-                    '', // method
-                    '', // equivalence
-                    '', // value
+                    self.itemField.children('option:selected').val(), // itemId
+                    self.equivalenceField.children('option:selected').val(), // equivalence
+                    self.stateField.children('option:selected').val(), // state
                     function() {
                         dis.parent().removeClass(APP.DOM_HOOK.UPDATING);
-                        // TODO
+                        setToDisplayMode();
                     },
                     function() {
                         // do nothing
@@ -2349,9 +2421,11 @@ APP.inherit(APP.ECANewConditionDisplay, APP.ECAConditionDisplay);
 /**
  *
  */
-APP.ECAActionManager = function(ruleId, actionArray) {
+APP.ECAActionManager = function(ruleId, actionArray, stage) {
     this.ruleId = ruleId;
     this.actionArray = actionArray;
+    this.stage = stage;
+    
     this.actionDisplays = [];
     for(var i = 0; i < this.actionArray.length; i++) {
         this.actionDisplays.push(new APP.ECAActionDisplay(ruleId, this.actionArray[i]));
@@ -2627,11 +2701,12 @@ APP.ECAActionDisplay.prototype.populateMethodField = function(selectedItemType) 
 /**
  *
  */
-APP.ECANewActionDisplay = function(ruleId) {
-    
+APP.ECANewActionDisplay = function(ruleId, stage) {
     var self = this;
     
     this.ruleId = ruleId;
+    this.stage = stage;
+    
     this.methodFieldset;
     this.methodWrapper;
     this.methodField;
@@ -3310,8 +3385,6 @@ APP.StageManager = function() {
                                 }
                             );
                         } else {
-                            console.log(rooms[roomIndex][APP.API.STATE.ROOM.ITEMS][itemIndex][APP.API.STATE.ROOM.ITEM.NAME]);
-                            console.log(rooms[roomIndex][APP.API.STATE.ROOM.NAME]);
                             addWarningIP.html('IP specified is already in use by existing item (' + rooms[roomIndex][APP.API.STATE.ROOM.ITEMS][itemIndex][APP.API.STATE.ROOM.ITEM.NAME] + ') in the room ' + rooms[roomIndex][APP.API.STATE.ROOM.NAME] + '.');
                         }
                     } else {
