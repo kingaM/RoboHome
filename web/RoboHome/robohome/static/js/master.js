@@ -40,6 +40,7 @@ APP.DOM_HOOK.ECA = {};
 APP.DOM_HOOK.ECA.RULE = 'eca-rule';
 APP.DOM_HOOK.ECA.NEW_RULE = 'eca-new-rule';
 APP.DOM_HOOK.ECA.RULE_TITLE = 'eca-rule-title';
+APP.DOM_HOOK.ECA.FORM_BOX = 'eca-form-box';
 APP.DOM_HOOK.ECA.EVENT = 'eca-event';
 APP.DOM_HOOK.ECA.EVENT_DISPLAY = 'eca-event-display';
 APP.DOM_HOOK.ECA.CONDITION = 'eca-condition';
@@ -1402,83 +1403,132 @@ APP.ECARuleDisplay = function(ruleObj) {
     actionArray = ruleObj[APP.API.EVENTS.RULE.ACTIONS];
     
     this.ruleObj = ruleObj;
-    this.eventDisplay = new APP.ECAEventDisplay(ruleId, eventObj);
+    this.eventDisplay = new APP.ECAEventDisplay(ruleId, this);
     this.conditionManager = new APP.ECAConditionManager(ruleId, conditionArray);
     this.actionManager = new APP.ECAActionManager(ruleId, actionArray);
+    
+    this.boundingBox;
+    this.titleBox;
+    this.formBox;
+    this.contentBox;
+    this.eventFieldset;
+    this.eventBox;
+    this.conditionsFieldset;
+    this.conditionsBox;
+    this.actionsFieldset;
+    this.actionsBox;
+    this.showHide;
+    this.ruleName;
+    this.ruleInput;
+    this.enableDisable;
+    this.editButton;
+    this.cancelButton;
+    this.saveButton;
+    this.deleteInput;
+    this.deleteButton;
 };
 
 /**
  *
  */
 APP.ECARuleDisplay.prototype.construct = function() {
-    var self = this,
-        boundingBox = $('<div></div>').addClass(APP.DOM_HOOK.ECA.RULE),
-        titleBox = $('<div></div>').addClass(APP.DOM_HOOK.ECA.RULE_TITLE),
-        contentBox = $('<div></div>'),
-        eventFieldset = $('<fieldset></fieldset>').addClass(APP.DOM_HOOK.ECA.EVENT_FIELDSET),
-        eventBox = $('<div></div>'),
-        conditionsFieldset = $('<fieldset></fieldset>').addClass(APP.DOM_HOOK.ECA.CONDITION_FIELDSET),
-        conditionsBox= $('<div></div>'),
-        actionsFieldset = $('<fieldset></fieldset>').addClass(APP.DOM_HOOK.ECA.ACTION_FIELDSET),
-        actionsBox = $('<div></div>'),
-        showHide = $('<button></button>').addClass(APP.DOM_HOOK.ECA.SHOW_HIDE + ' ' + APP.DOM_HOOK.COLLAPSED),
-        ruleName = $('<div>' + this.ruleObj[APP.API.EVENTS.RULE.RULE_NAME] + '</div>').addClass(APP.DOM_HOOK.ECA.FIELD_DIV),
-        enableDisable = $('<button></button>').addClass(APP.DOM_HOOK.ECA.ENABLE_DISABLE),
-        editName = $('<button>Edit</button>'),
-        deleteEventInput = $('<input></input>').attr({class: APP.DOM_HOOK.ECA.DELETE, placeholder: 'Confirm event name'}),
-        deleteEventButton = $('<button>Delete</button>').addClass(APP.DOM_HOOK.ECA.DELETE);
+    var self = this;
     
-    showHide.click(function() {
+    function setToDisplayMode() {
+        self.ruleName = $('<div>' + self.ruleObj[APP.API.EVENTS.RULE.RULE_NAME] + '</div>').addClass(APP.DOM_HOOK.ECA.FIELD_DIV),
+        self.editButton = $('<button>Edit</button>');
+        
+        self.editButton.click(function() {
+            setToFormMode();
+        });
+        
+        self.formBox.html('');
+        self.formBox.append(self.ruleName);
+        self.formBox.append(self.editButton);
+        return self.formBox;
+    }
+    
+    function setToFormMode() {
+        self.ruleInput = $('<input></input>').attr({placeholder: 'Event name', value: self.ruleObj[APP.API.EVENTS.RULE.RULE_NAME]}),
+        self.cancelButton = $('<button>Cancel</button>'),
+        self.saveButton = $('<button>Save</button>');
+        
+        self.cancelButton.click(function() {
+            setToDisplayMode();
+        });
+        
+        self.saveButton.click(function() {
+        
+        });
+        
+        self.formBox.html('');
+        self.formBox.append(self.ruleInput);
+        self.formBox.append(self.cancelButton);
+        self.formBox.append(self.saveButton);
+        return self.formBox;
+    }
+    
+    this.boundingBox = $('<div></div>').addClass(APP.DOM_HOOK.ECA.RULE),
+    this.titleBox = $('<div></div>').addClass(APP.DOM_HOOK.ECA.RULE_TITLE),
+    this.contentBox = $('<div></div>'),
+    this.formBox = $('<div></div>').addClass(APP.DOM_HOOK.ECA.FORM_BOX),
+    this.eventFieldset = $('<fieldset></fieldset>').addClass(APP.DOM_HOOK.ECA.EVENT_FIELDSET),
+    this.eventBox = $('<div></div>'),
+    this.conditionsFieldset = $('<fieldset></fieldset>').addClass(APP.DOM_HOOK.ECA.CONDITION_FIELDSET),
+    this.conditionsBox= $('<div></div>'),
+    this.actionsFieldset = $('<fieldset></fieldset>').addClass(APP.DOM_HOOK.ECA.ACTION_FIELDSET),
+    this.actionsBox = $('<div></div>'),
+    this.showHide = $('<button></button>').addClass(APP.DOM_HOOK.ECA.SHOW_HIDE + ' ' + APP.DOM_HOOK.COLLAPSED),
+    this.enableDisable = $('<button></button>').addClass(APP.DOM_HOOK.ECA.ENABLE_DISABLE),
+    this.deleteInput = $('<input></input>').attr({class: APP.DOM_HOOK.ECA.DELETE, placeholder: 'Confirm event name'}),
+    this.deleteButton = $('<button>Delete</button>').addClass(APP.DOM_HOOK.ECA.DELETE);
+    
+    this.showHide.click(function() {
         $(this).toggleClass(APP.DOM_HOOK.COLLAPSED);
-        contentBox.toggle(100);
+        self.contentBox.toggle(100);
     });
     
-    enableDisable.click(function() {
+    this.enableDisable.click(function() {
         // ajax call
             $(this).toggleClass(APP.DOM_HOOK.ENABLED);
     });
     
-    ruleName.click(function() {
-        // TODO
-    });
-    
-    deleteEventButton.click(function() {
+    this.deleteButton.click(function() {
         // TODO
     });
     
     // title box
-    if(self.ruleObj[APP.API.EVENTS.RULE.ENABLED] === true) {
-        enableDisable.addClass(APP.DOM_HOOK.ENABLED);
+    if(this.ruleObj[APP.API.EVENTS.RULE.ENABLED] === true) {
+        this.enableDisable.addClass(APP.DOM_HOOK.ENABLED);
     }
-    titleBox.append(showHide);
-    titleBox.append(ruleName);
-    titleBox.append(editName);
-    titleBox.append(enableDisable);
-    titleBox.append(deleteEventButton);
-    titleBox.append(deleteEventInput);
-    boundingBox.append(titleBox);
+    this.titleBox.append(this.showHide);
+    this.titleBox.append(setToDisplayMode());
+    this.titleBox.append(this.enableDisable);
+    this.titleBox.append(this.deleteButton);
+    this.titleBox.append(this.deleteInput);
+    this.boundingBox.append(this.titleBox);
     
     // event box
-    eventFieldset.append($('<legend></legend>').html('Event'));
-    eventFieldset.append(eventBox);
-    eventBox.append(this.eventDisplay.construct());
-    contentBox.append(eventFieldset);
+    this.eventFieldset.append($('<legend></legend>').html('Event'));
+    this.eventFieldset.append(this.eventBox);
+    this.eventBox.append(this.eventDisplay.construct());
+    this.contentBox.append(this.eventFieldset);
     
     // conditions box
-    conditionsFieldset.append($('<legend></legend>').html('Conditions'));
-    conditionsFieldset.append(conditionsBox);
-    conditionsBox.append(this.conditionManager.construct());
-    contentBox.append(conditionsFieldset);
+    this.conditionsFieldset.append($('<legend></legend>').html('Conditions'));
+    this.conditionsFieldset.append(this.conditionsBox);
+    this.conditionsBox.append(this.conditionManager.construct());
+    this.contentBox.append(this.conditionsFieldset);
     
     // actions box
-    actionsFieldset.append($('<legend></legend>').html('Actions'));
-    actionsFieldset.append(actionsBox);
-    actionsBox.append(this.actionManager.construct());
-    contentBox.append(actionsFieldset);
+    this.actionsFieldset.append($('<legend></legend>').html('Actions'));
+    this.actionsFieldset.append(this.actionsBox);
+    this.actionsBox.append(this.actionManager.construct());
+    this.contentBox.append(this.actionsFieldset);
     
-    contentBox.hide();
-    boundingBox.append(contentBox);
-    return boundingBox;
+    this.contentBox.hide();
+    this.boundingBox.append(this.contentBox);
+    return this.boundingBox;
 };
 
 /**
@@ -1519,10 +1569,10 @@ APP.ECANewRuleDisplay.prototype.construct = function() {
  * @class APP.ECAEventDisplay
  * @constructor
  */
-APP.ECAEventDisplay = function(ruleId, eventObj) {
+APP.ECAEventDisplay = function(ruleId, ruleDisplay) {
     var self = this;
     this.ruleId = ruleId;
-    this.eventObj = eventObj;
+    this.ruleDisplay = ruleDisplay;
     this.bridge1;
     this.bridge2;
     this.itemTypeFieldset;
@@ -1544,9 +1594,9 @@ APP.ECAEventDisplay = function(ruleId, eventObj) {
     this.context = $('<div></div>').addClass(APP.DOM_HOOK.ECA.EVENT);
     
     this.construct = function() {
-        var itemId = this.eventObj[APP.API.EVENTS.RULE.EVENT.ID],
-            itemType = this.eventObj[APP.API.EVENTS.RULE.EVENT.ITEM_TYPE],
-            itemStateId = self.eventObj[APP.API.EVENTS.RULE.EVENT.VALUE],
+        var itemId = this.ruleDisplay.ruleObj.event[APP.API.EVENTS.RULE.EVENT.ID],
+            itemType = this.ruleDisplay.ruleObj.event[APP.API.EVENTS.RULE.EVENT.ITEM_TYPE],
+            itemStateId = self.ruleDisplay.ruleObj.event[APP.API.EVENTS.RULE.EVENT.VALUE],
             itemState,
             scopeName,
             equivalence;
@@ -1560,7 +1610,7 @@ APP.ECAEventDisplay = function(ruleId, eventObj) {
             function getItemState() {
                 var states = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][itemType][APP.API.VERSION.SUPPORTED_TYPE.STATES];
                 for(var i = 0; i < states.length; i++) {
-                    if(self.eventObj[APP.API.EVENTS.RULE.EVENT.VALUE] === states[i][APP.API.VERSION.SUPPORTED_TYPE.STATE.ID]) {
+                    if(self.ruleDisplay.ruleObj.event[APP.API.EVENTS.RULE.EVENT.VALUE] === states[i][APP.API.VERSION.SUPPORTED_TYPE.STATE.ID]) {
                         itemState = states[i][APP.API.VERSION.SUPPORTED_TYPE.STATE.NAME];
                         break;
                     }
@@ -1568,13 +1618,13 @@ APP.ECAEventDisplay = function(ruleId, eventObj) {
             }
             
             function getScopeAndBridges() {
-                switch (self.eventObj[APP.API.EVENTS.RULE.ACTION.SCOPE]) {
+                switch (self.ruleDisplay.ruleObj.event[APP.API.EVENTS.RULE.ACTION.SCOPE]) {
                 case 'item':
                     self.bridge2.html('');
                     self.bridge3.html('');
                     for(var i = 0; i < APP.data.houseStructure[APP.API.STATE.ROOMS].length; i++) {
                         for(var j = 0; j < APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ITEMS].length; j++) {
-                            if(self.eventObj[APP.API.EVENTS.RULE.EVENT.ID] === APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ITEMS][j][APP.API.STATE.ROOM.ITEM.ID]) {
+                            if(self.ruleDisplay.ruleObj.event[APP.API.EVENTS.RULE.EVENT.ID] === APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ITEMS][j][APP.API.STATE.ROOM.ITEM.ID]) {
                                 scopeField.html(APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ITEMS][j][APP.API.STATE.ROOM.ITEM.NAME]);
                                 break;
                             }
@@ -1585,7 +1635,7 @@ APP.ECAEventDisplay = function(ruleId, eventObj) {
                     self.bridge2.html('any');
                     self.bridge3.html('in');
                     for(var i = 0; i < APP.data.houseStructure[APP.API.STATE.ROOMS].length; i++) {
-                        if(self.eventObj[APP.API.EVENTS.RULE.EVENT.ID] === APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ID]) {
+                        if(self.ruleDisplay.ruleObj.event[APP.API.EVENTS.RULE.EVENT.ID] === APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ID]) {
                             scopeName = APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.NAME];
                             break;
                         }
@@ -1667,13 +1717,13 @@ APP.ECAEventDisplay = function(ruleId, eventObj) {
             self.context.html('');
             
             self.populateItemTypeField(itemType);
-            self.populateScopeField(itemId, self.eventObj[APP.API.EVENTS.RULE.ACTION.SCOPE]);
+            self.populateScopeField(itemId, self.ruleDisplay.ruleObj.event[APP.API.EVENTS.RULE.ACTION.SCOPE]);
             self.populateEquivalenceField(itemType, equivalence);
             self.populateStateField(itemStateId);
             setBridges();
             
             self.itemTypeField.click(function() {
-                self.populateScopeField(itemId, self.eventObj[APP.API.EVENTS.RULE.ACTION.SCOPE]);
+                self.populateScopeField(itemId, self.ruleDisplay.ruleObj.event[APP.API.EVENTS.RULE.ACTION.SCOPE]);
                 self.populateStateField(itemStateId);
             });
             

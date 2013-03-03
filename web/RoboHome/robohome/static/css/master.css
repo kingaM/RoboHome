@@ -626,9 +626,9 @@ div.stage {
     display: inline-block;
 }
 
-.stage-content .eca-rule-title div {
-            margin: 0.2em 0.2em 0.2em 1em;
-            min-width: 15%;
+.stage-content .eca-form-box div {
+            margin: 0.2em;
+            min-width: 65%;
             padding: 0.25em;
             background: rgba(0,200,0,0.2);
             border: 1px solid rgba(132,169,14,0.5);
@@ -720,6 +720,14 @@ div.eca-field-div {
 
 .stage-content .eca-rule legend {
     font-size: 0.8em;
+}
+
+.stage-content .eca-rule .eca-form-box {
+    margin-left: 1em;
+    padding: 0;
+    min-width: 18em;
+    background-color: transparent;
+    border: none;
 }
 
 .stage-content .eca-new-rule button {
