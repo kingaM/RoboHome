@@ -798,6 +798,7 @@ div.eca-field-div {
     margin: 0.2em;
 }
 
+.eca-event fieldset,
 .eca-condition-display fieldset,
 .eca-action-display fieldset {
     display: inline-block;
@@ -807,6 +808,7 @@ div.eca-field-div {
     background-color: transparent !important;
 }
 
+.eca-event fieldset .select-wrapper,
 .eca-condition-display fieldset .select-wrapper,
 .eca-action-display fieldset .select-wrapper {
             display: inline-block;
@@ -819,6 +821,11 @@ div.eca-field-div {
             box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
 }
 
+.eca-event fieldset .select-wrapper {
+    border: 1px solid rgba(132,169,14,0.5);
+    background-color: rgba(0,200,0,0.2);
+}
+
 .eca-condition-display fieldset .select-wrapper {
     border: 1px solid rgba(0,134,191,0.5);
     background-color: rgba(0,0,200,0.2);
@@ -829,6 +836,7 @@ div.eca-field-div {
     background-color: rgba(255,0,0,0.2);
 }
 
+.eca-event fieldset select,
 .eca-condition-display fieldset select,
 .eca-action-display fieldset select {
     font-size: 0.8em;
