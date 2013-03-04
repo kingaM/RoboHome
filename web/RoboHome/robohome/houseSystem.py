@@ -304,7 +304,7 @@ class House(object):
 
         return {"rules": rules}
 
-    def addEvent(self, name, _type, _id, scope, trigger, enabled):
+    def addEvent(self, name, _type, _id, scope, value, enabled):
         """
         Adds an event to the house and database
 
@@ -313,9 +313,16 @@ class House(object):
         _type -- the type of the item the event concerns
         _id -- the id of the item/room which depends on scope
         scope -- the scope of the event ("item"/"room"/"house")
-        trigger -- the triggering state of the item
+        value -- the triggering state of the item
         enabled -- whether the rule is enabled (1/0)
         """
+        trigger = None
+        for state in data.states[_type]:
+            if state["id"] == value:
+                trigger = state["name"]
+                break
+        if trigger is None:
+            raise Exception("Invalid type and value combination")
         if scope == "item":
             item = self.getItemById(_id)
             room = None
@@ -331,7 +338,7 @@ class House(object):
         self.events.append(event)
         self.database.events.addEntry(event)
 
-    def updateEvent(self, name, _type, _id, scope, trigger, enabled, eventId):
+    def updateEvent(self, name, _type, _id, scope, value, enabled, eventId):
         """
         Updates an event to the house and database
 
@@ -340,9 +347,16 @@ class House(object):
         _type -- the type of the item the event concerns
         _id -- the id of the item/room which depends on scope
         scope -- the scope of the event ("item"/"room"/"house")
-        trigger -- the triggering state of the item
+        value -- the triggering state of the item
         enabled -- whether the rule is enabled (1/0)
         """
+        trigger = None
+        for state in data.states[_type]:
+            if state["id"] == value:
+                trigger = state["name"]
+                break
+        if trigger is None:
+            raise Exception("Invalid type and value combination")
         if scope == "item":
             item = self.getItemById(_id)
             room = None
@@ -367,7 +381,7 @@ class House(object):
                 break
         if e is None:
             raise Exception("Invalid event ID")
-        self.database.events.updateEvent(e)
+        self.database.events.updateEntry(e)
 
     def deleteEvent(self, eventId):
         """
@@ -386,6 +400,88 @@ class House(object):
             raise Exception("Invalid event ID")
         self.database.events.removeEntry(e)
         # Conditions and Actions for this event will also be deleted by the database
+
+    def addCondition(self, itemId, equivalence, value, eventId):
+        """
+        Adds a condition to the correct event and the database
+
+        Arguments:
+        itemId -- the id of the item the condition concerns
+        equivalence -- the equivalence to use on the item state and the value
+        value -- the state needed for the equivalence to pass
+        eventId -- the id of the event this condition is matched to
+        """
+        if equivalence == "is":
+            equivalence = "="
+        methodName = self.database.methods.getNiceStateName(itemId)
+        condition = eca.Condition(None, self.getItemById(itemId), "getState", methodName, equivalence, value)
+        self.database.conditions.addEntry(condition, eventId)
+        for e in self.events:
+            if e.id == eventId:
+                e.conditions.append(condition)
+
+    def updateCondition(self, itemId, equivalence, value, eventId, conditionId):
+        """
+        Updates a condition to the correct event and the database
+
+        Arguments:
+        conditionId -- the id of the condition to be updated
+        itemId -- the id of the item the condition concerns
+        equivalence -- the equivalence to use on the item state and the value
+        value -- the state needed for the equivalence to pass
+        eventId -- the id of the event this condition is matched to
+        """
+        if equivalence == "is":
+            equivalence = "="
+        event = None
+        for e in self.events:
+            if e.id == eventId:
+                event = e
+                break
+        if event is None:
+            raise Exception("Invalid event id")
+        condition = None
+        for c in event.conditions:
+            if c.id == conditionId:
+                condition = c
+                break
+        if condition is None:
+            raise Exception("Invalid condition id")
+
+        methodName = self.database.methods.getNiceStateName(itemId)
+
+        condition.item = self.getItemById(itemId)
+        condition.method = "getState"
+        condition.methodName = methodName
+        condition.equivalence = equivalence
+        condition.value = value
+
+        self.database.conditions.updateEntry(condition, eventId)
+
+    def deleteCondition(eventId, conditionId):
+        """
+        Deletes a condition from the house and database
+
+        Arguments:
+        eventId -- the id of the event this condition is matched to
+        conditionId -- the id of the condition to be deleted
+        """
+        event = None
+        for e in self.events:
+            if e.id == eventId:
+                event = e
+                break
+        if event is None:
+            raise Exception("Invalid event id")
+        condition = None
+        for c in event.conditions:
+            if c.id == conditionId:
+                condition = c
+                break
+        if condition is None:
+            raise Exception("Invalid condition id")
+        event.conditions.remove(condition)
+        self.database.conditions.removeEntry(conditionId)
 
     def getEventsForTrigger(self, item, trigger):
         """

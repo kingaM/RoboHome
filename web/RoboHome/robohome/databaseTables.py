@@ -80,6 +80,9 @@ class MethodsTable(DatabaseHelper):
     def addEntry(self, name, signiture, type, typeId):
         return  super(ItemsTable, self).addEntry(self.tablename, "name, signiture, type, typeId", "'" + name + "'," + "'" + signiture + "'," +"'" + type + "'," +"'" + str(typeId) + "'")
 
+    def getNiceStateName(self, itemId):
+        return self.retriveData("SELECT methods.name FROM methods, `types`, items WHERE `types`.id=methods.typeId AND `types`.id=items.id AND items.id=" + str(itemId) + " AND methods.signature='getState'")[0][0]
+
 
 class EventsTable(DatabaseHelper):
 
@@ -111,7 +114,7 @@ class EventsTable(DatabaseHelper):
         if event.room is None:
             roomId = "null"
         else:
-            roomId = event.room._id
+            roomId = event.room.id
         super(EventsTable, self).updateEntry(self.tablename, "id='" + str(event.id) + "'", "name='%s', typeId='%s', itemId=%s, roomId=%s, `trigger`='%s', enabled='%s'" % (event.name, typeId, itemId, roomId, event.trigger, event.enabled))
 
     def getEvents(self):
