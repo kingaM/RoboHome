@@ -626,7 +626,10 @@ div.stage {
     display: inline-block;
 }
 
-.stage-content .eca-rule-title .error-message-display {
+.stage-content .eca-rule-title .error-message-display,
+.stage-content .eca-event .error-message-display,
+.stage-content .eca-condition .error-message-display,
+.stage-content .eca-action .error-message-display {
     display: block;
 }
 
@@ -733,10 +736,6 @@ div.eca-field-div {
     min-width: 18em;
     background-color: transparent;
     border: none;
-}
-
-.stage-content .eca-new-rule button {
-    margin-left: 1em;
 }
 
 .stage-content .eca-event {

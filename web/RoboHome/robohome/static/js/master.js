@@ -571,6 +571,24 @@ APP.ajax_get_events = function(callback, error) {
 /**
  *
  */
+APP.ajax_post_events = function(ruleName, enabled, id, itemType, scope, equivalence, value, callback, error) {
+    APP.ajax('POST', APP.URL.EVENTS + '?' + 
+        APP.API.EVENTS.RULE.RULE_NAME + '=' + ruleName + '&' +
+        APP.API.EVENTS.RULE.ENABLED + '=' + enabled + '&' +
+        APP.API.EVENTS.RULE.EVENT.ID + '=' + id + '&' +
+        APP.API.EVENTS.RULE.EVENT.ITEM_TYPE + '=' + itemType + '&' +
+        APP.API.EVENTS.RULE.EVENT.SCOPE + '=' + scope + '&' +
+        APP.API.EVENTS.RULE.EVENT.EQUIVALENCE + '=' + equivalence + '&' +
+        APP.API.EVENTS.RULE.EVENT.VALUE + '=' + value,
+        '',
+        callback,
+        error
+    );
+};
+
+/**
+ *
+ */
 APP.ajax_put_events_eventId = function(eventId, ruleName, enabled, id, itemType, scope, equivalence, value, callback, error) {
     APP.ajax('PUT', APP.URL.EVENTS_EVENTID(eventId) + '?' + 
         APP.API.EVENTS.RULE.RULE_NAME + '=' + ruleName + '&' +
@@ -584,7 +602,7 @@ APP.ajax_put_events_eventId = function(eventId, ruleName, enabled, id, itemType,
         callback,
         error
     );
-}
+};
 
 /**
  *
@@ -595,7 +613,7 @@ APP.ajax_delete_events_eventId = function(eventId, callback, error) {
     callback,
     error
     );
-}
+};
 
 /**
  *
@@ -1613,28 +1631,55 @@ APP.ECARuleDisplay.prototype.update = function() {
 /**
  *
  */
+APP.ECARuleDisplay.prototype.delete = function() {
+
+};
+
+/**
+ *
+ */
 APP.ECANewRuleDisplay = function(stage) {
     this.stage = stage;
+    
+    this.boundingBox = $('<div></div>').addClass(APP.DOM_HOOK.ECA.RULE + ' ' + APP.DOM_HOOK.ECA.NEW_RULE);;
+    this.titlebox;
+    this.input;
+    this.addButton;
+    
 };
 
 /**
  *
  */
 APP.ECANewRuleDisplay.prototype.construct = function() {
-    var self = this,
-        boundingBox = $('<div></div>').addClass(APP.DOM_HOOK.ECA.RULE + ' ' + APP.DOM_HOOK.ECA.NEW_RULE),
-        titleBox = $('<div></div>').addClass(APP.DOM_HOOK.ECA.RULE_TITLE),
-        input = $('<input></input>').attr({type: 'text', placeholder: 'New event name', id: 'eca-add-new-rule-input'}),
-        button = $('<button></button>').html('Add');
+    var self = this;
     
-    button.click(function() {
-        // TODO
-    });
+    function setToDisplayMode() {
+        self.titleBox = $('<div></div>').addClass(APP.DOM_HOOK.ECA.RULE_TITLE);
+        self.button = $('<button></button>').html('Add new rule');
+        
+        self.button.click(function() {
+            setToFormMode();
+        });
+        self.titleBox.append(self.input);
+        self.titleBox.append(self.button);
+        self.boundingBox.append(self.titleBox);
+    }
     
-    titleBox.append(input);
-    titleBox.append(button);
-    boundingBox.append(titleBox);
-    return boundingBox
+    function setToFormMode() {
+        self.titleBox = $('<div></div>').addClass(APP.DOM_HOOK.ECA.RULE_TITLE);
+        self.input = $('<input></input>').attr({type: 'text', placeholder: 'New event name', id: 'eca-add-new-rule-input'});
+    }
+    
+    setToDisplayMode();
+    return this.boundingBox;
+};
+
+/**
+ *
+ */
+APP.ECANewRuleDisplay.prototype.delete = function() {
+
 };
 
 /**
@@ -1647,6 +1692,7 @@ APP.ECAEventDisplay = function(ruleId, ruleDisplay, stage) {
     this.stage = stage;
     
     this.ruleDisplay = ruleDisplay;
+    this.errorMessage;
     this.bridge1;
     this.bridge2;
     this.itemTypeFieldset;
@@ -1768,6 +1814,7 @@ APP.ECAEventDisplay = function(ruleId, ruleDisplay, stage) {
                 }
             }
             
+            self.errorMessage = $('<div></div>').addClass(APP.DOM_HOOK.ERROR_MESSAGE_DISPLAY),
             self.bridge1 = $('<div>When</div>'),
             self.bridge2 = $('<div></div>'),
             self.itemTypeFieldset = $('<fieldset><legend>Step 1 - Set type</legend></fieldset>'),
@@ -1809,9 +1856,34 @@ APP.ECAEventDisplay = function(ruleId, ruleDisplay, stage) {
             });
             
             self.saveButton.click(function() {
-                // TODO
+                var dis = $(this);
+                var eventId     = self.ruleDisplay.ruleObj[APP.API.EVENTS.RULE.RULE_ID],
+                    ruleName    = self.ruleDisplay.ruleObj[APP.API.EVENTS.RULE.RULE_NAME],
+                    enabled     = self.ruleDisplay.ruleObj[APP.API.EVENTS.RULE.ENABLED],
+                    itemType    = self.itemTypeField.find('option:selected').val(),
+                    scope       = self.scopeField.find('option:selected').val(),
+                    id          = self.scopeField.find('option[value="' + scope + '"]').attr('data-id'),
+                    equivalence = self.equivalenceField.find('option:selected').val(),
+                    value       = self.stateField.find('option:selected').val();
+                
+                if(itemType === 'undefined' || scope === 'undefined' || equivalence === 'undefined' || value === 'undefined') {
+                    self.errorMessage.html('One or more fields are not set.');
+                } else {
+                    self.errorMessage.html('');
+                    dis.parent().addClass(APP.DOM_HOOK.UPDATING);
+                    APP.ajax_put_events_eventId(eventId, ruleName, enabled, id, itemType, scope, equivalence, value,
+                        function() {
+                            dis.parent().removeClass(APP.DOM_HOOK.UPDATING);
+                            setToDisplayMode();
+                        },
+                        function() {
+                            // do nothing
+                        }
+                    );
+                }
             });
             
+            self.context.append(self.errorMessage);
             self.context.append(self.bridge1);
             self.context.append(self.bridge2);
             self.context.append(self.itemTypeFieldset.append(self.itemTypeWrapper.append(self.itemTypeField)));
@@ -1967,9 +2039,9 @@ APP.ECAEventDisplay.prototype.populateScopeField = function(selectedId, selected
             
             house = $('<optgroup></optgroup>').attr({label: 'House'});
             if(selectedScope === 'house') {
-                house.append($('<option>the house</option>').attr({value: 'house', 'data-id': 'undefined', selected: 'selected'}));
+                house.append($('<option>the house</option>').attr({value: 'house', 'data-id': 'null', selected: 'selected'}));
             } else {
-                house.append($('<option>the house</option>').attr({value: 'house', 'data-id': 'undefined'}));
+                house.append($('<option>the house</option>').attr({value: 'house', 'data-id': 'null'}));
             }
             scopeList.push(house);
             
@@ -1998,6 +2070,7 @@ APP.ECAEventDisplay.prototype.populateStateField = function(selectedStateId) {
             stateName
             stateList = [];
         
+        stateList.push($('<option>(Not set)</option>').attr({value: 'undefined'}));
         for(var i = 0; i < states.length; i++) {
             stateId = states[i][APP.API.VERSION.SUPPORTED_TYPE.STATE.ID];
             stateName = states[i][APP.API.VERSION.SUPPORTED_TYPE.STATE.NAME];
@@ -2064,6 +2137,7 @@ APP.ECAConditionDisplay = function(ruleId, conditionObj) {
     
     this.ruleId = ruleId;
     this.conditionObj = conditionObj;
+    this.errorMessage;
     this.bridge1;
     this.itemFieldset;
     this.itemWrapper;
@@ -2158,6 +2232,7 @@ APP.ECAConditionDisplay = function(ruleId, conditionObj) {
         }
         
         function setToFormMode() {
+            self.errorMessage = $('<div></div>').addClass(APP.DOM_HOOK.ERROR_MESSAGE_DISPLAY),
             self.bridge1 = $('<div>If</div>'),
             self.itemFieldset = $('<fieldset><legend>Step 1 - Set item</legend></fieldset>'),
             self.itemWrapper = $('<div></div>').addClass('select-wrapper'),
@@ -2177,6 +2252,7 @@ APP.ECAConditionDisplay = function(ruleId, conditionObj) {
             self.populateItemField(self.conditionObj[APP.API.EVENTS.RULE.CONDITION.ITEM_ID]);
             self.populateEquivalenceField(self.conditionObj[APP.API.EVENTS.RULE.CONDITION.ITEM_TYPE], equivalence);
             self.populateStateField(self.conditionObj[APP.API.EVENTS.RULE.CONDITION.ITEM_TYPE], self.conditionObj[APP.API.EVENTS.RULE.CONDITION.VALUE]);
+
             
             self.itemField.click(function() {
                 self.populateEquivalenceField(self.conditionObj[APP.API.EVENTS.RULE.CONDITION.ITEM_TYPE], equivalence);
@@ -2188,22 +2264,30 @@ APP.ECAConditionDisplay = function(ruleId, conditionObj) {
             });
             
             self.saveButton.click(function() {
-                var dis = $(this);
-                dis.parent().addClass(APP.DOM_HOOK.UPDATING);
-                APP.ajax_put_events_eventId_conditions_conditionId(self.ruleId, self.conditionObj[APP.API.EVENTS.RULE.CONDITION.CONDITION_ID],
-                    self.itemField.children('option:selected').val(), // itemId
-                    self.equivalenceField.children('option:selected').val(), // equivalence
-                    self.stateField.children('option:selected').val(), // state
-                    function() {
-                        dis.parent().removeClass(APP.DOM_HOOK.UPDATING);
-                        setToDisplayMode();
-                    },
-                    function() {
-                        // do nothing
-                    }
-                );
+                var dis = $(this),
+                    ruleId = self.ruleId,
+                    conditionId = self.conditionObj[APP.API.EVENTS.RULE.CONDITION.CONDITION_ID],
+                    itemId = self.itemField.children('option:selected').val(),
+                    equivalence = self.equivalenceField.children('option:selected').val(),
+                    state = self.stateField.children('option:selected').val();
+                if(itemId === 'undefined' || equivalence === 'undefined' || state === 'undefined') {
+                    self.errorMessage.html('One or more fields are not set.');
+                } else {
+                    self.errorMessage.html('');
+                    dis.parent().addClass(APP.DOM_HOOK.UPDATING);
+                    APP.ajax_put_events_eventId_conditions_conditionId(ruleId, conditionId, itemId, equivalence, state,
+                        function() {
+                            dis.parent().removeClass(APP.DOM_HOOK.UPDATING);
+                            setToDisplayMode();
+                        },
+                        function() {
+                            // do nothing
+                        }
+                    );
+                }
             });
             
+            self.context.append(self.errorMessage);
             self.context.append(self.bridge1);
             self.context.append(self.itemFieldset.append(self.itemWrapper.append(self.itemField)));
             self.context.append(self.equivalenceFieldset.append(self.equivalenceWrapper.append(self.equivalenceField)));
@@ -2321,6 +2405,7 @@ APP.ECANewConditionDisplay = function(ruleId, stage) {
     this.ruleId = ruleId;
     this.stage = stage;
     
+    this.errorMessage;
     this.bridge1;
     this.itemFieldset;
     this.itemWrapper;
@@ -2352,6 +2437,7 @@ APP.ECANewConditionDisplay = function(ruleId, stage) {
         }
         
         function setToFormMode() {
+            self.errorMessage = $('<div></div>').addClass(APP.DOM_HOOK.ERROR_MESSAGE_DISPLAY),
             self.bridge1 = $('<div>If</div>'),
             self.itemFieldset = $('<fieldset><legend>Step 1 - Set item</legend></fieldset>'),
             self.itemWrapper = $('<div></div>').addClass('select-wrapper'),
@@ -2380,22 +2466,29 @@ APP.ECANewConditionDisplay = function(ruleId, stage) {
             });
             
             self.saveButton.click(function() {
-                var dis = $(this);
-                dis.parent().addClass(APP.DOM_HOOK.UPDATING);
-                APP.ajax_post_events_eventId_conditions(self.ruleId,
-                    self.itemField.children('option:selected').val(), // itemId
-                    self.equivalenceField.children('option:selected').val(), // equivalence
-                    self.stateField.children('option:selected').val(), // state
-                    function() {
-                        dis.parent().removeClass(APP.DOM_HOOK.UPDATING);
-                        setToDisplayMode();
-                    },
-                    function() {
-                        // do nothing
-                    }
-                );
+                var dis = $(this),
+                    ruleId = self.ruleId,
+                    itemId = self.itemField.children('option:selected').val(),
+                    equivalence = self.equivalenceField.children('option:selected').val(),
+                    state = self.stateField.children('option:selected').val();
+                if(itemId === 'undefined' || equivalence === 'undefined' || state === 'undefined') {
+                    self.errorMessage.html('One or more fields are not set.');
+                } else {
+                    self.errorMessage.html('');
+                    dis.parent().addClass(APP.DOM_HOOK.UPDATING);
+                     APP.ajax_post_events_eventId_conditions(ruleId, itemId, equivalence, state,
+                        function() {
+                            dis.parent().removeClass(APP.DOM_HOOK.UPDATING);
+                            setToDisplayMode(); // TODO remove this
+                        },
+                        function() {
+                            // do nothing
+                        }
+                    );
+                }
             });
             
+            self.context.append(self.errorMessage);
             self.context.append(self.bridge1);
             self.context.append(self.itemFieldset.append(self.itemWrapper.append(self.itemField)));
             self.context.append(self.equivalenceFieldset.append(self.equivalenceWrapper.append(self.equivalenceField)));
@@ -2462,6 +2555,8 @@ APP.ECAActionDisplay = function(ruleId, actionObj) {
     
     this.ruleId = ruleId;
     this.actionObj = actionObj;
+    
+    this.errorMessage;
     this.methodFieldset;
     this.methodWrapper;
     this.methodField;
@@ -2577,6 +2672,7 @@ APP.ECAActionDisplay = function(ruleId, actionObj) {
                 }
             }
             
+            self.errorMessage = $('<div></div>').addClass(APP.DOM_HOOK.ERROR_MESSAGE_DISPLAY),
             self.methodFieldset = $('<fieldset><legend>Step 3 - Set method</legend></fieldset>'),
             self.methodWrapper = $('<div></div>').addClass('select-wrapper'),
             self.methodField = $('<select></select>'),
@@ -2611,22 +2707,30 @@ APP.ECAActionDisplay = function(ruleId, actionObj) {
             });
             
             self.saveButton.click(function() {
-                var dis = $(this);
-                dis.parent().addClass(APP.DOM_HOOK.UPDATING);
-                APP.ajax_put_events_eventId_actions_actionId(self.ruleId, self.actionObj[APP.API.EVENTS.RULE.ACTION.ACTION_ID],
-                    '', // scope
-                    '', // itemType
-                    '', // method
-                    function() {
-                        dis.parent().removeClass(APP.DOM_HOOK.UPDATING);
-                        setToDisplayMode();
-                    },
-                    function() {
-                        // do nothing
-                    }
-                )
+                var dis = $(this),
+                    ruleId = self.ruleId,
+                    actionId = self.actionObj[APP.API.EVENTS.RULE.ACTION.ACTION_ID],
+                    scope = self.scopeField.find('option:selected').val(),
+                    itemType = self.itemTypeField.find('option:selected').val(),
+                    method = self.methodField.find('option:selected').val();
+                if(scope === 'undefined' || itemType === 'undefined' || method === 'undefined') {
+                    self.errorMessage.html('One or more fields are not defined.');
+                } else {
+                    self.errorMessage.html('');
+                    dis.parent().addClass(APP.DOM_HOOK.UPDATING);
+                    APP.ajax_put_events_eventId_actions_actionId(ruleId, actionId, scope, itemType, method,
+                        function() {
+                            dis.parent().removeClass(APP.DOM_HOOK.UPDATING);
+                            setToDisplayMode();
+                        },
+                        function() {
+                            // do nothing
+                        }
+                    );
+                }
             });
-        
+            
+            self.context.append(self.errorMessage);
             self.context.append(self.methodFieldset.append(self.methodWrapper.append(self.methodField)));
             self.context.append(self.bridge1);
             self.context.append(self.itemTypeFieldset.append(self.itemTypeWrapper.append(self.itemTypeField)));
@@ -2707,6 +2811,7 @@ APP.ECANewActionDisplay = function(ruleId, stage) {
     this.ruleId = ruleId;
     this.stage = stage;
     
+    this.errorMessage;
     this.methodFieldset;
     this.methodWrapper;
     this.methodField;
@@ -2738,6 +2843,7 @@ APP.ECANewActionDisplay = function(ruleId, stage) {
         }
         
         function setToFormMode() {
+            self.errorMessage = $('<div></div>').addClass(APP.DOM_HOOK.ERROR_MESSAGE_DISPLAY),
             self.methodFieldset = $('<fieldset><legend>Step 3 - Set method</legend></fieldset>'),
             self.methodWrapper = $('<div></div>').addClass('select-wrapper'),
             self.methodField = $('<select></select>'),
@@ -2780,21 +2886,29 @@ APP.ECANewActionDisplay = function(ruleId, stage) {
             });
             
             self.saveButton.click(function() {
-                var dis = $(this);
-                dis.parent().addClass(APP.DOM_HOOK.UPDATING);
-                APP.ajax_post_events_eventId_actions(self.ruleId,
-                    '', // scope
-                    '', // itemType
-                    '', // method
-                    function() {
-                        dis.parent().removeClass(APP.DOM_HOOK.UPDATING);
-                    },
-                    function() {
-                        // do nothing
-                    }
-                )
+                var dis = $(this),
+                    ruleId = self.ruleId,
+                    scope = self.scopeField.find('option:selected').val(),
+                    itemType = self.itemTypeField.find('option:selected').val(),
+                    method = self.methodField.find('option:selected').val();
+                if(scope === 'undefined' || itemType === 'undefined' || method === 'undefined') {
+                    self.errorMessage.html('One or more fields are not defined.');
+                } else {
+                    self.errorMessage.html('');
+                    dis.parent().addClass(APP.DOM_HOOK.UPDATING);
+                    APP.ajax_post_events_eventId_actions(ruleId, scope, itemType, method,
+                        function() {
+                            dis.parent().removeClass(APP.DOM_HOOK.UPDATING);
+                            setToDisplayMode(); // TODO remove this
+                        },
+                        function() {
+                            // do nothing
+                        }
+                    );
+                }
             });
-        
+            
+            self.context.append(self.errorMessage);
             self.context.append(self.methodFieldset.append(self.methodWrapper.append(self.methodField)));
             self.context.append(self.bridge1);
             self.context.append(self.itemTypeFieldset.append(self.itemTypeWrapper.append(self.itemTypeField)));
