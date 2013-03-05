@@ -18,6 +18,8 @@ from houseSystem import House
 from databaseTables import Database
 from flask_openid import OpenID
 from IPy import IP
+import updateManager
+import threading
 
 SETTINGS = {
     'LANGUAGE': 'en',
@@ -64,6 +66,14 @@ def home():
     if request.method == 'GET':
         # Fetch the base HTML page and scripts
         return render_template('html/home.html')
+
+@app.route('/update/', methods=['POST'])
+def update():
+    if request.method == 'POST':
+        t = threading.Thread(target=updateManager.checkForUpdate())
+        t.daemon = True
+        t.start()
+        return jsonify(pack(house.getVersion()))
 
 
 @app.route('/version/', methods=['GET'])
