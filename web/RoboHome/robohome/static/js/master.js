@@ -2089,7 +2089,7 @@ APP.ECAEventDisplay = function(ruleId, ruleDisplay, stage) {
                     for(var i = 0; i < APP.data.houseStructure[APP.API.STATE.ROOMS].length; i++) {
                         for(var j = 0; j < APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ITEMS].length; j++) {
                             if(self.ruleDisplay.ruleObj.event[APP.API.EVENTS.RULE.EVENT.ID] === APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ITEMS][j][APP.API.STATE.ROOM.ITEM.ID]) {
-                                scopeField.html(APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ITEMS][j][APP.API.STATE.ROOM.ITEM.NAME]);
+                                self.scopeField.html(APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ITEMS][j][APP.API.STATE.ROOM.ITEM.NAME]);
                                 break;
                             }
                         }
