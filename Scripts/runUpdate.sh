@@ -6,21 +6,24 @@
 
 set -e
 
-cd ../../../..
+mv github.zip ../../../github.zip
+
+cd ../../..
 
 echo "\n Unzipping a file... \n"
 unzip github.zip #unzip the github.zip file 
 
-echo "\n Replace files... \n"
-mv ./robohomeApp ./robohomeApp.OLD
-mv ./comp2014-master ./robohomeApp
-
 echo "\n Killing the pid file...\n"
-kill -INT `cat ./robohomeApp.OLD/web/Robohome/robohome/robohome.pid`
+kill -INT `cat ./web/Robohome/robohome/robohome.pid`
+
+echo "\n Replace files... \n"
+mv ./web ./web.OLD
+mv ./comp2014-master/web ./web
 
 echo "\n Deleting files...\n"
-rm -rf ./robohomeApp.OLD
+rm -rf ./web.OLD
 rm -rf ./github.zip
+rm -rf ./comp2014-master
 
 echo "Restarting flask"
-#python ./robohomeApp/web/Robohome/robohome/flaskServer.py
+python ./web/Robohome/robohome/flaskServer.py
