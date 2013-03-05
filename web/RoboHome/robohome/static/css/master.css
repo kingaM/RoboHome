@@ -626,6 +626,10 @@ div.stage {
     display: inline-block;
 }
 
+.stage-content .eca-rule-title input:hover {
+    border: 1px solid rgb(229,151,0);
+}
+
 .stage-content .eca-rule-title .error-message-display,
 .stage-content .eca-event .error-message-display,
 .stage-content .eca-condition .error-message-display,
@@ -676,7 +680,7 @@ div.eca-field-div {
 
 .stage-content .eca-rule select:hover,
 .stage-content .eca-rule button:hover {
-    border: 1px solid rgb(229, 151, 0);
+    border: 1px solid rgb(229,151,0);
 }
 
 .stage-content .eca-show-hide {
