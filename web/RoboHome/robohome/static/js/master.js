@@ -660,7 +660,7 @@ APP.ajax_delete_events_eventId_conditions_conditionId = function(eventId, condit
  */
 APP.ajax_post_events_eventId_actions = function(eventId, id, scope, itemType, method, callback, error) {
     APP.ajax('POST', APP.URL.EVENTS_EVENTID_ACTIONS(eventId) + '?' + 
-    APP.API.EVENTS.RULE.ACTION.ID + '=' + encodeURIComponent(id) + '?' + 
+    APP.API.EVENTS.RULE.ACTION.ID + '=' + encodeURIComponent(id) + '&' + 
     APP.API.EVENTS.RULE.ACTION.SCOPE + '=' + encodeURIComponent(scope) + '&' + 
     APP.API.EVENTS.RULE.ACTION.ITEM_TYPE + '=' + encodeURIComponent(itemType) + '&' + 
     APP.API.EVENTS.RULE.ACTION.METHOD + '=' + encodeURIComponent(method),
@@ -674,7 +674,7 @@ APP.ajax_post_events_eventId_actions = function(eventId, id, scope, itemType, me
  *
  */
 APP.ajax_put_events_eventId_actions_actionId = function(eventId, actionId, id, scope, itemType, method, callback, error) {
-    APP.ajax('PUT', APP.URL.EVENTS_EVENTID_ACTIONS_ACTIONID(eventId, actionId) + '?' + 
+    APP.ajax('PUT', APP.URL.EVENTS_EVENTID_ACTIONS_ACTIONID(eventId, actionId) + '&' + 
     APP.API.EVENTS.RULE.ACTION.ID + '=' + encodeURIComponent(id) + '&' + 
     APP.API.EVENTS.RULE.ACTION.SCOPE + '=' + encodeURIComponent(scope) + '&' + 
     APP.API.EVENTS.RULE.ACTION.ITEM_TYPE + '=' + encodeURIComponent(itemType) + '&' + 
