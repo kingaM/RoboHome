@@ -2,8 +2,9 @@ class Event():
     """
     Represents an event that can br triggered by items in the house
     """
-    def __init__(self, id, type, item, room, trigger, enabled):
+    def __init__(self, id, name, type, item, room, trigger, enabled):
         self.id = id
+        self.name = name
         self.type = type
         self.item = item
         self.room = room
@@ -17,10 +18,11 @@ class Condition():
     """
     Represents a condition that is checked upon an event being triggered
     """
-    def __init__(self, id, item, method, equivalence, value):
+    def __init__(self, id, item, method, methodName, equivalence, value):
         self.id = id
         self.item = item
         self.method = method
+        self.methodName = methodName
         self.equivalence = equivalence
         self.value = value
 
@@ -48,11 +50,12 @@ class Action():
     """
     Represents an action that is performed as a result of an event's conditions being satisfied
     """
-    def __init__(self, id, item, room, method, _type):
+    def __init__(self, id, item, room, method, methodName, _type):
         self.id = id
         self.item = item
         self.room = room
         self.method = method
+        self.methodName = methodName
         self.type = _type
 
     def isAllItemsInHouse(self):

@@ -161,27 +161,77 @@ def events(version):
         return jsonify(pack(house.getRules()))
 
     if request.method == 'POST':
-        # Create a new event
-        pass
+        args = request.args.to_dict()
+        house.addEvent(args["ruleName"], args["itemType"], int(args["id"]), args["scope"], int(args["value"]), args["enabled"])
+        return jsonify(pack('success'))
 
 
-@app.route('/version/<string:version>/events/<int:eventId>/', methods=['GET', 'PUT', 'DELETE'])
+@app.route('/version/<string:version>/events/<int:eventId>/', methods=['PUT', 'DELETE'])
 def events_eventId(version, eventId):
     if g.user is None and not isIpOnLocalNetwork():
         return redirect(url_for('login'))
-    if request.method == 'GET':
-        # Return event
-        pass
 
     if request.method == 'PUT':
         # Update event
-        pass
+        args = request.args.to_dict()
+        house.updateEvent(args["ruleName"], args["itemType"], int(args["id"]), args["scope"], int(args["value"]), args["enabled"], int(eventId))
+        return jsonify(pack('success'))
 
     if request.method == 'DELETE':
-        # Remove event
+        # Delete event
+        house.deleteEvent(int(eventId))
+        return jsonify(pack('success'))
+
+@app.route('/version/<string:version>/events/<int:eventId>/conditions/', methods=['POST'])
+def events_eventId_conditions(version, eventId):
+    if g.user is None and not isIpOnLocalNetwork():
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        args = request.args.to_dict()
+        house.addCondition(int(args["itemId"]), args["equivalence"], int(args["value"]), int(eventId))
+        return(jsonify(pack('success')))
+
+
+@app.route('/version/<string:version>/events/<int:eventId>/conditions/<int:conditionId>/', methods=['GET', 'PUT', 'DELETE'])
+def events_eventId_conditions_conditionId(version, eventId, conditionId):
+    if g.user is None and not isIpOnLocalNetwork():
+        return redirect(url_for('login'))
+
+    if request.method == 'PUT':
+        args = request.args.to_dict()
+        house.updateCondition(int(args["itemId"]), args["equivalence"], int(args["value"]), int(eventId), int(conditionId))
+        return(jsonify(pack('success')))
+
+    if request.method == 'DELETE':
+        house.deleteCondition(int(eventId), int(conditionId))
+        return(jsonify(pack('success')))
+
+
+@app.route('/version/<string:version>/events/<int:eventId>/actions/', methods=['POST'])
+def events_eventId_actions(version, eventId):
+    if g.user is None and not isIpOnLocalNetwork():
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        return(jsonify(pack('success')))
+
+
+@app.route('/version/<string:version>/events/<int:eventId>/actions/<int:actionId>/', methods=['GET', 'PUT', 'DELETE'])
+def events_eventId_actions_actionId(version, eventId, actionId):
+    if g.user is None and not isIpOnLocalNetwork():
+        return redirect(url_for('login'))
+        
+    if request.method == 'GET':
         pass
+    
+    if request.method == 'PUT':
+        return(jsonify(pack('success')))
+        
+    if request.method == 'DELETE':
+        return(jsonify(pack('success')))
 
-
+        
 @app.route('/version/<string:version>/whitelist/', methods=['GET', 'POST', 'DELETE'])
 def whitelist(version):
     if g.user is None and not isIpOnLocalNetwork():

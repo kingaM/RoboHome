@@ -5,19 +5,61 @@ if (!isset($_SESSION['id'])) {
     // Redirection to login page twitter or facebook
     header("location: index.php?e=1");
 }
-	include('header.php');
+$id = $_SESSION['id'];
+include('opendb.php');
+include('header.php');
+if (isset($_POST['submitted'])) {
+	$name = $_POST['name'];
+	$ip = $_POST['ip'];
+	$sql="INSERT INTO rpi (users_id, name, status, ip_address) VALUES ('$id', '$name', 0, '$ip')";
+	if (!mysql_query($sql))
+	{
+		  die('Error: ' . mysql_error());
+	}
+	echo ' Thank You! Added new RPi ';
+}
+if (isset($_POST['delete'])) {
+	$row_id = $_POST['row_id'];
+	$sql="DELETE FROM rpi WHERE rpi_id='$row_id'";
+	if (!mysql_query($sql))
+	{
+		  die('Error: ' . mysql_error());
+	}
+	echo ' Deleted ';
+}
 ?>
-		<!-- Table -->
+
+<!-- Users Table -->
 <p>
 <div class="well">
 <?php
-echo '<h1>Welcome</h1>';
-echo '<br/>Name : ' . $_SESSION['username'];
-echo '<br/>Email : ' . $_SESSION['email'];
-echo '<br/>You are login with : ' . $_SESSION['oauth_provider'];
-echo '<br/>Logout from <a href="logout.php?logout">' . $_SESSION['oauth_provider'] . '</a>';
+echo '<h1>Welcome '. $_SESSION['username'] .' !</h1>';
+echo '<br/><font color="#A52A2A">Email</font> : ' . $_SESSION['email'];
+echo '<br/><font color="#A52A2A">You are login with :</font> ' . $_SESSION['oauth_provider'];
+echo '<br/><a href="logout.php?logout">Logout</a>';
 ?>
 </p>
+</div>
+
+</p>
+<a href="#myModal" role="button" class="btn btn-small btn btn-warning" data-toggle="modal">Add a new RPi</a>
+ <p><!-- Modal -->
+<div id="myModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Add a new RPi</h3>
+  </div>
+  <form action="home.php" method="post">
+  <div class="modal-body">
+    <p>Name:<br /><input name="name" type="text" placeholder="Ex: Home 1"></p>
+    <p>IP Address:<br /><input name="ip" type="text" placeholder="Ex: 192.168.0.1"></p>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </div>
+  <input type="hidden" name="submitted" value="TRUE" />
+  </form>
 </div>
 </p>
 
@@ -27,32 +69,40 @@ echo '<br/>Logout from <a href="logout.php?logout">' . $_SESSION['oauth_provider
                   <th width="6%">#</th>
                   <th width="14%">Name</th>
                   <th width="16%">Status</th>
-                  <th width="22%">IP Adress</th>
+                  <th width="22%">IP Address</th>
                   <th width="42%">Action</th>
                 </tr>
-              </thead>
+   </thead>
               <tbody>
-                <tr>
-                  <td>1</td>
-                  <td>Home</td>
-                  <td>Available</td>
-                  <td>192.168.0.1</td>
-                  <td><button class="btn btn-mini btn-primary" type="button">Edit</button> <button class="btn btn-mini btn-danger" type="button">Delete</button></td>
-                </tr>
-                <tr>
-                  <td>2</td>
-                  <td>Office</td>
-                  <td>Available</td>
-                  <td>192.168.0.2</td>
-                  <td><button class="btn btn-mini btn-primary" type="button">Edit</button> <button class="btn btn-mini btn-danger" type="button">Delete</button></td>
-                </tr>
+              <?php
+              $query = "select * from rpi where users_id = '$id'";
+			  $result = mysql_query ($query);
+			  $count = 1;
+				while($row = mysql_fetch_assoc($result))
+				{
+					echo '<tr>';
+					echo '<td>'.$count.'</td>';
+					echo '<td><a href="http://'.$row["ip_address"].'">'.$row["name"].'</td></a>';
+					if($row["status"] == '0'){echo '<td>Not available</td>';}else{echo '<td>Available</td>';}
+					echo '<td>'.$row["ip_address"].'</td>';
+					echo '<form action="home.php" method="post">';
+					//<button class="btn btn-mini btn-primary" type="button">Edit</button>
+					echo '<input type="hidden" name="row_id" value="'.$row["rpi_id"].'" />';
+					echo '<td><button type="submit" class="btn btn-mini btn-danger">Delete</button></td>';
+					echo '<input type="hidden" name="delete" value="TRUE" />';
+					echo '</form>';
+					echo '</tr>';
+					$count++;
+				}
+			  ?>             
+                
               </tbody>
-            </table>
+        </table>
 
       <hr>
 
       <div class="footer">
-        <p>&copy; RoboHome 2013</p>
+        <center><p>&copy; RoboHome 2013</p></center>
       </div>
 
     </div> <!-- /container -->

@@ -2,8 +2,8 @@ from item import *
 import eca
 from priorityQueue import MyPriorityQueue
 from threading import Thread
-
-types = {'motionSensor' : Item , 'lightSensor' : Item, 'temperatureSensor' : Item , 'energyMonitor' : Item , 'button' : Item , 'door' : Openable, 'window' : Openable, 'curtain' : Openable, 'plug' : OnOff, 'light' : Lights, 'radiator' : RadiatorValve}
+import staticData as data
+from listeners import ListenerManager
 
 class House(object):
     """
@@ -15,7 +15,10 @@ class House(object):
         self.rooms = {}
         self.events = []
         self.queue = MyPriorityQueue()
+        self.listenerManager = ListenerManager()
+        self.listenerManager.addListener(self.reactToEvent)
         self.methodThread = Thread(name="Method Thread", target=self.executeFromQueue)
+        self.methodThread.daemon = True
         self.methodThread.start()
 
     def initFromDatabase(self):
@@ -28,21 +31,21 @@ class House(object):
             if len(items) > 0:
                 for item in items:
                     type = self.database.types.getNameForId(item[5])
-                    self.rooms[room[0]].items[item[0]] = (types[type](item[0], item[1], item[2],  type, item[3]))
+                    self.rooms[room[0]].items[item[0]] = (data.types[type](item[0], item[1], item[2],  type, item[3], self.listenerManager))
 
         events = self.database.events.getEvents()
 
         for e in events:
-            if e[3] is not None:
-                tempRoom = self.rooms[e[3]]
+            if e[4] is not None:
+                tempRoom = self.rooms[e[4]]
             else:
                 tempRoom = None
-            self.events.append(eca.Event(e[0], e[1], self.getItemById(e[2]), tempRoom, e[4], e[5]))
+            self.events.append(eca.Event(e[0], e[1], e[2], self.getItemById(e[3]), tempRoom, e[5], e[6]))
 
         for e in self.events:
             conditions = self.database.conditions.getConditionsForEvent(e)
             for c in conditions:
-                e.conditions.append(eca.Condition(c[0], self.getItemById(c[1]), c[2], c[3], c[4]))
+                e.conditions.append(eca.Condition(c[0], self.getItemById(c[1]), c[2], c[3], c[4], c[5]))
 
             actions = self.database.actions.getActionsForEvent(e)
             for a in actions:
@@ -50,7 +53,7 @@ class House(object):
                     tempRoom = self.rooms[a[2]]
                 else:
                     tempRoom = None
-                e.actions.append(eca.Action(a[0], self.getItemById(a[1]), tempRoom, a[3], a[4]))
+                e.actions.append(eca.Action(a[0], self.getItemById(a[1]), tempRoom, a[3], a[4], a[5]))
 
     def addRoom(self, name):
         """
@@ -68,13 +71,30 @@ class House(object):
     def updateRoom(self, roomId, name):
         """
         Updates a specific room
-`
+
         Arguments:
         roomId -- the id of the room
         name -- new name for the given room
         """
-        self.database.room.updateEntry(roomId, name)
-        self.rooms[roomId] = Room(roomId, name)
+        if roomId in self.rooms:
+            self.database.room.updateEntry(roomId, name)
+            self.rooms[roomId] = Room(roomId, name)
+        else:
+            raise KeyError("Invalid roomId")
+
+    def deleteRoom(self, roomId):
+        """
+        Deletes a specific roomId
+
+        Arguments:
+        roomId -- the id of the room to delete
+        """
+        if roomId in self.rooms:
+            self.database.room.deleteEntryByID(roomId)
+            del self.rooms[roomId]
+        else:
+            raise KeyError("Invalid roomId")
+
 
     def addItem(self, roomId, name, brand, type, ip):
         """
@@ -87,13 +107,53 @@ class House(object):
         type -- the type of the item (e.g. motionSensor)
         ip -- the ip of the item
         """
+        if roomId in self.rooms:
+            typeId = self.database.types.getIdForName(type)
+            itemId = self.database.items.addEntry(name, brand, ip, roomId, typeId)
+            item = data.types[type](itemId, name, brand, type, ip, self.listenerManager)
+            self.rooms[roomId].addItem(itemId, item)
+        else:
+            raise KeyError("Invalid roomId")
+        return itemId
 
-        typeId = self.database.types.getIdForName(type)
-        itemId = self.database.items.addEntry(name, brand, ip, roomId, typeId)
-        item = types[type](itemId, name, brand, type, ip)
-        self.rooms[roomId].addItem(itemId, item)
+    def updateItem(self, roomId, itemId, name, brand, type, ip):
+        """
+        Updates an item to the house system and the database
+
+        Arguments:
+        roomId  -- the id of the room in which the item is
+        itemId -- the id of the room to update
+        name -- new/current if unchanged name of the item
+        brand -- new/current if unchanged brand of the item (e.g. arduino)
+        type -- new/current if unchanged type of the item (e.g. motionSensor)
+        ip -- tnew/current if unchangedhe ip of the item
+        """
+        if roomId in self.rooms and itemId in self.rooms[roomId].items:
+            typeId = self.database.types.getIdForName(type)
+            self.rooms[roomId].items[itemId].name = name
+            self.rooms[roomId].items[itemId].brand = brand
+            self.rooms[roomId].items[itemId].ip = ip
+            self.rooms[roomId].items[itemId]._type = type
+            self.rooms[roomId].items[itemId].roomId = roomId
+            self.database.items.updateEntry(itemId, name, brand, ip, roomId, typeId)
+        else:
+            raise KeyError("Invalid roomId or itemId")
 
         return itemId
+
+    def deleteItem(self, roomId, itemId):
+        """
+        Deletes an item 
+
+        Arguments:
+        roomId -- the id of the room in which the item is
+        itemid -- the id of the item to be deleted
+        """
+        if roomId in self.rooms and itemId in self.rooms[roomId].items:
+            self.database.items.deleteEntry(itemId)
+            del self.rooms[roomId].items[itemId]
+        else:
+            raise KeyError("Invalid roomId or itemId")
 
     def getItemById(self, itemId):
         """
@@ -152,13 +212,276 @@ class House(object):
         """
         Returns the state of the house
         """
-        pass
+        states = []
+        for r in self.rooms:
+            states = states + self.rooms[r].getState()
+        return {'states' : states}
 
     def getVersion(self):
         """
         Returns the API version that this house is compatible with
         """
-        pass
+        methods = self.database.getMethodsWithTypes()
+        methodList = [[]]
+        namesList = []
+        j = 0
+        for i in range(0, len(methods)):
+            temp = i+1
+            if temp > len(methods) - 1:
+                temp = 0
+            if methods[i][0] == methods[temp][0]:
+                methodList[j].append(methods[i][1])
+            else:
+                namesList.append(methods[i][0])
+                methodList.append([])
+                methodList[j].append(methods[i][1])
+                j +=1
+        methodsJSON = zip(namesList, methodList)
+        dictVersion = {}
+        for m in methodsJSON:
+            dictVersion[m[0]] = {'name' : data.typesNice[m[0]], 'isPassive' : data.passive[data.types[m[0]]], 'methods': m[1], 'supportedBrands' : ['arduino'], 'states' : data.states[m[0]]}
+        finalDict = {}
+        finalDict['supportedTypes'] = dictVersion
+        return finalDict
+
+    def getRules(self):
+        """
+        Returns ECA Rules in the correct API format
+        """
+
+        rules = []
+
+        for event in self.events:
+            ruleJSON = {"ruleId": event.id, "ruleName": event.name, "enabled": bool(event.enabled)}
+
+            eventJSON = {"itemType": event.type}
+
+            value = None
+            for state in data.states[event.type]:
+                if state["name"] == event.trigger:
+                    value = state["id"]
+                    break
+
+            eventJSON["value"] = value
+
+            if not event.item is None:
+                eventJSON["id"] = event.item._id
+                eventJSON["scope"] = "item"
+            elif not event.room is None:
+                eventJSON["id"] = event.room.id
+                eventJSON["scope"] = "room"
+            else:
+                eventJSON["id"] = None
+                eventJSON["scope"] = "house"
+
+            ruleJSON["event"] = eventJSON
+
+            conditionsJSON = []
+            ruleJSON["conditions"] = conditionsJSON
+
+            for c in event.conditions:
+                conditionsJSON.append({"conditionId": c.id, "itemId": c.item._id, "itemType": c.item._type, "method": c.methodName, "equivalence": c.equivalence, "value": c.value})
+
+            actionsJSON = []
+            ruleJSON["actions"] = actionsJSON
+
+            for a in event.actions:
+                actionJSON = {"actionId": a.id, "method": a.methodName, "itemType": a.type}
+
+                if not a.item is None:
+                    actionJSON["id"] = a.item._id
+                    actionJSON["scope"] = "item"
+                elif not a.room is None:
+                    actionJSON["id"] = a.room.id
+                    actionJSON["scope"] = "room"
+                else:
+                    actionJSON["id"] = None
+                    actionJSON["scope"] = "house"
+
+                actionsJSON.append(actionJSON)
+
+            rules.append(ruleJSON)
+
+        return {"rules": rules}
+
+    def addEvent(self, name, _type, _id, scope, value, enabled):
+        """
+        Adds an event to the house and database
+
+        Arguments:
+        name -- the name of the rule
+        _type -- the type of the item the event concerns
+        _id -- the id of the item/room which depends on scope
+        scope -- the scope of the event ("item"/"room"/"house")
+        value -- the triggering state of the item
+        enabled -- whether the rule is enabled (1/0)
+        """
+        trigger = None
+        for state in data.states[_type]:
+            if state["id"] == value:
+                trigger = state["name"]
+                break
+        if trigger is None:
+            raise Exception("Invalid type and value combination")
+        if scope == "item":
+            item = self.getItemById(_id)
+            room = None
+        elif scope == "room":
+            item = None
+            room = self.rooms[_id]
+        elif scope == "house":
+            item = None
+            room = None
+        else:
+            raise Exception("Invalid scope parameter")
+        event = eca.Event(name, _type, item, room, trigger, enabled)
+        self.events.append(event)
+        self.database.events.addEntry(event)
+
+    def updateEvent(self, name, _type, _id, scope, value, enabled, eventId):
+        """
+        Updates an event to the house and database
+
+        Arguments:
+        name -- the name of the rule
+        _type -- the type of the item the event concerns
+        _id -- the id of the item/room which depends on scope
+        scope -- the scope of the event ("item"/"room"/"house")
+        value -- the triggering state of the item
+        enabled -- whether the rule is enabled (1/0)
+        """
+        trigger = None
+        for state in data.states[_type]:
+            if state["id"] == value:
+                trigger = state["name"]
+                break
+        if trigger is None:
+            raise Exception("Invalid type and value combination")
+        if scope == "item":
+            item = self.getItemById(_id)
+            room = None
+        elif scope == "room":
+            item = None
+            room = self.rooms[_id]
+        elif scope == "house":
+            item = None
+            room = None
+        else:
+            raise Exception("Invalid scope parameter")
+        e = None
+        for event in self.events:
+            if event.id == eventId:
+                event.name = name
+                event.type = _type
+                event.item = item
+                event.room = room
+                event.trigger = trigger
+                event.enabled = enabled
+                e = event
+                break
+        if e is None:
+            raise Exception("Invalid event ID")
+        self.database.events.updateEntry(e)
+
+    def deleteEvent(self, eventId):
+        """
+        Deletes an event from the house and database
+
+        Arguments:
+        eventId -- the id of the event to be deleted
+        """
+        e = None
+        for event in self.events:
+            if event.id == eventId:
+                e = event
+                self.events.remove(e)
+                break
+        if e is None:
+            raise Exception("Invalid event ID")
+        self.database.events.removeEntry(e)
+        # Conditions and Actions for this event will also be deleted by the database
+
+    def addCondition(self, itemId, equivalence, value, eventId):
+        """
+        Adds a condition to the correct event and the database
+
+        Arguments:
+        itemId -- the id of the item the condition concerns
+        equivalence -- the equivalence to use on the item state and the value
+        value -- the state needed for the equivalence to pass
+        eventId -- the id of the event this condition is matched to
+        """
+        if equivalence == "is":
+            equivalence = "="
+        methodName = self.database.methods.getNiceStateName(itemId)
+        condition = eca.Condition(None, self.getItemById(itemId), "getState", methodName, equivalence, value)
+        self.database.conditions.addEntry(condition, eventId)
+        for e in self.events:
+            if e.id == eventId:
+                e.conditions.append(condition)
+
+    def updateCondition(self, itemId, equivalence, value, eventId, conditionId):
+        """
+        Updates a condition to the correct event and the database
+
+        Arguments:
+        conditionId -- the id of the condition to be updated
+        itemId -- the id of the item the condition concerns
+        equivalence -- the equivalence to use on the item state and the value
+        value -- the state needed for the equivalence to pass
+        eventId -- the id of the event this condition is matched to
+        """
+        if equivalence == "is":
+            equivalence = "="
+        event = None
+        for e in self.events:
+            if e.id == eventId:
+                event = e
+                break
+        if event is None:
+            raise Exception("Invalid event id")
+        condition = None
+        for c in event.conditions:
+            if c.id == conditionId:
+                condition = c
+                break
+        if condition is None:
+            raise Exception("Invalid condition id")
+
+        methodName = self.database.methods.getNiceStateName(itemId)
+
+        condition.item = self.getItemById(itemId)
+        condition.method = "getState"
+        condition.methodName = methodName
+        condition.equivalence = equivalence
+        condition.value = value
+
+        self.database.conditions.updateEntry(condition, eventId)
+
+    def deleteCondition(eventId, conditionId):
+        """
+        Deletes a condition from the house and database
+
+        Arguments:
+        eventId -- the id of the event this condition is matched to
+        conditionId -- the id of the condition to be deleted
+        """
+        event = None
+        for e in self.events:
+            if e.id == eventId:
+                event = e
+                break
+        if event is None:
+            raise Exception("Invalid event id")
+        condition = None
+        for c in event.conditions:
+            if c.id == conditionId:
+                condition = c
+                break
+        if condition is None:
+            raise Exception("Invalid condition id")
+        event.conditions.remove(condition)
+        self.database.conditions.removeEntry(conditionId)
 
     def getEventsForTrigger(self, item, trigger):
         """
@@ -184,6 +507,7 @@ class House(object):
         ip -- the IP address of the item that sent the trigger
         trigger -- the name of the trigger
         """
+
         item = self.getItemByIP(ip)
 
         possibleEvents = self.getEventsForTrigger(item, trigger)
@@ -224,8 +548,7 @@ class House(object):
         """Executes method from the queue, run in a seperate thread"""
         while True:
             if not self.queue.empty():
-                executeMethod(*self.queue.get())
-
+                self.executeMethod(*self.queue.get())
 
     def addToQueue(self, roomId, itemId, method, args=[]):
         """
@@ -251,7 +574,6 @@ class House(object):
         """
         return getattr(self.rooms[roomId].items[itemId], method)(*args)
 
-
 class Room:
     """
     A class to represent a room inside the house
@@ -273,4 +595,8 @@ class Room:
 
     def getStructure(self):
         """Returns a structure of the room as a dict"""
-        return {'id' : self.id, 'name' : self.name, 'items': [ {'id' : self.items[i]._id, 'name' : self.items[i].name, 'itemType' : self.items[i]._type, 'brand' : self.items[i].brand, 'ip' : self.items[i].ip} for i in self.items]}
+        return {'id' : self.id, 'name' : self.name, 'items': [ {'id' : self.items[i]._id, 'name' : self.items[i].name, 'itemType' : self.items[i]._type, 'brand' : self.items[i].brand, 'ip' : self.items[i].ip, 'state' : self.items[i].getState()} for i in self.items]}
+
+    def getState(self):
+        """Returns a list of states of all the items in the room as a dict"""
+        return [ {'id' : self.items[i]._id, 'state' : self.items[i].getState()} for i in self.items]

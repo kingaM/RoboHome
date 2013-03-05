@@ -58,6 +58,8 @@ body {
 #wrapper-right {
     width: 80%;
     background-image: url('../img/grid.png');
+    background-attachment: fixed;
+    background-position: center 0;
 }
 
 #wrapper-primary {
@@ -114,9 +116,19 @@ body {
 #bar-left .pretty-border.horizontal > .middle { width: 80%; }
 #bar-left .pretty-border.horizontal > .right { width: 10%; }
 
+/*
 #left-panel {
-    overflow-y: auto;
+            margin: 0 1.5em 0 0;
+            overflow: auto;
+    -webkit-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+       -moz-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+        -ms-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+         -o-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+            box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+            background-color: rgba(0,200,200,0.1);
+            background-image: url('../img/grid.png');
 }
+*/
 
 #time, #day, #date, #time, #am-pm, #day, #date {
     font-family: 'serene';
@@ -186,10 +198,145 @@ body {
     font-size: 1.2em;
 }
 
+/* ----- error message display ----- */
+.error-message-display {
+    font-size: 0.8em;
+    color: rgba(196,30,30,1);
+}
+
+/* ----- context menus ----- */
+.context-menu-inner-wrapper {
+    margin-right: 0.5em;
+    background-image: url('../img/grid.png');
+    background-attachment: fixed;
+    background-position: center 0;
+}
+
+.context-menu-content {
+    border: 1px solid #666666;
+    background-color: rgba(0,200,200,0.1);
+    padding: 0.5em;
+}
+
+#context-menu h1 {
+    font-size: 0.9em;
+    margin-top: 0;
+    margin-bottom: 0.5em;
+}
+
+#context-menu h2 {
+    font-size: 0.9em;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+}
+
+#context-menu fieldset {
+            margin: 0.5em 0;
+            padding: 0.5em;
+            border: 1px solid #666666;
+    -webkit-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+       -moz-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+        -ms-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+         -o-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+            box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+}
+
+#context-menu fieldset > div {
+    margin: -1em -0.5em -0.5em -0.5em;
+    padding: 1em 0.5em 0.5em 0.5em;
+}
+
+#context-menu legend {
+    font-weight: bold;
+    font-size: 0.8em;
+}
+
+#context-menu input {
+            display: inline-block;
+            min-width: 60%;
+            padding: 0.2em 0.4em;
+            margin: 0.2em 0;
+            text-decoration: none;
+            font-size: 0.8em;
+            color: #FFFFFF;
+            border: 1px solid #666666;
+            background: rgba(0,200,200,0.2);
+    -webkit-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+       -moz-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+        -ms-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+         -o-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+            box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+}
+#context-menu input::-webkit-input-placeholder { color: rgba(50,184,191,1); }
+#context-menu input::-moz-placeholder { #color: rgba(50,184,191,1); }
+#context-menu input:-moz-placeholder { #color: rgba(50,184,191,1); }
+#context-menu input:ms-input-placeholder { #color: rgba(50,184,191,1); }
+
+#context-menu .button {
+            display: inline-block;
+            text-decoration: none;
+            font-size: 0.8em;
+            border: 1px solid #666666;
+            background: rgba(0,200,200,0.3);
+            padding: 0.2em;
+            margin: 0.2em 0 0.2em 0.5em;
+            min-width: 6em;
+            text-align: center;
+            font-family: 'serene';
+    -webkit-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+       -moz-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+        -ms-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+         -o-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+            box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+}
+
+#context-menu input:hover,
+#context-menu .button:hover {
+    border: 1px solid rgb(229,151,0);
+    background: rgba(0,200,200,0.4);
+}
+
+#context-menu .select-wrapper {
+            margin: 2px;
+            display: inline-block;
+            background: rgba(0,200,200,0.2);
+    -webkit-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+       -moz-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+        -ms-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+         -o-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+            box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+}
+
+#context-menu select {
+    font-size: 0.8em;
+    color: white;
+    min-width: 64%;
+    padding: 0.2em;
+    margin: 0.2em 0;
+    border: 1px solid #666666;
+    background: transparent;
+}
+
+#context-menu optgroup,
+#context-menu option {
+    color: #000000;
+    font-size: 1em;
+    background-color: #FFFFFF;
+}
+
+#context-menu select:hover {
+    border: 1px solid rgb(299,151,0);
+}
+
+#context-bar {
+    margin: 0 1em 1em 1em;
+    font-size: 0.8em;
+    color: rgba(196,30,30,1);
+}
+
 /* ----- stages ----- */
 .stage {
             z-index: 1;
-            padding: 1.5em;
             transition-timing-function: ease-out;
     -webkit-transition-property: left;
        -moz-transition-property: left;
@@ -227,7 +374,7 @@ div.stage {
 }
 
 .stage-content .entity-display {
-            padding: 1em;
+            padding: 0.5em 1em;
             margin: 0.5em 0;
             border: 1px solid #666666;
             overflow: auto;
@@ -239,14 +386,10 @@ div.stage {
             background-color: transparent;
 }
 
-.stage-content .entity-display:hover {
-    background-color: rgba(255,255,255,0.1);
-}
-
 .stage-content > .entity-display.item-type {
     width: 29%;
     float: left;
-    margin: 0 0.5em 0.5em 0.5em;
+    margin: 0 0.5em 1em 0.5em;
     background-color: rgba(0,200,200,0.1);
             transition-timing-function: ease-out;
     -webkit-transition-property: width;
@@ -260,31 +403,29 @@ div.stage {
          -o-transition-duration: 0.5s;
 }
 
-.stage-content > .entity-display.item-type:hover {
-    background-color: rgba(0,200,200,0.2);
-}
-
 @media only screen and (max-width: 1200px) {
     .stage-content > .entity-display.item-type {
         width: 41.5%;
-        font-size: 200%;
+        font-size: 180%;
     }
 }
 
 @media only screen and (max-width: 600px) {
     .stage-content > .entity-display.item-type {
-        width: 92%;
+        width: 88%;
         font-size: 300%;
     }
 }
 
-/*
-.stage-content .entity-display.door { border-left: 0.15em solid rgba(0,134,191,1); }
-.stage-content .entity-display.lock { border-left: 0.15em solid rgba(196,30,30,1); }
-.stage-content .entity-display.window { border-left: 0.15em solid rgba(93,33,182,1); }
-.stage-content .entity-display.curtain { border-left: 0.15em solid rgba(93,33,182,1); }
-.stage-content .entity-display.light { border-left: 0.15em solid rgba(255,233,21,1); }
-*/
+.stage-content .entity-display .item {
+    cursor: pointer;
+    background-color: rgba(0,200,200,0.1);
+}
+
+.stage-content .entity-display.item:hover {
+    background-color: rgba(0,200,200,0.2);
+    border: 1px solid rgb(229, 151, 0);
+}
 
 .stage-content .entity-display .info-bar {
     width: 100%;
@@ -295,19 +436,67 @@ div.stage {
     float: left;
 }
 
+.stage-content .entity-display.item {
+    padding: 0;
+}
+
 .stage-content .entity-display.item .info-bar {
+    margin: 1em;
     width: auto;
     display: inline-block;
 }
 
 .stage-content .entity-display h1 {
     display: inline-block;
-    font-size: 1em;
+    font-size: 0.9em;
     margin: 0;
 }
 
 .stage-content .entity-display.item h1 {
     font-size: 0.9em;
+}
+
+.stage-content .entity-display.item:active {
+    border: 1px solid #FFFFFF;
+}
+
+@-webkit-keyframes updating {
+    from { background-position: 0 50%; }
+    to   { background-position: 2em 50%; }
+}
+@-moz-keyframes updating {
+    from { background-position: 0 50%; }
+    to   { background-position: 2em 50%; }
+}
+@-ms-keyframes updating {
+    from { background-position: 0 50%; }
+    to   { background-position: 2em 50%; }
+}
+@-o-keyframes updating {
+    from { background-position: 0 50%; }
+    to   { background-position: 2em 50%; }
+}
+@keyframes updating {
+    from { background-position: 0 50%; }
+    to   { background-position: 2em 50%; }
+}
+
+.updating {
+            background-color: transparent;
+            background-repeat: repeat;
+            background-size: 2em 2em;
+            background-position: 0 50%;
+            background-image:        -webkit-gradient(linear, left top, right bottom, color-stop(0%,transparent), color-stop(25%,transparent), color-stop(25%,rgba(255, 255, 255, 0.1)), color-stop(50%,rgba(255, 255, 255, 0.1)), color-stop(50%,transparent), color-stop(75%,transparent), color-stop(75%,rgba(255, 255, 255, 0.1)), color-stop(100%,rgba(255, 255, 255, 0.1)));
+            background-image: -webkit-linear-gradient(315deg, transparent, transparent 25%, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.1) 50%, transparent 50%, transparent 75%, rgba(255, 255, 255, 0.1) 75%, rgba(255, 255, 255, 0.1) 100%);
+            background-image:    -moz-linear-gradient(315deg, transparent, transparent 25%, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.1) 50%, transparent 50%, transparent 75%, rgba(255, 255, 255, 0.1) 75%, rgba(255, 255, 255, 0.1) 100%);
+            background-image:     -ms-linear-gradient(315deg, transparent, transparent 25%, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.1) 50%, transparent 50%, transparent 75%, rgba(255, 255, 255, 0.1) 75%, rgba(255, 255, 255, 0.1) 100%);
+            background-image:      -o-linear-gradient(315deg, transparent, transparent 25%, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.1) 50%, transparent 50%, transparent 75%, rgba(255, 255, 255, 0.1) 75%, rgba(255, 255, 255, 0.1) 100%);
+            background-image:         linear-gradient(315deg, transparent, transparent 25%, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.1) 50%, transparent 50%, transparent 75%, rgba(255, 255, 255, 0.1) 75%, rgba(255, 255, 255, 0.1) 100%);
+    -webkit-animation: updating 1s linear infinite;
+       -moz-animation: updating 1s linear infinite;
+        -ms-animation: updating 1s linear infinite;
+         -o-animation: updating 1s linear infinite;
+            animation: updating 1s linear infinite;
 }
 
 .stage-content .entity-display span {
@@ -317,6 +506,23 @@ div.stage {
     display: block;
 }
 
+.stage-content .entity-display .status {
+    font-family: 'serene';
+}
+
+.stage-content .entity-display.item .status {
+    margin: 1em;
+}
+
+.stage-content .entity-display.item.connection-error .status {
+    color: rgba(196,30,30,1);
+}
+
+.stage-content .entity-display.item.connection-error .status:before {
+    margin-right: 0.3em;
+    content: url('../img/ajax-loader.gif');
+}
+
 .stage-content .entity-display .attachments.self {
     display: inline-block;
     float: right;
@@ -324,288 +530,452 @@ div.stage {
     text-align: center;
 }
 
-.stage-content .entity-display .attachments.self > .attachment {
-    background-image:        -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,255,255,0.2)), color-stop(30%,rgba(255,255,255,0)));
-    background-image: -webkit-linear-gradient(top, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
-    background-image:    -moz-linear-gradient(top, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
-    background-image:     -ms-linear-gradient(top, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
-    background-image:      -o-linear-gradient(top, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
-    background-image:   linear-gradient(to bottom, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
-}
-
-.stage-content .entity-display .attachments.self > .attachment:active {
-    background-image:        -webkit-gradient(linear, left bottom, left top, color-stop(0%,rgba(255,255,255,0.2)), color-stop(30%,rgba(255,255,255,0)));
-    background-image: -webkit-linear-gradient(bottom, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
-    background-image:    -moz-linear-gradient(bottom, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
-    background-image:     -ms-linear-gradient(bottom, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
-    background-image:      -o-linear-gradient(bottom, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
-    background-image:         linear-gradient(to top, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
-}
-
-/*
-.stage-content .attachments.command,
-.stage-content .attachments.collapse {
-    display: block;
-    margin: 0 0 0 -0.5em;
-    padding: 0.5em 0.5em 0.5em 0.3em;
-    border-left: none;
-    clear: left;
-}
-.stage-content .attachments.collapse {
-    margin-top: -0.8em;
-}
-.stage-content .attachments.command > .attachment {
-    vertical-align: top;
-}
-
-.stage-content .attachments.collapse .attachment {
-    display: inline-block;
-    border: 1px solid #FF0000;
-    min-height: 1em;
-    min-width: 5.35em;
-    margin: 0.2em 0.2em;
-    text-align: center;
-}
-.stage-content .attachments.command > .attachment > div.collapse,
-.stage-content .attachments.command > .attachment .filler {
-    height: 1.2em;
-}
-.stage-content .attachments.command > .attachment > div > .sprite {
-    width: 0em;
-    height: 0em;
-    display: inline-block;
-    position: relative;
-    border-width: 0.5em;
-    border-style: solid;
-    border-color: transparent;
-    border-bottom-color: #ffffff;
-    bottom: 0.2em;
-}
-.stage-content .attachments.command > .attachment > div.collapse {
-    border: 1px solid #444444;
-    background-color: rgba(20,20,20,0.6);
-}
-.stage-content .attachments.command > .attachment > div.collapsed {
-    background-color: rgba(255,0,0,0.6);
-}
-.stage-content .attachments.command > .attachment > div.collapsed > .sprite {
-    border-color: transparent;
-    border-top-color: #ffffff;
-    bottom: 0;
-    top: 0.3em;
-}
-
-.stage-content .attachments.panel {
-    clear: both;
-}
-
-.stage-content .attachment {
-    overflow: hidden;
-}
-
-.stage-content .entity-display.door .entity-display,
-.stage-content .entity-display.window .entity-display {
-    width: 23%;
-    float: left;
-    margin-right: 1em;
-}
-
-.stage-content .entity-display .attachments.self {
-    display: inline-block;
-    margin: 0 0.5em;
-    text-align: center;
-}
-
-.stage-content .entity-display.door .attachments .self,
-.stage-content .entity-display.window .attachments .self {
-    border: none;
-    display: block;
-}
-
-.stage-content .entity-display .attachments.command > .attachment,
-.stage-content .entity-display .attachments.self > .attachment {
-    display: inline-block;
-}
-
-.stage-content .entity-display .attacments.command > .attachment > div {
-    display: block;
-}
-
-.stage-content .entity-display .attachments.command > .attachment > div,
-.stage-content .entity-display .attachments.self > .attachment {
-            cursor: pointer;
-            text-align: center;
-            margin: 0 0.2em;
-            padding: 0.3em 1em;
-            font-family: sans-serif;
-            font-weight: bold;
-            font-size: 0.7em;
-    -webkit-box-shadow: 0 0 1px 1px rgba(0,0,0,0.7) inset;
-       -moz-box-shadow: 0 0 1px 1px rgba(0,0,0,0.7) inset;
-        -ms-box-shadow: 0 0 1px 1px rgba(0,0,0,0.7) inset;
-         -o-box-shadow: 0 0 1px 1px rgba(0,0,0,0.7) inset;
-            box-shadow: 0 0 1px 1px rgba(0,0,0,0.7) inset;
-}
-
-.stage-content .entity-display .attachments.self .attachment { width: 6em; }
-.stage-content .entity-display .attachments.command .attachment > div.command { width: 5.8em; }
-.stage-content .entity-display .bar .control-button:first-child { margin-left: 1em; }
-
-.stage-content .entity-display.lock > .attachments.command > .attachment > div.command,
-.stage-content .entity-display.curtain > .attachments.command > .attachment > div.command {
-    margin: 0;
-    padding: 0.2em 0;
-    display: block;
-}
-
-.stage-content .entity-display > .attachments.command > .attachment:not(.self) {
-    white-space: pre-wrap;
-}
-
-.stage-content .entity-display .filler {
-    cursor: default !important;
-    border: 1px solid #444444;
-    background-color: rgba(20,20,20,0.6);
-    background-image:        -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,255,255,0.2)), color-stop(30%,rgba(255,255,255,0))) !important;
-    background-image: -webkit-linear-gradient(top, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%) !important;
-    background-image:    -moz-linear-gradient(top, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%) !important;
-    background-image:     -ms-linear-gradient(top, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%) !important;
-    background-image:      -o-linear-gradient(top, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%) !important;
-    background-image:   linear-gradient(to bottom, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%) !important;
-}
-
-.stage-content .entity-display[data-state-door="0"] > .attachments.command > .attachment > div.command.door,
-.stage-content .entity-display[data-state-window="0"] > .attachments.command > .attachment > div.command.window,
-.stage-content .entity-display[data-state-curtain="0"] > .attachments.command > .attachment > div.command.curtain,
-.stage-content .entity-display[data-state-lock="0"] > .attachments.command > .attachment > div.command.lock,
-.stage-content .entity-display.door[data-state-self="0"] > .attachments.self > .attachment,
-.stage-content .entity-display.window[data-state-self="0"] > .attachments.self > .attachment,
-.stage-content .entity-display.curtain[data-state-self="0"] > .attachments.self > .attachment,
-.stage-content .entity-display.lock[data-state-self="0"] > .attachments.self > .attachment {
-    border: 1px solid #444444;
-    background-color: rgba(0,150,0,0.6);
-}
-.stage-content .entity-display[data-state-door="1"] > .attachments.command > .attachment > div.command.door,
-.stage-content .entity-display[data-state-window="1"] > .attachments.command > .attachment > div.command.window,
-.stage-content .entity-display[data-state-curtain="1"] > .attachments.command > .attachment > div.command.curtain,
-.stage-content .entity-display[data-state-lock="1"] > .attachments.command > .attachment > div.command.lock,
-.stage-content .entity-display.door[data-state-self="1"] > .attachments.self > .attachment,
-.stage-content .entity-display.window[data-state-self="1"] > .attachments.self > .attachment,
-.stage-content .entity-display.curtain[data-state-self="1"] > .attachments.self > .attachment,
-.stage-content .entity-display.lock[data-state-self="1"] > .attachments.self > .attachment {
+.stage-content .no-room {
     border: 1px solid #666666;
-    background-color: rgba(255,200,0,0.6);
-}
-.stage-content .entity-display[data-state-light="0"] > .attachments.command > .attachment > div.command.light,
-.stage-content .entity-display.light[data-state-self="0"] > .attachments.self > .attachment.self {
-    border: 1px solid #444444;
-    background-color: rgba(20,20,20,0.6);
-}
-.stage-content .entity-display[data-state-light="1"] > .attachments.command > .attachment > div.command.light,
-.stage-content .entity-display.light[data-state-self="1"] > .attachments.self > .attachment {
-    border: 1px solid #AAAAAA;
-    background-color: rgba(255,255,255,0.6);
+    display: inline-block;
+    padding: 1em;
 }
 
-.stage-content .entity-display.door[data-state-self="0"] > .attachments.self > .attachment:after,
-.stage-content .entity-display.window[data-state-self="0"] > .attachments.self > .attachment:after,
-.stage-content .entity-display.curtain[data-state-self="0"] > .attachments.self > .attachment:after {
-    content: 'CLOSED';
+.stage-content .no-room input {
+            display: inline-block;
+            min-width: 60%;
+            padding: 0.2em 0.4em;
+            margin: 0.2em 0;
+            text-decoration: none;
+            font-size: 0.8em;
+            color: #FFFFFF;
+            border: 1px solid #666666;
+            background: rgba(0,200,200,0.2);
+    -webkit-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+       -moz-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+        -ms-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+         -o-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+            box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
 }
-.stage-content .entity-display[data-state-door="0"] > .attachments.command > .attachment > div.command.door:after {
-    content: 'DOORS\A CLOSED';
-}
-.stage-content .entity-display[data-state-window="0"] > .attachments.command > .attachment > div.command.window:after {
-    content: 'WINDOWS\A CLOSED';
-}
-.stage-content .entity-display[data-state-curtain="0"] > .attachments.command > .attachment > div.command.curtain:after {
-    content: 'CURTAINS\A CLOSED';
-}
-.stage-content .entity-display.door[data-state-self="1"] > .attachments.self > .attachment:after,
-.stage-content .entity-display.window[data-state-self="1"] > .attachments.self > .attachment:after,
-.stage-content .entity-display.curtain[data-state-self="1"] > .attachments.self > .attachment:after {
-    content: 'OPEN';
-}
-.stage-content .entity-display[data-state-door="1"] > .attachments.command > .attachment > div.command.door:after {
-    content: 'DOORS\A OPEN';
-}
-.stage-content .entity-display[data-state-window="1"] > .attachments.command > .attachment > div.command.window:after {
-    content: 'WINDOWS\A OPEN';
-}
-.stage-content .entity-display[data-state-curtain="1"] > .attachments.command > .attachment > div.command.curtain:after {
-    content: 'CURTAINS\A OPEN';
-}
-.stage-content .entity-display.lock[data-state-self="0"] > .attachments.self > .attachment:after {
-    content: 'ENGAGED';
-}
-.stage-content .entity-display[data-state-lock="0"] > .attachments.command > .attachment > div.command.lock:after {
-    content: 'LOCKS\A ENGAGED';
-}
-.stage-content .entity-display.lock[data-state-self="1"] > .attachments.self > .attachment:after {
-    content: 'DISENGD';
-}
-.stage-content .entity-display[data-state-lock="1"] > .attachments.command > .attachment > div.command.lock:after {
-    content: 'LOCKS\A DISENGD';
-}
-.stage-content .entity-display.light[data-state-self="0"] > .attachments.self > .attachment:after {
-    content: 'OFF';
-}
-.stage-content .entity-display[data-state-light="0"] > .attachments.command > .attachment > div.command.light:after {
-    content: 'LIGHTS\A OFF';
-}
-.stage-content .entity-display.light[data-state-self="1"] > .attachments.self > .attachment:after {
-    content: 'ON';
-}
-.stage-content .entity-display[data-state-light="1"] > .attachments.command > .attachment > div.command.light:after {
-    content: 'LIGHTS\A ON';
+.stage-content .no-room input::-webkit-input-placeholder { color: rgba(50,184,191,1); }
+.stage-content .no-room input::-moz-placeholder { #color: rgba(50,184,191,1); }
+.stage-content .no-room input:-moz-placeholder { #color: rgba(50,184,191,1); }
+.stage-content .no-room input:ms-input-placeholder { #color: rgba(50,184,191,1); }
+.stage-content .no-room input:hover {
+    border: 1px solid rgb(229, 151, 0);
 }
 
-.stage-content .entity-display[data-state-self="-1"] > .attachments.command > .attachment > div.command.self,
-.stage-content .entity-display[data-state-door="-1"] > .attachments.command > .attachment > div.command.door,
-.stage-content .entity-display[data-state-window="-1"] > .attachments.command > .attachment > div.command.window,
-.stage-content .entity-display[data-state-lock="-1"] > .attachments.command > .attachment > div.command.lock,
-.stage-content .entity-display[data-state-curtain="-1"] > .attachments.command > .attachment > div.command.curtain,
-.stage-content .entity-display[data-state-light="-1"] > .attachments.command > .attachment > div.command.light,
-.stage-content .entity-display[data-state-area="-1"] > .attachments.command > .attachment > div.command.area {
-    border: 1px solid #444444;
-    background-color: rgba(0,150,150,0.6);
+.stage-content .no-room button {
+            cursor: pointer;
+            float: right;
+            color: #FFFFFF;
+            display: inline-block;
+            text-decoration: none;
+            font-size: 0.8em;
+            border: 1px solid #666666;
+            background: rgba(0,200,200,0.3);
+            padding: 0.2em;
+            margin: 0.2em 0 0.2em 0.5em;
+            min-width: 6em;
+            text-align: center;
+            font-family: 'serene';
+    -webkit-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+       -moz-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+        -ms-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+         -o-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+            box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+}
+.stage-content .no-room button:hover {
+    border: 1px solid rgb(229, 151, 0);
 }
 
-.stage-content .entity-display[data-state-door="-1"] > .attachments.command > .attachment > div.command.door:after {
-    content: 'DOORS\A PARTIAL';
+.stage-content .eca-rule input {
+            display: inline-block;
+            padding: 0.2em 0.4em;
+            margin: 0.2em 0;
+            text-decoration: none;
+            font-size: 0.8em;
+            color: #FFFFFF;
+            padding: 0.4em;
+            border: 1px solid #666666;
+            background: rgba(0,200,0,0.2);
+    -webkit-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+       -moz-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+        -ms-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+         -o-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+            box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
 }
-.stage-content .entity-display[data-state-window="-1"] > .attachments.command > .attachment > div.command.window:after {
-    content: 'WINDOWS\A PARTIAL';
-}
-.stage-content .entity-display[data-state-lock="-1"] > .attachments.command > .attachment > div.command.lock:after {
-    content: 'LOCKS\A PARTIAL';
-}
-.stage-content .entity-display[data-state-curtain="-1"] > .attachments.command > .attachment > div.command.curtain:after {
-    content: 'CURTAINS\A PARTIAL';
-}
-.stage-content .entity-display[data-state-light="-1"] > .attachments.command > .attachment > div.command.light:after {
-    content: 'LIGHTS\A PARTIAL';
-}
-.stage-content .entity-display[data-state-area="-1"] > .attachments.command > .attachment > div.command.area:after {
-    content: 'AREAS\A PARTIAL';
+.stage-content .eca-rule input::-webkit-input-placeholder { color: rgba(132,169,14,1); }
+.stage-content .eca-rule input::-moz-placeholder { #color: rgba(132,169,14,1); }
+.stage-content .eca-rule input:-moz-placeholder { #color: rgba(132,169,14,1); }
+.stage-content .eca-rule input:ms-input-placeholder { #color: rgba(132,169,14,1); }
+
+.stage-content .eca-rule {
+            padding: 0.5em;
+            margin: 1em 0.5em;
+            border: 1px solid #666666;
+            background: rgba(0,100,0,0.1);
+    -webkit-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+       -moz-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+        -ms-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+         -o-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+            box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
 }
 
-.stage-content .entity-display[data-state-self="undefined"] > .attachments.self > .attachment,
-.stage-content .entity-display[data-state-door="undefined"] > .attachments.collapse > .attachment.door,
-.stage-content .entity-display[data-state-window="undefined"] > .attachments.collapse > .attachment.window,
-.stage-content .entity-display[data-state-lock="undefined"] > .attachments.collapse > .attachment.lock,
-.stage-content .entity-display[data-state-curtain="undefined"] > .attachments.collapse > .attachment.curtain,
-.stage-content .entity-display[data-state-light="undefined"] > .attachments.collapse > .attachment.light,
-.stage-content .entity-display[data-state-area="undefined"] > .attachments.collapse > .attachment.area,
-.stage-content .entity-display[data-state-door="undefined"] > .attachments.command > .attachment.door,
-.stage-content .entity-display[data-state-window="undefined"] > .attachments.command > .attachment.window,
-.stage-content .entity-display[data-state-lock="undefined"] > .attachments.command > .attachment.lock,
-.stage-content .entity-display[data-state-curtain="undefined"] > .attachments.command > .attachment.curtain,
-.stage-content .entity-display[data-state-light="undefined"] > .attachments.command > .attachment.light,
-.stage-content .entity-display[data-state-area="undefined"] > .attachments.command > .attachment.area {
-    display: none;
+.stage-content .eca-rule div {
+    font-size: 1em;
 }
-*/
+
+.stage-content .eca-rule-title button,
+.stage-content .eca-rule-title div {
+    display: inline-block;
+}
+
+.stage-content .eca-rule-title .error-message-display,
+.stage-content .eca-event .error-message-display,
+.stage-content .eca-condition .error-message-display,
+.stage-content .eca-action .error-message-display {
+    display: block;
+}
+
+.stage-content .eca-form-box div {
+            margin: 0.2em;
+            min-width: 70%;
+            padding: 0.25em;
+            background: rgba(0,200,0,0.2);
+            border: 1px solid rgba(132,169,14,0.5);
+    -webkit-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+       -moz-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+        -ms-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+         -o-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+            box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+}
+
+.stage-content .eca-form-box input {
+    font-size: 0.9em;
+    padding: 0.3em;
+}
+
+div.eca-field-div {
+    border: 1px solid transparent;
+}
+
+.stage-content .eca-rule button {
+            cursor: pointer;
+            color: #FFFFFF;
+            display: inline-block;
+            font-size: 0.9em;
+            line-height: 1.5em;
+            border: 1px solid #666666;
+            background: rgba(0,200,0,0.2);
+            padding: 0.175em 1em;
+            min-width: 1.5em;
+            text-align: center;
+            font-family: 'serene';
+    -webkit-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+       -moz-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+        -ms-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+         -o-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+            box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+}
+
+.stage-content .eca-rule select:hover,
+.stage-content .eca-rule button:hover {
+    border: 1px solid rgb(229, 151, 0);
+}
+
+.stage-content .eca-show-hide {
+    padding: 0 !important;
+    font-size: 1.1em !important;
+    font-family: Arial !important;
+}
+.stage-content .eca-show-hide:after {
+    content: '-';
+}
+.stage-content .eca-show-hide.collapsed:after {
+    content: '+';
+}
+
+.stage-content .eca-enable-disable:after {
+    content: 'Disabled';
+}
+.stage-content .eca-enable-disable.enabled:after {
+    content: 'Enabled';
+}
+
+.stage-content .eca-delete {
+    float: right;
+}
+.stage-content button.eca-delete {
+    margin-left: 1em;
+}
+
+.stage-content .eca-rule fieldset {
+    border: 1px solid transparent;
+    margin: 0.5em 0 0 3em;
+    padding: 0.5em;
+    background-image: url('../img/grid.png');
+    background-attachment: fixed;
+    background-position: center 0;
+}
+
+.stage-content .eca-rule > div > fieldset > div {
+    margin: -1em -0.5em -0.5em -0.5em;
+}
+
+.stage-content .eca-rule > div > fieldset.eca-event-fieldset {
+    margin-left: 0;
+}
+
+.stage-content .eca-rule > div > fieldset.eca-action-fieldset {
+    margin-bottom: 0.5em;
+}
+
+.stage-content .eca-rule legend {
+    font-size: 0.8em;
+}
+
+.stage-content .eca-rule .eca-form-box {
+    margin-left: 1em;
+    padding: 0;
+    min-width: 18em;
+    background-color: transparent;
+    border: none;
+}
+
+.stage-content .eca-event {
+    padding: 0.5em;
+    background-color: rgba(0,100,0,0.3);
+}
+
+.stage-content .eca-condition-display,
+.stage-content .eca-action-display {
+    padding: 0.5em;
+    border-bottom: 1px solid #666666;
+}
+
+.stage-content .eca-condition-display:last-child,
+.stage-content .eca-action-display:last-child {
+    border-bottom: 1px solid transparent;
+}
+
+.stage-content .eca-condition-display:hover,
+.stage-content .eca-action-display:hover {
+    -webkit-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+       -moz-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+        -ms-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+         -o-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+            box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+}
+
+.stage-content .eca-event:hover {
+    background-color: rgba(0,100,0,0.4);
+}
+
+.stage-content .eca-condition-display:hover {
+    background-color: rgba(0,0,200,0.2);
+}
+
+.stage-content .eca-action-display:hover {
+    background-color: rgba(255,0,0,0.1);
+}
+
+.eca-event .eca-field-div,
+.eca-condition-display .eca-field-div,
+.eca-action-display .eca-field-div {
+            padding: 0.25em 1em !important;
+    -webkit-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+       -moz-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+        -ms-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+         -o-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+            box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+}
+
+.eca-event .eca-field-div {
+    background-color: rgba(0,100,0,0.2);
+    border: 1px solid rgba(132,169,14,0.5);
+}
+
+.eca-condition-display .eca-field-div {
+    background-color: rgba(0,0,200,0.1);
+    border: 1px solid rgba(0,134,191,0.5);
+}
+
+.eca-action-display .eca-field-div {
+    background-color: rgba(255,0,0,0.1);
+    border: 1px solid rgba(196,30,30,0.5);
+}
+
+.stage-content .eca-event > div,
+.stage-content .eca-condition-display > div,
+.stage-content .eca-action-display > div {
+    display: inline-block;
+    font-size: 1em;
+    padding: 0.2em;
+    margin: 0.2em;
+}
+
+.eca-event fieldset,
+.eca-condition-display fieldset,
+.eca-action-display fieldset {
+    display: inline-block;
+    padding: 0 !important;
+    margin: 0 1em !important;
+    background-image: none !important;
+    background-color: transparent !important;
+}
+
+.eca-event fieldset .select-wrapper,
+.eca-condition-display fieldset .select-wrapper,
+.eca-action-display fieldset .select-wrapper {
+            display: inline-block;
+            padding: 0;
+            margin: 0;
+    -webkit-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+       -moz-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+        -ms-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+         -o-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+            box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+}
+
+.eca-event fieldset .select-wrapper {
+    border: 1px solid rgba(132,169,14,0.5);
+    background-color: rgba(0,200,0,0.2);
+}
+
+.eca-condition-display fieldset .select-wrapper {
+    border: 1px solid rgba(0,134,191,0.5);
+    background-color: rgba(0,0,200,0.2);
+}
+
+.eca-action-display fieldset .select-wrapper {
+    border: 1px solid rgba(196,30,30,0.5);
+    background-color: rgba(255,0,0,0.2);
+}
+
+.eca-event fieldset select,
+.eca-condition-display fieldset select,
+.eca-action-display fieldset select {
+    font-size: 1em;
+    color: white;
+    min-width: 64%;
+    padding: 0.2em;
+    margin: 0;
+    border: 1px solid #666666;
+    background: transparent;
+}
+
+.stage-content .eca-event,
+.stage-content .eca-condition,
+.stage-content .eca-action {
+            border: 1px solid #666666;
+    -webkit-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+       -moz-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+        -ms-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+         -o-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+            box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+}
+
+.stage-content .eca-condition {
+    background-color: rgba(50,50,200,0.2);
+}
+
+.stage-content .eca-action {
+    background-color: rgba(200,0,0,0.2);
+}
+
+.stage-content .eca-condition button {
+    padding: 0.2em 1em;
+    background-color: rgba(0,0,200,0.3);
+}
+
+.stage-content .eca-action button {
+    padding: 0.2em 1em;
+    background-color: rgba(255,0,0,0.3);
+}
+
+#stage-rules-eca optgroup,
+#stage-rules-eca option {
+    color: #000000;
+    background-color: #FFFFFF;
+}
+
+#stage-rules-eca .eca-capitalize {
+    text-transform: capitalize;
+}
+
+#stage-rules-eca img {
+    margin-left: 1em;
+}
+
+.stage-content .whitelist-display div {
+    font-size: 0.7em;
+}
+
+.stage-content .whitelist-display button {
+    padding: 0.3em 1em;
+}
+
+.whitelist-display {
+    font-size: 1.3em;
+    width: 30%;
+}
+
+@media only screen and (max-width: 1200px) {
+    .whitelist-display {
+        font-size: 2.6em;
+        width: 70%;
+    }
+}
+
+.whitelist-display div {
+    padding: 0.4em;
+    overflow: auto;
+}
+
+.whitelist-display span {
+    line-height: 2em;
+}
+
+.whitelist-display span,
+.whitelist-display input {
+    display: inline-block;
+    float: left;
+}
+
+.whitelist-display button,
+.whitelist-display input {
+            color: #FFFFFF;
+            font-size: 0.9em;
+            border: 1px solid #666666;
+            background: rgba(255,255,0,0.2);
+            padding: 0.2em;
+            margin: 0.2em 0;
+    -webkit-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+       -moz-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+        -ms-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+         -o-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+            box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+}
+
+.whitelist-display button {
+    float: right;
+    cursor: pointer;
+    min-width: 6em;
+    text-align: center;
+    font-family: 'serene';
+    display: inline-block;
+    margin-left: 2em;
+}
+
+.whitelist-display button:hover,
+.whitelist-display input:hover {
+    border: 1px solid rgb(229,151,0);
+}
+
+.whitelist-display input {
+    text-align: left;
+    width: 60%;
+}
+.whitelist-display input::-webkit-input-placeholder { color: rgba(255,233,21,0.5); }
+.whitelist-display input::-moz-placeholder { #color: rgba(255,233,21,0.5); }
+.whitelist-display input:-moz-placeholder { #color: rgba(255,233,21,0.5); }
+.whitelist-display input:ms-input-placeholder { #color: rgba(255,233,21,0.5); }
 
 
 /* ----- pretty borders -----
@@ -672,6 +1042,7 @@ div.stage {
 }
 
 /* ----- decorative classes ----- */
+/*
 .pillow-button {
     background-image:        -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,255,255,0.2)), color-stop(30%,rgba(255,255,255,0)));
     background-image: -webkit-linear-gradient(top, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
@@ -689,6 +1060,7 @@ div.stage {
     background-image:      -o-linear-gradient(bottom, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
     background-image:         linear-gradient(to top, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 30%);
 }
+*/
 
 /* ----- colors ----- */
 a {

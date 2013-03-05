@@ -1,7 +1,6 @@
 venv
 
-*.DS_Store
-
 # Python
 *.py[cod]
 *.egg-info
+*.DS_Store

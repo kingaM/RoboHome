@@ -1,0 +1,8 @@
+MyServer	KEYWORD1
+setupWifi	KEYWORD2
+printWifiStatus	KEYWORD2
+send404	KEYWORD2
+sendStatus	KEYWORD2
+parse	KEYWORD2
+countSegments	KEYWORD2
+readClient	KEYWORD2

@@ -3,6 +3,8 @@
   <head>
     <meta charset="utf-8">
     <title>RoboHome</title>
+    <link rel=”shortcut icon” href=”/favicon.ico” type=”image/x-icon” />
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
@@ -138,7 +140,7 @@
                 <li><a href="index.php">Home</a></li>
                 <li><a href="home.php">My Account</a></li>
                 <li><a href="#">Documentation</a></li>
-                <li><a href="#">Downloads</a></li>
+                <li><a href="https://github.com/michboon/comp2014.git">Downloads</a></li>
                 <li><a href="#">About</a></li>
                 <li><a href="#">Help</a></li>
               </ul>
