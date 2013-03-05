@@ -233,22 +233,26 @@ def events_eventId_actions(version, eventId):
         return redirect(url_for('login'))
 
     if request.method == 'POST':
-        return(jsonify(pack('success')))
+        args = request.args.to_dict()
+        _id = house.addAction(int(args["id"]), args["itemType"], args["scope"], args["method"], int(eventId))
+        return jsonify(pack({"actionId": _id}))
 
 
 @app.route('/version/<string:version>/events/<int:eventId>/actions/<int:actionId>/', methods=['PUT', 'DELETE'])
 def events_eventId_actions_actionId(version, eventId, actionId):
     if g.user is None and not isIpOnLocalNetwork():
         return redirect(url_for('login'))
-    
+
     if request.method == 'PUT':
+        args = request.args.to_dict()
+        house.updateAction(int(args["id"]), args["itemType"], args["scope"], args["method"], int(eventId), int(actionId))
         return(jsonify(pack('success')))
-        
+
     if request.method == 'DELETE':
         house.deleteAction(eventId, actionId)
         return(jsonify(pack('success')))
 
-        
+
 @app.route('/version/<string:version>/whitelist/', methods=['GET', 'POST', 'DELETE'])
 def whitelist(version):
     if g.user is None and not isIpOnLocalNetwork():

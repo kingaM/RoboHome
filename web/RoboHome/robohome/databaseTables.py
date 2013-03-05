@@ -83,6 +83,9 @@ class MethodsTable(DatabaseHelper):
     def getNiceStateName(self, itemId):
         return self.retriveData("SELECT methods.name FROM methods, `types`, items WHERE `types`.id=methods.typeId AND `types`.id=items.id AND items.id=" + str(itemId) + " AND methods.signature='getState'")[0][0]
 
+    def getSignature(self, name, _type):
+        return self.retriveData("SELECT signature FROM methods, `types` WHERE `types`.id=methods.typeId AND methods.name=\'" + str(name) + "' AND `types`.name='" + str(_type) + "'")[0][0]
+
 
 class EventsTable(DatabaseHelper):
 
@@ -99,7 +102,7 @@ class EventsTable(DatabaseHelper):
         if event.room is None:
             roomId = "null"
         else:
-            roomId = event.room._id
+            roomId = event.room.id
         event.id = super(EventsTable, self).addEntry(self.tablename, "name, typeId, itemId, roomId, `trigger`, enabled", "'%s', '%s', %s, %s, '%s', '%s'" % (event.name, typeId, itemId, roomId, event.trigger, event.enabled))
 
     def removeEntry(self, event):
@@ -160,7 +163,7 @@ class ActionsTable(DatabaseHelper):
         if action.room is None:
             roomId = "null"
         else:
-            roomId = action.room._id
+            roomId = action.room.id
         action.id = super(ActionsTable, self).addEntry(self.tablename, "itemId, roomId, methodId, eventId", "%s, %s, %s, %s" % (itemId, roomId, methodId, eventId))
 
     def removeEntry(self, action):
@@ -176,7 +179,7 @@ class ActionsTable(DatabaseHelper):
         if action.room is None:
             roomId = "null"
         else:
-            roomId = action.room._id
+            roomId = action.room.id
         super(ActionsTable, self).updateEntry(self.tablename, "id='" + str(action.id) + "'", "itemId=%s, roomId=%s, methodId=%s, eventId=%s" % (itemId, roomId, methodId, eventId))
 
     def getActionsForEvent(self, event):

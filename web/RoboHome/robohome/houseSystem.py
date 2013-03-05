@@ -341,7 +341,7 @@ class House(object):
 
     def updateEvent(self, name, _type, _id, scope, value, enabled, eventId):
         """
-        Updates an event to the house and database
+        Updates an event in the house and database
 
         Arguments:
         name -- the name of the rule
@@ -424,7 +424,7 @@ class House(object):
 
     def updateCondition(self, itemId, equivalence, value, eventId, conditionId):
         """
-        Updates a condition to the correct event and the database
+        Updates a condition in the house and database
 
         Arguments:
         conditionId -- the id of the condition to be updated
@@ -485,9 +485,81 @@ class House(object):
         self.database.conditions.removeEntry(condition)
         event.conditions.remove(condition)
 
-    #def addAction(self, ):
+    def addAction(self, _id, _type, scope, methodName, eventId):
+        """
+        Adds an action to the house and database
 
-    #def updateAction(self,):
+        Arguments:
+        _type -- the type of the item the action concerns
+        _id -- the id of the item/room which depends on scope
+        scope -- the scope of the event ("item"/"room"/"house")
+        methodName -- the action to perform
+        eventId -- the event the action belongs to
+        """
+        if scope == "item":
+            item = self.getItemById(_id)
+            room = None
+        elif scope == "room":
+            item = None
+            room = self.rooms[_id]
+        elif scope == "house":
+            item = None
+            room = None
+        else:
+            raise Exception("Invalid scope parameter")
+        method = self.database.methods.getSignature(methodName, _type)
+        action = eca.Action(None, item, room, method, methodName, _type)
+        for e in self.events:
+            if e.id == eventId:
+                e.actions.append(action)
+        return action.id
+
+    def updateAction(self, _id, _type, scope, methodName, eventId, actionId):
+        """
+        Updates an action in the house and database
+
+        Arguments:
+        _type -- the type of the item the action concerns
+        _id -- the id of the item/room which depends on scope
+        scope -- the scope of the action ("item"/"room"/"house")
+        methodName -- the action to perform
+        eventId -- the event the action belongs to
+        actionId -- the id of the action to update
+        """
+        if scope == "item":
+            item = self.getItemById(_id)
+            room = None
+        elif scope == "room":
+            item = None
+            room = self.rooms[_id]
+        elif scope == "house":
+            item = None
+            room = None
+        else:
+            raise Exception("Invalid scope parameter")
+        event = None
+        for e in self.events:
+            if e.id == eventId:
+                event = e
+                break
+        if event is None:
+            raise Exception("Invalid event id")
+        action = None
+        for a in event.actions:
+            if a.id == actionId:
+                action = a
+                break
+        if action is None:
+            raise Exception("Invalid action id")
+
+        action.item = item
+        action.room = room
+        action.method = self.database.methods.getSignature(methodName, _type)
+        action.methodName = methodName
+        action.type = _type
+
+        self.database.actions.updateEntry(action, eventId)
+
 
     def deleteAction(self, eventId, actionId):
         """
