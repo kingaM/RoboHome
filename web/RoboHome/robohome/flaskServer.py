@@ -172,7 +172,11 @@ def events(version):
 
     if request.method == 'POST':
         args = request.args.to_dict()
-        _id = house.addEvent(args["ruleName"], args["itemType"], int(args["id"]), args["scope"], int(args["value"]), args["enabled"])
+        if args["enabled"] == "true":
+            enabled = 1
+        else:
+            enabled = 0
+        _id = house.addEvent(args["ruleName"], args["itemType"], int(args["id"]), args["scope"], int(args["value"]), enabled)
         return jsonify(pack({"ruleId": _id}))
 
 
@@ -184,13 +188,18 @@ def events_eventId(version, eventId):
     if request.method == 'PUT':
         # Update event
         args = request.args.to_dict()
-        house.updateEvent(args["ruleName"], args["itemType"], int(args["id"]), args["scope"], int(args["value"]), args["enabled"], int(eventId))
+        if args["enabled"] == "true":
+            enabled = 1
+        else:
+            enabled = 0
+        house.updateEvent(args["ruleName"], args["itemType"], int(args["id"]), args["scope"], int(args["value"]), enabled, int(eventId))
         return jsonify(pack('success'))
 
     if request.method == 'DELETE':
         # Delete event
         house.deleteEvent(int(eventId))
         return jsonify(pack('success'))
+
 
 @app.route('/version/<string:version>/events/<int:eventId>/conditions/', methods=['POST'])
 def events_eventId_conditions(version, eventId):
