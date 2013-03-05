@@ -334,9 +334,10 @@ class House(object):
             room = None
         else:
             raise Exception("Invalid scope parameter")
-        event = eca.Event(name, _type, item, room, trigger, enabled)
+        event = eca.Event(None, name, _type, item, room, trigger, enabled)
         self.events.append(event)
         self.database.events.addEntry(event)
+        return event.id
 
     def updateEvent(self, name, _type, _id, scope, value, enabled, eventId):
         """
@@ -419,6 +420,7 @@ class House(object):
         for e in self.events:
             if e.id == eventId:
                 e.conditions.append(condition)
+        return condition.id
 
     def updateCondition(self, itemId, equivalence, value, eventId, conditionId):
         """
@@ -458,7 +460,7 @@ class House(object):
 
         self.database.conditions.updateEntry(condition, eventId)
 
-    def deleteCondition(eventId, conditionId):
+    def deleteCondition(self, eventId, conditionId):
         """
         Deletes a condition from the house and database
 
@@ -480,8 +482,37 @@ class House(object):
                 break
         if condition is None:
             raise Exception("Invalid condition id")
+        self.database.conditions.removeEntry(condition)
         event.conditions.remove(condition)
-        self.database.conditions.removeEntry(conditionId)
+
+    #def addAction(self, ):
+
+    #def updateAction(self,):
+
+    def deleteAction(self, eventId, actionId):
+        """
+        Deletes an action from the house and database
+
+        Arguments:
+        eventId -- the id of the event this condition is matched to
+        actionId -- the id of the action to be deleted
+        """
+        event = None
+        for e in self.events:
+            if e.id == eventId:
+                event = e
+                break
+        if event is None:
+            raise Exception("Invalid event id")
+        action = None
+        for a in event.actions:
+            if a.id == actionId:
+                action = a
+                break
+        if action is None:
+            raise Exception("Invalid action id")
+        self.database.actions.removeEntry(action)
+        event.actions.remove(action)
 
     def getEventsForTrigger(self, item, trigger):
         """

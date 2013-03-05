@@ -172,8 +172,8 @@ def events(version):
 
     if request.method == 'POST':
         args = request.args.to_dict()
-        house.addEvent(args["ruleName"], args["itemType"], int(args["id"]), args["scope"], int(args["value"]), args["enabled"])
-        return jsonify(pack('success'))
+        _id = house.addEvent(args["ruleName"], args["itemType"], int(args["id"]), args["scope"], int(args["value"]), args["enabled"])
+        return jsonify(pack({"ruleId": _id}))
 
 
 @app.route('/version/<string:version>/events/<int:eventId>/', methods=['PUT', 'DELETE'])
@@ -199,8 +199,8 @@ def events_eventId_conditions(version, eventId):
 
     if request.method == 'POST':
         args = request.args.to_dict()
-        house.addCondition(int(args["itemId"]), args["equivalence"], int(args["value"]), int(eventId))
-        return(jsonify(pack('success')))
+        _id = house.addCondition(int(args["itemId"]), args["equivalence"], int(args["value"]), int(eventId))
+        return jsonify(pack({"conditionId": _id}))
 
 
 @app.route('/version/<string:version>/events/<int:eventId>/conditions/<int:conditionId>/', methods=['GET', 'PUT', 'DELETE'])
@@ -227,18 +227,16 @@ def events_eventId_actions(version, eventId):
         return(jsonify(pack('success')))
 
 
-@app.route('/version/<string:version>/events/<int:eventId>/actions/<int:actionId>/', methods=['GET', 'PUT', 'DELETE'])
+@app.route('/version/<string:version>/events/<int:eventId>/actions/<int:actionId>/', methods=['PUT', 'DELETE'])
 def events_eventId_actions_actionId(version, eventId, actionId):
     if g.user is None and not isIpOnLocalNetwork():
         return redirect(url_for('login'))
-        
-    if request.method == 'GET':
-        pass
     
     if request.method == 'PUT':
         return(jsonify(pack('success')))
         
     if request.method == 'DELETE':
+        house.deleteAction(eventId, actionId)
         return(jsonify(pack('success')))
 
         
