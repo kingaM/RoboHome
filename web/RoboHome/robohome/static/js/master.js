@@ -2869,8 +2869,8 @@ APP.ECAActionDisplay = function(ruleId, actionObj) {
             self.saveButton.click(function() {
                 var ruleId = self.ruleId,
                     actionId = self.actionObj[APP.API.EVENTS.RULE.ACTION.ACTION_ID],
-                    id = self.actionObj[APP.API.EVENTS.RULE.ACTION.ID],
                     scope = self.scopeField.find('option:selected').val(),
+                    id = self.scopeField.find('option:selected').attr('data-id'),
                     itemType = self.itemTypeField.find('option:selected').val(),
                     method = self.methodField.find('option:selected').val();
                 if(scope === 'undefined' || itemType === 'undefined' || method === 'undefined') {
@@ -3047,8 +3047,8 @@ APP.ECANewActionDisplay = function(ruleId, stage) {
             
             self.saveButton.click(function() {
                 var ruleId = self.ruleId,
-                    id = self.actionObj[APP.API.EVENTS.RULE.ACTION.ID],
                     scope = self.scopeField.find('option:selected').val(),
+                    id = self.scopeField.find('option:selected').attr('data-id'),
                     itemType = self.itemTypeField.find('option:selected').val(),
                     method = self.methodField.find('option:selected').val();
                 if(scope === 'undefined' || itemType === 'undefined' || method === 'undefined') {
