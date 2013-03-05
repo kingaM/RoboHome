@@ -407,7 +407,7 @@ APP.ajax = function(requestType, url, payload, callback, error) {
     internalCallback = function(args) {
         APP.data.connection.lastSuccess = new Date();
         APP.data.connection.lastSuccess.setTime(APP.data.connection.lastAttempt);
-        console.log('AJAX callback called ' + url + ' ' + APP.clock.getTimestamp(APP.data.connection.lastSuccess));
+        console.log('AJAX callback called ' + requestType + ' ' + url + ' ' + APP.clock.getTimestamp(APP.data.connection.lastSuccess));
         if(callback) {
             callback(args);
         }
@@ -479,7 +479,7 @@ APP.ajax_get_version = function(callback, error) {
  */
 APP.ajax_post_rooms = function(roomName, callback, error) {
     APP.ajax('POST', APP.URL.ROOMS + '?' + 
-    APP.API.ROOMS.NAME + '=' + roomName,
+    APP.API.ROOMS.NAME + '=' + encodeURIComponent(roomName),
     '',
     callback,
     error
@@ -513,10 +513,10 @@ APP.ajax_delete_rooms_roomId = function(roomId, callback, error) {
  */
 APP.ajax_post_rooms_roomId_items = function(roomId, itemBrand, itemIP, itemName, itemType, callback, error) {
     APP.ajax('POST', APP.URL.ROOMS_ROOMID_ITEMS(roomId) + '?' + 
-        APP.API.ITEMS.BRAND + '=' + itemBrand + '&' + 
-        APP.API.ITEMS.IP + '=' + itemIP + '&' + 
-        APP.API.ITEMS.NAME + '=' + itemName + '&' + 
-        APP.API.ITEMS.ITEM_TYPE + '=' + itemType,
+        APP.API.ITEMS.BRAND + '=' + encodeURIComponent(itemBrand) + '&' + 
+        APP.API.ITEMS.IP + '=' + encodeURIComponent(itemIP) + '&' + 
+        APP.API.ITEMS.NAME + '=' + encodeURIComponent(itemName) + '&' + 
+        APP.API.ITEMS.ITEM_TYPE + '=' + encodeURIComponent(itemType),
         '',
         callback,
         error
@@ -573,13 +573,13 @@ APP.ajax_get_events = function(callback, error) {
  */
 APP.ajax_post_events = function(ruleName, enabled, id, itemType, scope, equivalence, value, callback, error) {
     APP.ajax('POST', APP.URL.EVENTS + '?' + 
-        APP.API.EVENTS.RULE.RULE_NAME + '=' + ruleName + '&' +
-        APP.API.EVENTS.RULE.ENABLED + '=' + enabled + '&' +
-        APP.API.EVENTS.RULE.EVENT.ID + '=' + id + '&' +
-        APP.API.EVENTS.RULE.EVENT.ITEM_TYPE + '=' + itemType + '&' +
-        APP.API.EVENTS.RULE.EVENT.SCOPE + '=' + scope + '&' +
-        APP.API.EVENTS.RULE.EVENT.EQUIVALENCE + '=' + equivalence + '&' +
-        APP.API.EVENTS.RULE.EVENT.VALUE + '=' + value,
+        APP.API.EVENTS.RULE.RULE_NAME + '=' + encodeURIComponent(ruleName) + '&' +
+        APP.API.EVENTS.RULE.ENABLED + '=' + encodeURIComponent(enabled) + '&' +
+        APP.API.EVENTS.RULE.EVENT.ID + '=' + encodeURIComponent(id) + '&' +
+        APP.API.EVENTS.RULE.EVENT.ITEM_TYPE + '=' + encodeURIComponent(itemType) + '&' +
+        APP.API.EVENTS.RULE.EVENT.SCOPE + '=' + encodeURIComponent(scope) + '&' +
+        APP.API.EVENTS.RULE.EVENT.EQUIVALENCE + '=' + encodeURIComponent(equivalence) + '&' +
+        APP.API.EVENTS.RULE.EVENT.VALUE + '=' + encodeURIComponent(value),
         '',
         callback,
         error
@@ -591,13 +591,13 @@ APP.ajax_post_events = function(ruleName, enabled, id, itemType, scope, equivale
  */
 APP.ajax_put_events_eventId = function(eventId, ruleName, enabled, id, itemType, scope, equivalence, value, callback, error) {
     APP.ajax('PUT', APP.URL.EVENTS_EVENTID(eventId) + '?' + 
-        APP.API.EVENTS.RULE.RULE_NAME + '=' + ruleName + '&' +
-        APP.API.EVENTS.RULE.ENABLED + '=' + enabled + '&' +
-        APP.API.EVENTS.RULE.EVENT.ID + '=' + id + '&' +
-        APP.API.EVENTS.RULE.EVENT.ITEM_TYPE + '=' + itemType + '&' +
-        APP.API.EVENTS.RULE.EVENT.SCOPE + '=' + scope + '&' +
-        APP.API.EVENTS.RULE.EVENT.EQUIVALENCE + '=' + equivalence + '&' +
-        APP.API.EVENTS.RULE.EVENT.VALUE + '=' + value,
+        APP.API.EVENTS.RULE.RULE_NAME + '=' + encodeURIComponent(ruleName) + '&' +
+        APP.API.EVENTS.RULE.ENABLED + '=' + encodeURIComponent(enabled) + '&' +
+        APP.API.EVENTS.RULE.EVENT.ID + '=' + encodeURIComponent(id) + '&' +
+        APP.API.EVENTS.RULE.EVENT.ITEM_TYPE + '=' + encodeURIComponent(itemType) + '&' +
+        APP.API.EVENTS.RULE.EVENT.SCOPE + '=' + encodeURIComponent(scope) + '&' +
+        APP.API.EVENTS.RULE.EVENT.EQUIVALENCE + '=' + encodeURIComponent(equivalence) + '&' +
+        APP.API.EVENTS.RULE.EVENT.VALUE + '=' + encodeURIComponent(value),
         '',
         callback,
         error
@@ -620,9 +620,9 @@ APP.ajax_delete_events_eventId = function(eventId, callback, error) {
  */
 APP.ajax_post_events_eventId_conditions = function(eventId, itemId, equivalence, value, callback, error) {
     APP.ajax('POST', APP.URL.EVENTS_EVENTID_CONDITIONS(eventId) + '?' + 
-    APP.API.EVENTS.RULE.CONDITION.ITEM_ID + '=' + itemId + '&' + 
-    APP.API.EVENTS.RULE.CONDITION.EQUIVALENCE + '=' + equivalence + '&' + 
-    APP.API.EVENTS.RULE.CONDITION.VALUE + '=' + value,
+    APP.API.EVENTS.RULE.CONDITION.ITEM_ID + '=' + encodeURIComponent(itemId) + '&' + 
+    APP.API.EVENTS.RULE.CONDITION.EQUIVALENCE + '=' + encodeURIComponent(equivalence) + '&' + 
+    APP.API.EVENTS.RULE.CONDITION.VALUE + '=' + encodeURIComponent(value),
     '',
     callback,
     error
@@ -634,10 +634,10 @@ APP.ajax_post_events_eventId_conditions = function(eventId, itemId, equivalence,
  */
 APP.ajax_put_events_eventId_conditions_conditionId = function(eventId, conditionId, itemId, equivalence, value, callback, error) {
     APP.ajax('PUT', APP.URL.EVENTS_EVENTID_CONDITIONS_CONDITIONID(eventId, conditionId) + '?' + 
-    APP.API.EVENTS.RULE.CONDITION.ITEM_ID + '=' + itemId + '&' + 
-    APP.API.EVENTS.RULE.CONDITION.CONDITION_ID + '=' + conditionId + '&' + 
-    APP.API.EVENTS.RULE.CONDITION.EQUIVALENCE + '=' + equivalence + '&' + 
-    APP.API.EVENTS.RULE.CONDITION.VALUE + '=' + value,
+    APP.API.EVENTS.RULE.CONDITION.ITEM_ID + '=' + encodeURIComponent(itemId) + '&' + 
+    APP.API.EVENTS.RULE.CONDITION.CONDITION_ID + '=' + encodeURIComponent(conditionId) + '&' + 
+    APP.API.EVENTS.RULE.CONDITION.EQUIVALENCE + '=' + encodeURIComponent(equivalence) + '&' + 
+    APP.API.EVENTS.RULE.CONDITION.VALUE + '=' + encodeURIComponent(value),
     '',
     callback,
     error
@@ -649,6 +649,7 @@ APP.ajax_put_events_eventId_conditions_conditionId = function(eventId, condition
  */
 APP.ajax_delete_events_eventId_conditions_conditionId = function(eventId, conditionId, callback, error) {
     APP.ajax('DELETE', APP.URL.EVENTS_EVENTID_CONDITIONS_CONDITIONID(eventId, conditionId),
+    '',
     callback,
     error
     );
@@ -659,9 +660,9 @@ APP.ajax_delete_events_eventId_conditions_conditionId = function(eventId, condit
  */
 APP.ajax_post_events_eventId_actions = function(eventId, scope, itemType, method, callback, error) {
     APP.ajax('POST', APP.URL.EVENTS_EVENTID_ACTIONS(eventId) + '?' + 
-    APP.API.EVENTS.RULE.ACTION.SCOPE + '=' + scope + 
-    APP.API.EVENTS.RULE.ACTION.ITEM_TYPE + '=' + itemType + 
-    APP.API.EVENTS.RULE.ACTION.METHOD + '=' + method,
+    APP.API.EVENTS.RULE.ACTION.SCOPE + '=' + encodeURIComponent(scope) + '&' + 
+    APP.API.EVENTS.RULE.ACTION.ITEM_TYPE + '=' + encodeURIComponent(itemType) + '&' + 
+    APP.API.EVENTS.RULE.ACTION.METHOD + '=' + encodeURIComponent(method),
     '',
     callback,
     error
@@ -673,9 +674,9 @@ APP.ajax_post_events_eventId_actions = function(eventId, scope, itemType, method
  */
 APP.ajax_put_events_eventId_actions_actionId = function(eventId, actionId, scope, itemType, method, callback, error) {
     APP.ajax('PUT', APP.URL.EVENTS_EVENTID_ACTIONS_ACTIONID(eventId, actionId) + '?' + 
-    APP.API.EVENTS.RULE.ACTION.SCOPE + '=' + scope + 
-    APP.API.EVENTS.RULE.ACTION.ITEM_TYPE + '=' + itemType + 
-    APP.API.EVENTS.RULE.ACTION.METHOD + '=' + method,
+    APP.API.EVENTS.RULE.ACTION.SCOPE + '=' + encodeURIComponent(scope) + '&' + 
+    APP.API.EVENTS.RULE.ACTION.ITEM_TYPE + '=' + encodeURIComponent(itemType) + '&' + 
+    APP.API.EVENTS.RULE.ACTION.METHOD + '=' + encodeURIComponent(method),
     '',
     callback,
     error
@@ -686,7 +687,8 @@ APP.ajax_put_events_eventId_actions_actionId = function(eventId, actionId, scope
  *
  */
 APP.ajax_delete_events_eventId_actions_actionId = function(eventId, actionId, callback, error) {
-    APP.ajax('DELETE', APP.URL.EVENTS_EVENTID_ACTIONS_ACTIONID(eventId, atctionId),
+    APP.ajax('DELETE', APP.URL.EVENTS_EVENTID_ACTIONS_ACTIONID(eventId, actionId),
+    '',
     callback,
     error
     );
@@ -714,7 +716,7 @@ APP.ajax_get_whitelist = function(callback, error) {
  */
 APP.ajax_post_whitelist = function(email, callback, error) {
     APP.ajax('POST', APP.URL.WHITELIST + '?' + 
-    APP.API.WHITELIST.EMAIL + '=' + email,
+    APP.API.WHITELIST.EMAIL + '=' + encodeURIComponent(email),
     '',
     callback,
     error
@@ -730,7 +732,7 @@ APP.ajax_post_whitelist = function(email, callback, error) {
  */
 APP.ajax_delete_whitelist = function(email, callback, error) {
     APP.ajax('DELETE', APP.URL.WHITELIST + '?' + 
-    APP.API.WHITELIST.EMAIL + '=' + email,
+    APP.API.WHITELIST.EMAIL + '=' + encodeURIComponent(email),
     '',
     callback,
     error
@@ -1510,8 +1512,8 @@ APP.ECARuleDisplay.prototype.construct = function() {
                 equivalence = '=', // TODO change to self.ruleObj[APP.API.EVENTS.RULE.EVENT.EVENT][APP.API.EVENTS.RULE.EVENT.SCOPE]
                 value       = self.ruleObj[APP.API.EVENTS.RULE.EVENT.EVENT][APP.API.EVENTS.RULE.EVENT.VALUE];        
             
-            if(ruleName === '' || /\s+/.test(ruleName) === true) {
-                self.errorMessage.html('Name cannot be undefined or entirely whitespace.');
+            if(ruleName === '' || /^[\s\t\n\u00A0;]+$/.test(ruleName) === true || /[^]*[;][^]*/.test(ruleName) === true) {
+                self.errorMessage.html('Name cannot be empty, all whitespace, start with whitespace, or contain the semicolon (;).');
             } else {
                 self.errorMessage.html('');
                 self.titleBox.addClass(APP.DOM_HOOK.UPDATING);
@@ -1559,19 +1561,19 @@ APP.ECARuleDisplay.prototype.construct = function() {
     this.enableDisable.click(function() {
         var dis = $(this),
             eventId     = self.ruleObj[APP.API.EVENTS.RULE.RULE_ID],
-            ruleName    = self.ruleObj[APP.API.EVENTS.RULE.EVENT.EVENT][APP.API.EVENTS.RULE.EVENT.RULE_NAME],
+            ruleName    = self.ruleObj[APP.API.EVENTS.RULE.RULE_NAME],
             enabled     = self.ruleObj[APP.API.EVENTS.RULE.EVENT.EVENT][APP.API.EVENTS.RULE.EVENT.ENABLED],
             id          = self.ruleObj[APP.API.EVENTS.RULE.EVENT.EVENT][APP.API.EVENTS.RULE.EVENT.ID],
             itemType    = self.ruleObj[APP.API.EVENTS.RULE.EVENT.EVENT][APP.API.EVENTS.RULE.EVENT.ITEM_TYPE],
             scope       = self.ruleObj[APP.API.EVENTS.RULE.EVENT.EVENT][APP.API.EVENTS.RULE.EVENT.SCOPE],
-            equivalence = '=', // TODO change to self.ruleObj[APP.API.EVENTS.RULE.EVENT.EVENT][APP.API.EVENTS.RULE.EVENT.SCOPE]
+            equivalence = 'is', // TODO change to self.ruleObj[APP.API.EVENTS.RULE.EVENT.EVENT][APP.API.EVENTS.RULE.EVENT.SCOPE]
             value       = self.ruleObj[APP.API.EVENTS.RULE.EVENT.EVENT][APP.API.EVENTS.RULE.EVENT.VALUE];
         
         enabled = !enabled;
         self.titleBox.addClass(APP.DOM_HOOK.UPDATING);
         APP.ajax_put_events_eventId(eventId, ruleName, enabled, id, itemType, scope, equivalence, value,
             function() {
-                self.ruleObj[APP.API.EVENTS.RULE.EVENT.EVENT][APP.API.EVENTS.RULE.EVENT.ENABLED];
+                self.ruleObj[APP.API.EVENTS.RULE.EVENT.EVENT][APP.API.EVENTS.RULE.EVENT.ENABLED] = enabled;
                 self.titleBox.removeClass(APP.DOM_HOOK.UPDATING);
                 dis.toggleClass(APP.DOM_HOOK.ENABLED);
                 self.stage.update();
@@ -1583,7 +1585,25 @@ APP.ECARuleDisplay.prototype.construct = function() {
     });
     
     this.deleteButton.click(function() {
-        // TODO
+        var eventId     = self.ruleObj[APP.API.EVENTS.RULE.RULE_ID],
+            ruleName    = self.ruleObj[APP.API.EVENTS.RULE.RULE_NAME],
+            deleteRoomName = self.deleteInput.val();
+        if(ruleName !== deleteRoomName) {
+            self.errorMessage.html('Names do not match. Please reconfirm.');
+        } else {
+            self.errorMessage.html('');
+            self.titleBox.addClass(APP.DOM_HOOK.UPDATING);
+            APP.ajax_delete_events_eventId(eventId,
+                function() {
+                    self.titleBox.removeClass(APP.DOM_HOOK.UPDATING);
+                    setToDisplayMode();
+                    self.stage.update();
+                },
+                function() {
+                    // do nothing
+                }
+            );
+        }
     });
     
     // title box
@@ -1641,7 +1661,7 @@ APP.ECARuleDisplay.prototype.delete = function() {
 APP.ECANewRuleDisplay = function(stage) {
     this.stage = stage;
     
-    this.boundingBox = $('<div></div>').addClass(APP.DOM_HOOK.ECA.RULE + ' ' + APP.DOM_HOOK.ECA.NEW_RULE);;
+    this.boundingBox = $('<div></div>').addClass(APP.DOM_HOOK.ECA.RULE + ' ' + APP.DOM_HOOK.ECA.NEW_RULE);
     this.titlebox;
     this.input;
     this.addButton;
@@ -2209,12 +2229,12 @@ APP.ECAConditionDisplay = function(ruleId, conditionObj) {
             });
             
             self.deleteButton.click(function() {
-                var dis = $(this);
-                dis.parent().addClass(APP.DOM_HOOK.UPDATING);
-                APP.ajax_delete_events_eventId_conditions_conditionId(self.ruleId, self.conditionObj[APP.API.EVENTS.RULE.CONDITION.CONDITION_ID],
-                    function() {
-                        dis.parent().removeClass(APP.DOM_HOOK.UPDATING);
-                        // TODO
+                var eventId = self.ruleId,
+                    conditionId = self.conditionObj[APP.API.EVENTS.RULE.CONDITION.CONDITION_ID];
+                self.context.addClass(APP.DOM_HOOK.UPDATING);
+                APP.ajax_delete_events_eventId_conditions_conditionId(eventId, conditionId,
+                    function(json) {
+                        self.context.removeClass(APP.DOM_HOOK.UPDATING);
                     },
                     function() {
                         // do nothing
@@ -2264,8 +2284,7 @@ APP.ECAConditionDisplay = function(ruleId, conditionObj) {
             });
             
             self.saveButton.click(function() {
-                var dis = $(this),
-                    ruleId = self.ruleId,
+                var ruleId = self.ruleId,
                     conditionId = self.conditionObj[APP.API.EVENTS.RULE.CONDITION.CONDITION_ID],
                     itemId = self.itemField.children('option:selected').val(),
                     equivalence = self.equivalenceField.children('option:selected').val(),
@@ -2274,10 +2293,10 @@ APP.ECAConditionDisplay = function(ruleId, conditionObj) {
                     self.errorMessage.html('One or more fields are not set.');
                 } else {
                     self.errorMessage.html('');
-                    dis.parent().addClass(APP.DOM_HOOK.UPDATING);
+                    self.context.addClass(APP.DOM_HOOK.UPDATING);
                     APP.ajax_put_events_eventId_conditions_conditionId(ruleId, conditionId, itemId, equivalence, state,
                         function() {
-                            dis.parent().removeClass(APP.DOM_HOOK.UPDATING);
+                            self.context.removeClass(APP.DOM_HOOK.UPDATING);
                             setToDisplayMode();
                         },
                         function() {
@@ -2630,11 +2649,12 @@ APP.ECAActionDisplay = function(ruleId, actionObj) {
             });
             
             self.deleteButton.click(function() {
-                var dis = $(this);
-                dis.parent().addClass(APP.DOM_HOOK.UPDATING);
-                APP.ajax_delete_events_eventId_conditions_conditionId(self.ruleId, self.actionObj[APP.API.EVENTS.RULE.ACTION.ACTION_ID],
+                var eventId = self.ruleId,
+                    actionId = self.actionObj[APP.API.EVENTS.RULE.ACTION.ACTION_ID];
+                self.context.addClass(APP.DOM_HOOK.UPDATING);
+                APP.ajax_delete_events_eventId_actions_actionId(eventId, actionId,
                     function() {
-                        dis.parent().removeClass(APP.DOM_HOOK.UPDATING);
+                        self.context.removeClass(APP.DOM_HOOK.UPDATING);
                         // TODO
                     },
                     function() {
@@ -2707,8 +2727,7 @@ APP.ECAActionDisplay = function(ruleId, actionObj) {
             });
             
             self.saveButton.click(function() {
-                var dis = $(this),
-                    ruleId = self.ruleId,
+                var ruleId = self.ruleId,
                     actionId = self.actionObj[APP.API.EVENTS.RULE.ACTION.ACTION_ID],
                     scope = self.scopeField.find('option:selected').val(),
                     itemType = self.itemTypeField.find('option:selected').val(),
@@ -2717,10 +2736,10 @@ APP.ECAActionDisplay = function(ruleId, actionObj) {
                     self.errorMessage.html('One or more fields are not defined.');
                 } else {
                     self.errorMessage.html('');
-                    dis.parent().addClass(APP.DOM_HOOK.UPDATING);
+                    self.context.addClass(APP.DOM_HOOK.UPDATING);
                     APP.ajax_put_events_eventId_actions_actionId(ruleId, actionId, scope, itemType, method,
                         function() {
-                            dis.parent().removeClass(APP.DOM_HOOK.UPDATING);
+                            self.context.removeClass(APP.DOM_HOOK.UPDATING);
                             setToDisplayMode();
                         },
                         function() {
@@ -2886,8 +2905,7 @@ APP.ECANewActionDisplay = function(ruleId, stage) {
             });
             
             self.saveButton.click(function() {
-                var dis = $(this),
-                    ruleId = self.ruleId,
+                var ruleId = self.ruleId,
                     scope = self.scopeField.find('option:selected').val(),
                     itemType = self.itemTypeField.find('option:selected').val(),
                     method = self.methodField.find('option:selected').val();
@@ -2895,10 +2913,10 @@ APP.ECANewActionDisplay = function(ruleId, stage) {
                     self.errorMessage.html('One or more fields are not defined.');
                 } else {
                     self.errorMessage.html('');
-                    dis.parent().addClass(APP.DOM_HOOK.UPDATING);
+                    self.context.addClass(APP.DOM_HOOK.UPDATING);
                     APP.ajax_post_events_eventId_actions(ruleId, scope, itemType, method,
                         function() {
-                            dis.parent().removeClass(APP.DOM_HOOK.UPDATING);
+                            self.context.removeClass(APP.DOM_HOOK.UPDATING);
                             setToDisplayMode(); // TODO remove this
                         },
                         function() {
@@ -3184,8 +3202,8 @@ APP.StageManager = function() {
             button.click(function() {
                 var dis = $(this),
                     roomName = input.val();
-                if(roomName === '' || /\s+/.test(roomName) === true) {
-                    warning.html('Name cannot be undefined or entirely whitespace.');
+                if(roomName === '' || /^[\s\t\n\u00A0;]+$/.test(roomName) === true || /[^]*[;][^]*/.test(roomName) === true) {
+                    warning.html('Name cannot be empty, all whitespace, start with whitespace, or contain the semicolon (;).');
                 } else {
                     dis.parent().addClass(APP.DOM_HOOK.UPDATING);
                     APP.ajax_post_rooms(roomName,
@@ -3290,8 +3308,8 @@ APP.StageManager = function() {
                 addButton.click(function() {
                     var dis = $(this),
                         addRoomName = $('#' + addInputSelector).val();
-                    if(addRoomName === '' || /\s+/.test(addRoomName) === true) {
-                        addWarning.html('Name cannot be undefined or entirely whitespace.');
+                    if(addRoomName === '' || /^[\s\t\n\u00A0;]+$/.test(addRoomName) === true || /[^]*[;][^]*/.test(addRoomName) === true) {
+                        addWarning.html('Name cannot be empty, all whitespace, start with whitespace, or contain the semicolon (;).');
                     } else {
                         $(this).parent().addClass(APP.DOM_HOOK.UPDATING);
                         APP.ajax_post_rooms(addRoomName,
@@ -3441,8 +3459,8 @@ APP.StageManager = function() {
                         duplicateIP = false;
                     
                     targetName = $('#' + addInputNameSelector).val();
-                    if(targetName === '' || /\s+/.test(targetName) === true) {
-                        addWarningName.html('Name cannot be undefined or entirely whitespace.');
+                    if(targetName === '' || /^[\s\t\n\u00A0;]+$/.test(targetName) === true || /[^]*[;][^]*/.test(targetName) === true) {
+                        addWarningName.html('Name cannot be empty, all whitespace, start with whitespace, or contain the semicolon (;).');
                     } else {
                         addWarningName.html('');
                     }
