@@ -658,8 +658,9 @@ APP.ajax_delete_events_eventId_conditions_conditionId = function(eventId, condit
 /**
  *
  */
-APP.ajax_post_events_eventId_actions = function(eventId, scope, itemType, method, callback, error) {
+APP.ajax_post_events_eventId_actions = function(eventId, id, scope, itemType, method, callback, error) {
     APP.ajax('POST', APP.URL.EVENTS_EVENTID_ACTIONS(eventId) + '?' + 
+    APP.API.EVENTS.RULE.ACTION.ID + '=' + encodeURIComponent(id) + '?' + 
     APP.API.EVENTS.RULE.ACTION.SCOPE + '=' + encodeURIComponent(scope) + '&' + 
     APP.API.EVENTS.RULE.ACTION.ITEM_TYPE + '=' + encodeURIComponent(itemType) + '&' + 
     APP.API.EVENTS.RULE.ACTION.METHOD + '=' + encodeURIComponent(method),
@@ -672,8 +673,9 @@ APP.ajax_post_events_eventId_actions = function(eventId, scope, itemType, method
 /**
  *
  */
-APP.ajax_put_events_eventId_actions_actionId = function(eventId, actionId, scope, itemType, method, callback, error) {
+APP.ajax_put_events_eventId_actions_actionId = function(eventId, actionId, id, scope, itemType, method, callback, error) {
     APP.ajax('PUT', APP.URL.EVENTS_EVENTID_ACTIONS_ACTIONID(eventId, actionId) + '?' + 
+    APP.API.EVENTS.RULE.ACTION.ID + '=' + encodeURIComponent(id) + '&' + 
     APP.API.EVENTS.RULE.ACTION.SCOPE + '=' + encodeURIComponent(scope) + '&' + 
     APP.API.EVENTS.RULE.ACTION.ITEM_TYPE + '=' + encodeURIComponent(itemType) + '&' + 
     APP.API.EVENTS.RULE.ACTION.METHOD + '=' + encodeURIComponent(method),
@@ -2867,6 +2869,7 @@ APP.ECAActionDisplay = function(ruleId, actionObj) {
             self.saveButton.click(function() {
                 var ruleId = self.ruleId,
                     actionId = self.actionObj[APP.API.EVENTS.RULE.ACTION.ACTION_ID],
+                    id = self.actionObj[APP.API.EVENTS.RULE.ACTION.ID],
                     scope = self.scopeField.find('option:selected').val(),
                     itemType = self.itemTypeField.find('option:selected').val(),
                     method = self.methodField.find('option:selected').val();
@@ -2875,7 +2878,7 @@ APP.ECAActionDisplay = function(ruleId, actionObj) {
                 } else {
                     self.errorMessage.html('');
                     self.context.addClass(APP.DOM_HOOK.UPDATING);
-                    APP.ajax_put_events_eventId_actions_actionId(ruleId, actionId, scope, itemType, method,
+                    APP.ajax_put_events_eventId_actions_actionId(ruleId, actionId, id, scope, itemType, method,
                         function() {
                             self.context.removeClass(APP.DOM_HOOK.UPDATING);
                             setToDisplayMode();
@@ -3044,6 +3047,7 @@ APP.ECANewActionDisplay = function(ruleId, stage) {
             
             self.saveButton.click(function() {
                 var ruleId = self.ruleId,
+                    id = self.actionObj[APP.API.EVENTS.RULE.ACTION.ID],
                     scope = self.scopeField.find('option:selected').val(),
                     itemType = self.itemTypeField.find('option:selected').val(),
                     method = self.methodField.find('option:selected').val();
@@ -3052,7 +3056,7 @@ APP.ECANewActionDisplay = function(ruleId, stage) {
                 } else {
                     self.errorMessage.html('');
                     self.context.addClass(APP.DOM_HOOK.UPDATING);
-                    APP.ajax_post_events_eventId_actions(ruleId, scope, itemType, method,
+                    APP.ajax_post_events_eventId_actions(ruleId, id, scope, itemType, method,
                         function() {
                             self.context.removeClass(APP.DOM_HOOK.UPDATING);
                             setToDisplayMode(); // TODO remove this
