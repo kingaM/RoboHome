@@ -35,8 +35,11 @@ void loop() {
         int nSegments = myServer.countSegments();
         char **pathsegments = myServer.parse();
 
-        if (c == '\n' && currentLineIsBlank) {
-          handleCommand(client, pathsegments[0]);     
+        if (c == '\n' && nSegments > 0 && currentLineIsBlank) {
+          handleCommand(client, pathsegments[0]);
+          while(client.available()) {
+            c = client.read();
+          }     
         }
         if (c == '\n') {
           currentLineIsBlank = true;
