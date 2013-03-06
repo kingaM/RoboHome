@@ -80,7 +80,7 @@ class Action():
         elif self.room != None:
             items = self.room.items
             for key in items:
-                if items[key]._type is self._type:
+                if items[key]._type is self.type:
                     getattr(items[key], self.method)()
 
         else:
@@ -91,7 +91,7 @@ class Action():
         """
         Gets the items that this action affects
         """
-        return (self.item, self.room, self._type)
+        return (self.item, self.room, self.type)
 
     def isConflictWithOtherActions(self, otherItemsActedOn):
         """

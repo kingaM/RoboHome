@@ -626,7 +626,7 @@ class House(object):
                     eventMatch = False
                     break
                 else:
-                    eventItemsActedOn.append(action.getItemsActedOn)
+                    eventItemsActedOn.append(action.getItemsActedOn())
             if eventMatch == True:
                 itemsActedOn.extend(eventItemsActedOn)
                 events.append(event)
