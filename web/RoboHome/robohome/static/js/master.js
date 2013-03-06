@@ -1191,19 +1191,18 @@ APP.ItemTypeDisplay.prototype.update = function() {
             itemDisplaysCopy = itemDisplays.slice(0),
             itemDisplaysCopyLength = itemDisplaysCopy.length;
         
-        loop1:
         for(var i = 0; i < itemDisplaysCopyLength; i++) {
-            loop2:
+            inner:
             for(var j = 0; j < itemsCopyLength; j++) {
                 if(itemDisplaysCopy[i].itemObj[APP.API.STATE.ROOM.ITEM.ID] === itemsCopy[j][APP.API.STATE.ROOM.ITEM.ID]) {
                     itemDisplaysCopy[i].update(itemsCopy[j]);
-                    itemsCopy.splice(j, 1);
                     itemDisplaysCopy.splice(i, 1);
-                    itemsCopyLength = itemsCopy.length;
+                    itemsCopy.splice(j, 1);
                     itemDisplaysCopyLength = itemDisplaysCopy.length;
+                    itemsCopyLength = itemsCopy.length;
                     i--;
                     j--;
-                    break loop2;
+                    break inner;
                 }
             }
 
@@ -1410,9 +1409,38 @@ APP.ItemDisplay.prototype.updateError = function(itemObj) {
 APP.ECARuleManager = function(stage) {
     this.stage = stage;
     this.ruleDisplays = [];
+    this.newRuleDisplay = new APP.ECANewRuleDisplay(this.stage);
     
     for(var i = 0; i < APP.data.events.length; i++) {
         this.ruleDisplays.push(new APP.ECARuleDisplay(APP.data.events[i], this.stage));
+    }
+};
+
+/**
+ *
+ */
+APP.ECARuleManager.prototype.addECARuleDisplays = function(ruleObjArray) {
+    var newRuleDisplay;
+    
+    this.newRuleDisplay.delete();
+    for(var i = 0; i < ruleObjArray.length; i++) {
+        newRuleDisplay = new APP.ECARuleDisplay(ruleObjArray[i], this.stage);
+        this.ruleDisplays.push(newRuleDisplay);
+        this.stage.getContext().append(newRuleDisplay.construct());
+    }
+    this.stage.getContext().append(this.newRuleDisplay.construct());
+    
+};
+
+/**
+ *
+ */
+APP.ECARuleManager.prototype.removeECARuleDisplay = function(ruleId) {
+    for(var i = 0; i < this.ruleDisplays.length; i++) {
+        if(this.ruleDisplays[i].ruleObj[APP.API.EVENTS.RULE.RULE_ID] === ruleId) {
+            this.ruleDisplays[i].delete();
+            break;
+        }
     }
 };
 
@@ -1423,14 +1451,52 @@ APP.ECARuleManager.prototype.construct = function() {
     for(var i = 0; i < this.ruleDisplays.length; i++) {
         this.stage.getContext().append(this.ruleDisplays[i].construct());
     }
-    this.stage.getContext().append((new APP.ECANewRuleDisplay(this.stage)).construct());
+    this.stage.getContext().append(this.newRuleDisplay.construct());
 };
 
 /**
  *
  */
 APP.ECARuleManager.prototype.update = function() {
-
+    var self = this;
+    APP.ajax_get_events(
+        function() {
+            var rules = APP.data.events,
+                rulesCopy = rules.slice(0),
+                rulesCopyLength = rulesCopy.length,
+                ruleDisplays = self.ruleDisplays,
+                ruleDisplaysCopy = ruleDisplays.slice(0),
+                ruleDisplaysCopyLength = ruleDisplaysCopy.length;
+                
+            for(var i = 0; i < ruleDisplaysCopyLength; i++) {
+                inner:
+                for(var j = 0; j < rulesCopyLength; j++) {
+                    if(ruleDisplaysCopy[i].ruleObj[APP.API.EVENTS.RULE.RULE_ID] === rulesCopy[j][APP.API.EVENTS.RULE.RULE_ID]) {
+                        ruleDisplaysCopy[i].update();
+                        ruleDisplaysCopy.splice(i, 1);
+                        rulesCopy.splice(j, 1);
+                        ruleDisplaysCopyLength = ruleDisplaysCopy.length;
+                        rulesCopyLength = rulesCopy.length;
+                        i--;
+                        j--;
+                        break inner;
+                    }
+                }
+            }
+            
+            // If there are any unmatched ruleDisplays, it means they need to be removed
+            for(var i = 0; i < ruleDisplaysCopy.length; i++) {
+                self.removeECARuleDisplay(ruleDisplaysCopy[i].ruleObj[APP.API.EVENTS.RULE.RULE_ID]);
+            }
+            
+            // If there are any unmatched rules, it means they need to be added
+            self.addECARuleDisplays(rulesCopy);
+            
+        },
+        function() {
+            // do nothing
+        }
+    );
 };
 
 /**
@@ -1453,7 +1519,7 @@ APP.ECARuleDisplay = function(ruleObj, stage) {
     this.conditionManager = new APP.ECAConditionManager(ruleId, conditionArray, this.stage);
     this.actionManager = new APP.ECAActionManager(ruleId, actionArray, this.stage);
     
-    this.boundingBox;
+    this.boundingBox = $('<div></div>').addClass(APP.DOM_HOOK.ECA.RULE);
     this.titleBox;
     this.formBox;
     this.errorMessage;
@@ -1539,7 +1605,6 @@ APP.ECARuleDisplay.prototype.construct = function() {
         return self.formBox;
     }
     
-    this.boundingBox = $('<div></div>').addClass(APP.DOM_HOOK.ECA.RULE),
     this.titleBox = $('<div></div>').addClass(APP.DOM_HOOK.ECA.RULE_TITLE),
     this.contentBox = $('<div></div>'),
     this.formBox = $('<div></div>').addClass(APP.DOM_HOOK.ECA.FORM_BOX),
@@ -1654,7 +1719,7 @@ APP.ECARuleDisplay.prototype.update = function() {
  *
  */
 APP.ECARuleDisplay.prototype.delete = function() {
-
+    this.boundingBox.remove();
 };
 
 /**
@@ -1779,6 +1844,7 @@ APP.ECANewRuleDisplay = function(stage) {
                             function() {
                                 self.formBox.removeClass(APP.DOM_HOOK.UPDATING);
                                 setToDisplayMode();
+                                self.stage.update();
                             },
                             function() {
                                 // do nothing
@@ -2218,6 +2284,7 @@ APP.ECAEventDisplay = function(ruleId, ruleDisplay, stage) {
                         function() {
                             self.context.removeClass(APP.DOM_HOOK.UPDATING);
                             setToDisplayMode();
+                            self.stage.update();
                         },
                         function() {
                             // do nothing
@@ -3059,7 +3126,8 @@ APP.ECANewActionDisplay = function(ruleId, stage) {
                     APP.ajax_post_events_eventId_actions(ruleId, id, scope, itemType, method,
                         function() {
                             self.context.removeClass(APP.DOM_HOOK.UPDATING);
-                            setToDisplayMode(); // TODO remove this
+                            setToDisplayMode();
+                            self.stage.update();
                         },
                         function() {
                             // do nothing
@@ -3903,7 +3971,7 @@ APP.StageManager = function() {
             // default
         });
         stage.setUpdate(function() {
-            // default
+            stage.data.ruleManager.update();
         });
         stage.setUpdateError(function() {
             // default
