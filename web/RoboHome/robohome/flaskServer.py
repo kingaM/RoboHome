@@ -172,11 +172,15 @@ def events(version):
 
     if request.method == 'POST':
         args = request.args.to_dict()
+        if args["id"] == "null":
+            reqId = None
+        else:
+            reqId = int(args["id"])
         if args["enabled"] == "true":
             enabled = 1
         else:
             enabled = 0
-        _id = house.addEvent(args["ruleName"], args["itemType"], int(args["id"]), args["scope"], int(args["value"]), enabled)
+        _id = house.addEvent(args["ruleName"], args["itemType"], reqId, args["scope"], int(args["value"]), enabled)
         return jsonify(pack({"ruleId": _id}))
 
 
@@ -188,11 +192,15 @@ def events_eventId(version, eventId):
     if request.method == 'PUT':
         # Update event
         args = request.args.to_dict()
+        if args["id"] == "null":
+            reqId = None
+        else:
+            reqId = int(args["id"])
         if args["enabled"] == "true":
             enabled = 1
         else:
             enabled = 0
-        house.updateEvent(args["ruleName"], args["itemType"], int(args["id"]), args["scope"], int(args["value"]), enabled, int(eventId))
+        house.updateEvent(args["ruleName"], args["itemType"], reqId, args["scope"], int(args["value"]), enabled, int(eventId))
         return jsonify(pack('success'))
 
     if request.method == 'DELETE':
@@ -234,7 +242,11 @@ def events_eventId_actions(version, eventId):
 
     if request.method == 'POST':
         args = request.args.to_dict()
-        _id = house.addAction(int(args["id"]), args["itemType"], args["scope"], args["method"], int(eventId))
+        if args["id"] == "null":
+            reqId = None
+        else:
+            reqId = int(args["id"])
+        _id = house.addAction(reqId, args["itemType"], args["scope"], args["method"], int(eventId))
         return jsonify(pack({"actionId": _id}))
 
 
@@ -245,7 +257,11 @@ def events_eventId_actions_actionId(version, eventId, actionId):
 
     if request.method == 'PUT':
         args = request.args.to_dict()
-        house.updateAction(int(args["id"]), args["itemType"], args["scope"], args["method"], int(eventId), int(actionId))
+        if args["id"] == "null":
+            reqId = None
+        else:
+            reqId = int(args["id"])
+        house.updateAction(reqId, args["itemType"], args["scope"], args["method"], int(eventId), int(actionId))
         return(jsonify(pack('success')))
 
     if request.method == 'DELETE':
