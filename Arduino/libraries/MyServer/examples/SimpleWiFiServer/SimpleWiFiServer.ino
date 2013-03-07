@@ -30,21 +30,17 @@ void loop() {
     boolean currentLineIsBlank = true;
     while (client.connected()) {
       if (client.available()) {
-        
         char c = myServer.readClient(client);
         int nSegments = myServer.countSegments();
         char **pathsegments = myServer.parse();
 
-        if (c == '\n' && nSegments > 0 && currentLineIsBlank) {
+        if (nSegments > 0) {
+          Serial.println(pathsegments[0]);
           handleCommand(client, pathsegments[0]);
           while(client.available()) {
-            c = client.read();
+            client.read();
           }     
-        }
-        if (c == '\n') {
-          currentLineIsBlank = true;
-        } else if (c != '\r') {
-          currentLineIsBlank = false;
+          break;
         }
       }
     }
