@@ -2,7 +2,7 @@
 #include <WiFi.h>
 
 WiFiServer server(80);
-MyServer myServer("virginmedia6048706", "ehfekscx");
+MyServer myServer("name", "pass");
 int reedOpenPin = 5;
 int reedClosePin = 6;
 boolean currentOpen = LOW;
