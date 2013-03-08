@@ -1,5 +1,7 @@
 import time
 import threading
+import urllib2
+from flask import Blueprint
 
 # These classes mock how the middle layers interact with items until hardware is available
 
@@ -65,6 +67,17 @@ class ArduinoLayer(MiddleLayer):
         self.mockState = temperature
 
 
+class GadgeteerLayer(MiddleLayer):
+    def __init__(self, ip, item):
+        super(GadgeteerLayer, self).__init__(ip, item)
+
+    def checkState(self):
+        return int(urllib2.urlopen("http://" + self.ip + "/state").read())
+
+    def send(self, command, *args):
+        return getattr(self, command)(*args)
+
+
 class WemoLayer():
     def send(self, command):
         pass
@@ -75,4 +88,4 @@ class LightwaveRFLayer():
         pass
 
 
-brands = {'arduino': ArduinoLayer, 'wemo': WemoLayer, 'lightwaveRF': LightwaveRFLayer, 'RF': ArduinoLayer, 'rf': ArduinoLayer}
+brands = {'arduino': ArduinoLayer, 'gadgeteer': GadgeteerLayer, 'wemo': WemoLayer, 'lightwaveRF': LightwaveRFLayer, 'RF': ArduinoLayer, 'rf': ArduinoLayer}

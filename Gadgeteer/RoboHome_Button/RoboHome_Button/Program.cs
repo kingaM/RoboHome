@@ -21,7 +21,7 @@ namespace RoboHome_Button
         String ssid = "ssid";
         String password = "password";
 
-        String sensorState = "off";
+        String sensorState = "0";
 
         // This method is run when the mainboard is powered up or reset.   
         void ProgramStarted()
@@ -75,7 +75,7 @@ namespace RoboHome_Button
 
         void button_ButtonPressed(Button sender, Button.ButtonState state)
         {
-            sensorState = (sensorState.Equals("off")) ? "on" : "off";
+            sensorState = (sensorState.Equals("0")) ? "1" : "0";
             Debug.Print(sensorState);
             //PUTContent emptyPut = new PUTContent();
             //Gadgeteer.Networking.HttpRequest req = HttpHelper.CreateHttpPutRequest("url", emptyPut, null);
