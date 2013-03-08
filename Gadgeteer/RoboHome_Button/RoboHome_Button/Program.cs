@@ -20,6 +20,7 @@ namespace RoboHome_Button
 
         String ssid = "ssid";
         String password = "password";
+        String rpi = "192.168.0.120";
 
         String sensorState = "0";
 
@@ -77,8 +78,10 @@ namespace RoboHome_Button
         {
             sensorState = (sensorState.Equals("0")) ? "1" : "0";
             Debug.Print(sensorState);
-            //PUTContent emptyPut = new PUTContent();
-            //Gadgeteer.Networking.HttpRequest req = HttpHelper.CreateHttpPutRequest("url", emptyPut, null);
+            PUTContent emptyPut = new PUTContent();
+            Gadgeteer.Networking.HttpRequest req = HttpHelper.CreateHttpPutRequest("http://" + rpi + ":9090/gadgeteer/state/" + sensorState + "/", emptyPut, null);
+            req.SendRequest();
         }
+
     }
 }

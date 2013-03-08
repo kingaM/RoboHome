@@ -2,8 +2,26 @@ import time
 import threading
 import urllib2
 from flask import Blueprint
+from flask import *
 
-# These classes mock how the middle layers interact with items until hardware is available
+items = {}
+
+gadgeteerBlueprint = Blueprint('item', __name__, url_prefix='/gadgeteer')
+
+
+@gadgeteerBlueprint.route('/state/<int:status>/', methods=['PUT'])
+def gadgeteerStatusUpdate(status):
+    if request.method == 'PUT':
+        if not request.headers.getlist("X-Forwarded-For"):
+            ip = request.remote_addr
+        else:
+            ip = request.headers.getlist("X-Forwarded-For")[0]
+        items[ip].updateState(status)
+        return ("success")
+
+
+
+# Some of these classes mock how the middle layers interact with items until hardware is available
 
 
 class MiddleLayer(object):
@@ -69,10 +87,18 @@ class ArduinoLayer(MiddleLayer):
 
 class GadgeteerLayer(MiddleLayer):
     def __init__(self, ip, item):
-        super(GadgeteerLayer, self).__init__(ip, item)
+        #super(GadgeteerLayer, self).__init__(ip, item) -- No need to poll the state now since Gadgeteer can send PUT requests
+        self.state = 1
+        self.item = item
+        self.ip = ip
+        items[ip] = self
 
     def checkState(self):
         return int(urllib2.urlopen("http://" + self.ip + "/state").read())
+
+    def updateState(self, state):
+        self.state = state
+        self.item.stateChanged(state)
 
     def send(self, command, *args):
         return getattr(self, command)(*args)

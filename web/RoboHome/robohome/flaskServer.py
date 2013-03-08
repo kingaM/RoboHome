@@ -20,6 +20,7 @@ from flask_openid import OpenID
 from IPy import IP
 import updateManager
 import threading
+import middleLayers
 
 SETTINGS = {
     'LANGUAGE': 'en',
@@ -49,6 +50,8 @@ app.config.update(
     SECRET_KEY = 'development key',
     DEBUG = True
 )
+
+app.register_blueprint(middleLayers.gadgeteerBlueprint)
 
 db = Database()
 house = House(db)
