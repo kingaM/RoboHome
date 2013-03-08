@@ -1,14 +1,12 @@
-#include <MyServer.h>
+#include <MyServerM.h>
 #include <WiFi.h>
 
 WiFiServer server(80);
-MyServer myServer("name", "pass");
+MyServerM myServer("name", "pass");
 int reedOpenPin = 5;
 int reedClosePin = 6;
 boolean currentOpen = LOW;
 boolean currentClose = LOW;
-int openState = 1;
-int closeState = 0;
 boolean motionDetected = false;
 boolean newMotion = false;
 
@@ -23,26 +21,10 @@ boolean takeHighTime = true;
 int pir1Pin = 2;
 int pir2Pin = 3;
 
-/* Handles the RESTful command from the server
- * Args:
- * client -- WiFi client to send the respons to
- * cmd -- the RESTful command
-*/
-void handleCommand(WiFiClient client, char* cmd) {
-  if (strcmp(cmd, "status") == 0) {
-    Serial.println(currentOpen);
-    Serial.println(currentClose);
-    getStatus(client);
-  } 
-  else {
-    myServer.send404(client);
-  }  
-}
-
 /* Sends status back to the server, depending on the readings
  * Args:
  * client -- WiFi client to send the respons to
-*/
+ */
 void getStatus(WiFiClient client) {
   if (currentOpen == 1 && currentClose == 0) {
     myServer.sendStatus(client, "{status : 1}");
@@ -55,7 +37,7 @@ void getStatus(WiFiClient client) {
 /* Helper function to reduce the inaccuracies in readings
  * Args:
  * pin -- the pin number
-*/
+ */
 boolean debounce(int pin)
 {
   boolean current = digitalRead(pin);
@@ -64,10 +46,52 @@ boolean debounce(int pin)
   return current;
 }
 
+/* A stub method for opening the door, not implemented yet
+ */
+void openDoor() {
+  /*while(currentOpen!=1) {
+   motor.run();
+   currentOpen = debounce(reedOpenPin);
+   } */
+}
+
+/* A stub method for closing the door, not implemented yet
+ */
+void closeDoor() {
+  /*while(currentClose!=1) {
+   motor.run();
+   currentClose = debounce(reedOpenPin);
+   } */
+}
+
+/* Handles the RESTful command from the server
+ * Args:
+ * client -- WiFi client to send the respons to
+ * cmd -- the RESTful command
+ */
+void handleCommand(WiFiClient client, char* cmd) {
+  if (strcmp(cmd, "status") == 0) {
+    Serial.println(currentOpen);
+    Serial.println(currentClose);
+    getStatus(client);
+  } 
+  else if (strcmp(cmd, "open") == 0) {
+    openDoor();
+	getStatus(client);
+  }
+  else if (strcmp(cmd, "close") == 0) {
+    closeDoor();
+	getStatus(client);
+  }
+  else {
+    myServer.send404(client);
+  }  
+}
+
 /* Listenes for request from the server
-*/
+ */
 void listenToRequest() {
-   WiFiClient client = server.available();
+  WiFiClient client = server.available();
   if (client) {
     boolean currentLineIsBlank = true;
     while (client.connected()) {
@@ -95,12 +119,11 @@ void listenToRequest() {
 /* Checks if there is new motion detected on a given PIR
  * Args:
  * pirPin -- the pin number for the pir sensor to check
-*/
+ */
 int pir(int pirPin) {
 
   if(digitalRead(pirPin) == HIGH){
     if(lockLow){  
-      Serial.println("HIGH PIR");
       lockLow = false;
       newMotion = true;      
       motionDetected = true;
@@ -110,12 +133,11 @@ int pir(int pirPin) {
   }
 
   if(digitalRead(pirPin) == LOW){       
-
     if(takeLowTime){
       lowIn = millis();       
       takeLowTime = false;
     }
-  
+
     if(!lockLow && millis() - lowIn > pause){  
       lockLow = true;
       newMotion = true;     
@@ -150,22 +172,6 @@ void loop() {
   listenToRequest();
   currentOpen = debounce(reedOpenPin);
   currentClose = debounce(reedClosePin);
-  if (currentOpen == LOW) {
-    openState = 0;
-  } 
-  else {
-    openState = 1;
-  }
-  if (currentClose == LOW) {
-    closeState = 0;
-  } 
-  else {
-    closeState = 1;
-  }
-  Serial.print("Open: ");
-  Serial.println(currentOpen);
-  Serial.print("Close: ");
-  Serial.println(currentClose);
   if (currentOpen == 1 && currentClose == 0) {
     Serial.println("{status : 1}");
   } 
@@ -182,3 +188,4 @@ void loop() {
   newMotion = false;
   delay(1000);
 }
+
