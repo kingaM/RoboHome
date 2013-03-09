@@ -81,7 +81,7 @@ class MethodsTable(DatabaseHelper):
         return  super(ItemsTable, self).addEntry(self.tablename, "name, signiture, type, typeId", "'" + name + "'," + "'" + signiture + "'," +"'" + type + "'," +"'" + str(typeId) + "'")
 
     def getNiceStateName(self, itemId):
-        return self.retriveData("SELECT methods.name FROM methods, `types`, items WHERE `types`.id=methods.typeId AND `types`.id=items.id AND items.id=" + str(itemId) + " AND methods.signature='getState'")[0][0]
+        return self.retriveData("SELECT methods.name FROM methods, `types`, items WHERE `types`.id=methods.typeId AND `types`.id=items.typeId AND items.id=" + str(itemId) + " AND methods.signature='getState'")[0][0]
 
     def getSignature(self, name, _type):
         return self.retriveData("SELECT signature FROM methods, `types` WHERE `types`.id=methods.typeId AND methods.name=\'" + str(name) + "' AND `types`.name='" + str(_type) + "'")[0][0]
