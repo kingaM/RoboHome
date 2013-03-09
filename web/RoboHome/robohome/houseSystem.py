@@ -509,9 +509,14 @@ class House(object):
             raise Exception("Invalid scope parameter")
         method = self.database.methods.getSignature(methodName, _type)
         action = eca.Action(None, item, room, method, methodName, _type)
+        event = None
         for e in self.events:
             if e.id == eventId:
                 e.actions.append(action)
+                event = e
+        if event is None:
+            raise Exception("Invalid event id")
+        self.database.actions.addEntry(action, event.id)
         return action.id
 
     def updateAction(self, _id, _type, scope, methodName, eventId, actionId):
