@@ -1434,6 +1434,7 @@ APP.ECARuleManager = function(stage) {
         for(var i = 0; i < self.ruleDisplays.length; i++) {
             if(self.ruleDisplays[i].ruleObj[APP.API.EVENTS.RULE.RULE_ID] === ruleId) {
                 self.ruleDisplays[i].delete();
+                self.ruleDisplays.splice(i, 1);
                 break;
             }
         }
@@ -1448,7 +1449,6 @@ APP.ECARuleManager = function(stage) {
     
     this.update = function(func) {
         var baz = this;
-        
         APP.ajax_get_events(
             function() {
                 var rules = APP.data.events,
@@ -1513,8 +1513,8 @@ APP.ECARuleDisplay = function(ruleObj, ruleManager) {
     this.ruleManager = ruleManager;
     
     this.eventDisplay = new APP.ECAEventDisplay(ruleId, this, this.ruleManager);
-    this.conditionManager = new APP.ECAConditionManager(ruleId, conditionArray, this);
-    this.actionManager = new APP.ECAActionManager(ruleId, actionArray, this);
+    this.conditionManager = new APP.ECAConditionManager(ruleId, conditionArray, this.ruleManager);
+    this.actionManager = new APP.ECAActionManager(ruleId, actionArray, this.ruleManager);
     
     this.boundingBox = $('<div></div>').addClass(APP.DOM_HOOK.ECA.RULE);
     this.titleBox;
@@ -1581,8 +1581,8 @@ APP.ECARuleDisplay = function(ruleObj, ruleManager) {
                 self.titleBox.addClass(APP.DOM_HOOK.UPDATING);
                 APP.ajax_put_events_eventId(eventId, ruleName, enabled, id, itemType, scope, equivalence, value,
                     function() {
-                        self.titleBox.removeClass(APP.DOM_HOOK.UPDATING);
                         self.ruleManager.update(function() {
+                            self.titleBox.removeClass(APP.DOM_HOOK.UPDATING);
                             self.setToDisplayMode();
                         });
                     },
@@ -1658,9 +1658,7 @@ APP.ECARuleDisplay = function(ruleObj, ruleManager) {
                 APP.ajax_delete_events_eventId(eventId,
                     function() {
                         self.titleBox.removeClass(APP.DOM_HOOK.UPDATING);
-                        self.ruleManager.update(function() {
-                            self.setToDisplayMode();
-                        });
+                        self.ruleManager.update();
                     },
                     function() {
                         // do nothing
@@ -1705,6 +1703,9 @@ APP.ECARuleDisplay = function(ruleObj, ruleManager) {
     };
     
     this.update = function(ruleObj) {
+    
+        var oldRuleObj = self.ruleObj;
+    
         var oldEnabled = self.ruleObj[APP.API.EVENTS.RULE.ENABLED],
             enabled = ruleObj[APP.API.EVENTS.RULE.ENABLED],
             oldEventObj = self.ruleObj[APP.API.EVENTS.RULE.EVENT.EVENT],
@@ -1737,7 +1738,16 @@ APP.ECARuleDisplay = function(ruleObj, ruleManager) {
             enabled === true ? self.enableDisable.addClass(APP.DOM_HOOK.ENABLED) : self.enableDisable.removeClass(APP.DOM_HOOK.ENABLED);
             self.eventDisplay.update();
         }
-        
+        var isChanged = false;
+        for(var i = 0; i < conditionArray.length; i++) {
+            for(var property in oldRuleObj.conditions[i]) {
+                if(oldRuleObj.conditions[i].hasOwnProperty(property)) {
+                    if(oldRuleObj.conditions[i][property] !== conditionArray[i][property]) {
+                        isChanged = true;
+                    }
+                }
+            }
+        }
         self.conditionManager.update(conditionArray);
         self.actionManager.update(actionArray);
     };
@@ -1868,8 +1878,8 @@ APP.ECANewRuleDisplay = function(ruleManager) {
                         self.formBox.addClass(APP.DOM_HOOK.UPDATING);
                         APP.ajax_post_events(ruleName, enabled, id, itemType, scope, equivalence, value,
                             function() {
-                                self.formBox.removeClass(APP.DOM_HOOK.UPDATING);
                                 self.ruleManager.update(function() {
+                                    self.formBox.removeClass(APP.DOM_HOOK.UPDATING);
                                     setToDisplayMode();
                                 });
                             },
@@ -2148,6 +2158,7 @@ APP.ECAEventDisplay = function(ruleId, ruleDisplay, ruleManager) {
     this.context = $('<div></div>').addClass(APP.DOM_HOOK.ECA.EVENT);
     
     this.setToDisplayMode = function() {
+        
         function getEquivalence() {
             equivalence = 'is'; // REDO when implemented equivalences
         }
@@ -2203,7 +2214,7 @@ APP.ECAEventDisplay = function(ruleId, ruleDisplay, ruleManager) {
         self.stateField = $('<div></div>').addClass(APP.DOM_HOOK.ECA.FIELD_DIV);
         self.editButton = $('<button>Edit</button>');
         
-        self.context.html('');
+        self.context.html('');        
         getScopeAndBridges();
         getItemState();
         getEquivalence();
@@ -2296,8 +2307,8 @@ APP.ECAEventDisplay = function(ruleId, ruleDisplay, ruleManager) {
                 self.context.addClass(APP.DOM_HOOK.UPDATING);
                 APP.ajax_put_events_eventId(eventId, ruleName, enabled, id, itemType, scope, equivalence, value,
                     function() {
-                        self.context.removeClass(APP.DOM_HOOK.UPDATING);
                         self.ruleManager.update(function() {
+                            self.context.removeClass(APP.DOM_HOOK.UPDATING);
                             self.setToDisplayMode();
                         });
                     },
@@ -2320,19 +2331,13 @@ APP.ECAEventDisplay = function(ruleId, ruleDisplay, ruleManager) {
         self.context.append(self.saveButton);
     };
     
+    this.update = this.setToDisplayMode;
+    
     this.construct = function() {
         self.setToDisplayMode();
         return this.context;
     };
-    
-    this.update = function() {
-        // do nothing. this.setToDisplayMode already pulls data off APP.data.events
-    };
-    
-    this.delete = function() {
-    
-    };
-    
+        
 };
 APP.inherit(APP.ECAEventDisplay, APP.ECANewRuleDisplay);
 
@@ -2341,19 +2346,41 @@ APP.inherit(APP.ECAEventDisplay, APP.ECANewRuleDisplay);
 /**
  *
  */
-APP.ECAConditionManager = function(ruleId, conditionArray, stage) {
+APP.ECAConditionManager = function(ruleId, conditionArray, ruleManager) {
     var self = this;
     
     this.ruleId = ruleId;
     this.conditionArray = conditionArray;
-    this.stage = stage;
+    this.ruleManager = ruleManager;
     
     this.conditionDisplays = [];
     for(var i = 0; i < this.conditionArray.length; i++) {
-        this.conditionDisplays.push(new APP.ECAConditionDisplay(ruleId, conditionArray[i]));
+        this.conditionDisplays.push(new APP.ECAConditionDisplay(ruleId, conditionArray[i], this.ruleManager));
     }
-    this.newConditionDisplay = new APP.ECANewConditionDisplay(ruleId);
+    this.newConditionDisplay = new APP.ECANewConditionDisplay(ruleId, this.ruleManager);
     this.context = $('<div></div>').addClass(APP.DOM_HOOK.ECA.CONDITION);
+    
+    this.addECAConditionDisplays = function(conditionArray) {
+        var conditionDisplay;
+        
+        for(var i = 0; i < conditionArray.length; i++) {
+            conditionDisplay = new APP.ECAConditionDisplay(self.ruleId, conditionArray[i], self.ruleManager);
+            self.conditionDisplays.push(conditionDisplay);
+            self.context.append(conditionDisplay.construct());
+        }
+        // move the newConditionDisplay to the bottom
+        self.context.append(self.newConditionDisplay.context);
+    };
+    
+    this.removeECAConditionDisplay = function(conditionId) {
+        for(var i = 0; i < self.conditionDisplays.length; i++) {
+            if(self.conditionDisplays[i].conditionObj[APP.API.EVENTS.RULE.CONDITION.CONDITION_ID] === conditionId) {
+                self.conditionDisplays[i].delete();
+                self.conditionDisplays.splice(i, 1);
+                break;
+            }
+        }
+    };
     
     this.construct = function() {
         for(var i = 0; i < self.conditionDisplays.length; i++) {
@@ -2364,60 +2391,43 @@ APP.ECAConditionManager = function(ruleId, conditionArray, stage) {
     };
     
     this.update = function(conditionArray) {
-        /*
-        this.conditionArray = conditionArray;
+        var ruleId,
+            conditions,
+            conditionsCopy,
+            conditionsCopyLength,
+            conditionDisplaysCopy,
+            conditionDisplaysCopyLength;
         
-        var conditions = conditionArray,
-            conditionsCopy = conditions.slice(0),
-            conditionsCopyLength = conditionsCopy.length,
-            conditionDisplays = self.conditionDisplays,
-            conditionDisplaysCopy = self.conditionDisplays.slice(0),
-            conditionDisplaysCopyLength = self.conditionDisplays.length;
+        conditions = conditionArray,
+        conditionsCopy = conditions.slice(0),
+        conditionsCopyLength = conditionsCopy.length,
+        conditionDisplays = this.conditionDisplays,
+        conditionDisplaysCopy = conditionDisplays.slice(0),
+        conditionDisplaysCopyLength = conditionDisplays.length;
         
         for(var i = 0; i < conditionDisplaysCopyLength; i++) {
             inner:
-            for(var j = 0; j < conditionsLength; j++) {
-                if() {
-                    conditionsCopy[i].update(conditionsCopy[i]);
-                    conditionsCopy.splice(i, 1);
-                    rulesCopy.splice(j, 1);
+            for(var j = 0; j < conditionsCopyLength; j++) {
+                if(conditionDisplaysCopy[i].conditionObj[APP.API.EVENTS.RULE.CONDITION.CONDITION_ID] === conditionsCopy[j][APP.API.EVENTS.RULE.CONDITION.CONDITION_ID]) {
+                    conditionDisplaysCopy[i].update(conditionsCopy[j]);
+                    conditionDisplaysCopy.splice(i, 1);
+                    conditionsCopy.splice(j, 1);
+                    conditionDisplaysCopyLength = conditionDisplaysCopy.length;
                     conditionsCopyLength = conditionsCopy.length;
-                    rulesCopyLength = rulesCopy.length;
                     i--;
                     j--;
                     break inner;
                 }
             }
         }
-                    
-                            for(var i = 0; i < ruleDisplaysCopyLength; i++) {
-                                inner:
-                                for(var j = 0; j < rulesCopyLength; j++) {
-                                    if(ruleDisplaysCopy[i].ruleObj[APP.API.EVENTS.RULE.RULE_ID] === rulesCopy[j][APP.API.EVENTS.RULE.RULE_ID]) {
-                                        ruleDisplaysCopy[i].update(rulesCopy[j]);
-                                        ruleDisplaysCopy.splice(i, 1);
-                                        rulesCopy.splice(j, 1);
-                                        ruleDisplaysCopyLength = ruleDisplaysCopy.length;
-                                        rulesCopyLength = rulesCopy.length;
-                                        i--;
-                                        j--;
-                                        break inner;
-                                    }
-                                }
-                            }
-                            
-                            // If there are any unmatched ruleDisplays, it means they need to be removed
-                            for(var i = 0; i < ruleDisplaysCopy.length; i++) {
-                                self.removeECARuleDisplay(ruleDisplaysCopy[i].ruleObj[APP.API.EVENTS.RULE.RULE_ID]);
-                            }
-                            
-                            // If there are any unmatched rules, it means they need to be added
-                            self.addECARuleDisplays(rulesCopy);
         
+        // If there are any unmatched conditionDisplays, it means they need to be removed
+        for(var i = 0; i < conditionDisplaysCopy.length; i++) {
+            self.removeECAConditionDisplay(conditionDisplaysCopy[i].conditionObj[APP.API.EVENTS.RULE.CONDITION.CONDITION_ID]);
+        }
         
-        */
-        
-        
+        // If there are any unmatched conditions, it means they need to be added
+        self.addECAConditionDisplays(conditionsCopy);
         
     };
     
@@ -2427,12 +2437,18 @@ APP.ECAConditionManager = function(ruleId, conditionArray, stage) {
  * @class APP.ECAConditionNode
  * @constructor
  */
-APP.ECAConditionDisplay = function(ruleId, conditionObj) {
+APP.ECAConditionDisplay = function(ruleId, conditionObj, ruleManager) {
 
-    var self = this;
+    var self = this,
+        itemId,
+        itemName,
+        equivalence,
+        state;
     
     this.ruleId = ruleId;
     this.conditionObj = conditionObj;
+    this.ruleManager = ruleManager;
+    
     this.errorMessage;
     this.bridge1;
     this.itemFieldset;
@@ -2450,158 +2466,164 @@ APP.ECAConditionDisplay = function(ruleId, conditionObj) {
     this.cancelButton;
     this.context = $('<div></div>').addClass(APP.DOM_HOOK.ECA.CONDITION_DISPLAY);
     
-    this.construct = function() {
-    
-        var itemId,
-            itemName,
-            equivalence,
-            state;
+    this.setToDisplayMode = function() {
+        function getStateDisplay() {
+            var states = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][self.conditionObj[APP.API.EVENTS.RULE.CONDITION.ITEM_TYPE]][APP.API.VERSION.SUPPORTED_TYPE.STATES];
+            for(var i = 0; i < states.length; i++) {
+                if(self.conditionObj[APP.API.EVENTS.RULE.CONDITION.VALUE] === states[i][APP.API.VERSION.SUPPORTED_TYPE.STATE.ID]) {
+                    state = states[i][APP.API.VERSION.SUPPORTED_TYPE.STATE.NAME];
+                    break;
+                }
+            }
+        }
         
-        function setToDisplayMode() {
-        
-            function getStateDisplay() {
-                var states = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][self.conditionObj[APP.API.EVENTS.RULE.CONDITION.ITEM_TYPE]][APP.API.VERSION.SUPPORTED_TYPE.STATES];
-                for(var i = 0; i < states.length; i++) {
-                    if(self.conditionObj[APP.API.EVENTS.RULE.CONDITION.VALUE] === states[i][APP.API.VERSION.SUPPORTED_TYPE.STATE.ID]) {
-                        state = states[i][APP.API.VERSION.SUPPORTED_TYPE.STATE.NAME];
+        function getItemNameDisplay() {
+            var rooms,
+                items;
+            rooms = APP.data.houseStructure[APP.API.STATE.ROOMS];
+            for(var i = 0; i < rooms.length; i++) {
+                items = rooms[i][APP.API.STATE.ROOM.ITEMS];
+                for(var j = 0; j < items.length; j++) {
+                    if(self.conditionObj[APP.API.EVENTS.RULE.CONDITION.ITEM_ID] === items[j][APP.API.STATE.ROOM.ITEM.ID]) {
+                        itemName = items[j][APP.API.STATE.ROOM.ITEM.NAME];
                         break;
                     }
                 }
             }
-            
-            function getItemNameDisplay() {
-                var rooms,
-                    items;
-                rooms = APP.data.houseStructure[APP.API.STATE.ROOMS];
-                for(var i = 0; i < rooms.length; i++) {
-                    items = rooms[i][APP.API.STATE.ROOM.ITEMS];
-                    for(var j = 0; j < items.length; j++) {
-                        if(self.conditionObj[APP.API.EVENTS.RULE.CONDITION.ITEM_ID] === items[j][APP.API.STATE.ROOM.ITEM.ID]) {
-                            itemName = items[j][APP.API.STATE.ROOM.ITEM.NAME];
-                            break;
-                        }
-                    }
-                }
-            }
-            
-            function getEquivalence() {
-                equivalence = 'is'; // change when we implement equivalences
-            }
-            
-            self.bridge1 = $('<div>If</div>');
-            self.itemNameField = $('<div></div>').addClass(APP.DOM_HOOK.ECA.FIELD_DIV);
-            self.equivalenceField = $('<div></div>').addClass(APP.DOM_HOOK.ECA.FIELD_DIV);
-            self.stateField = $('<div></div>').addClass(APP.DOM_HOOK.ECA.FIELD_DIV);
-            self.editButton = $('<button>Edit</button>');
-            self.deleteButton = $('<button>Delete</button>').addClass(APP.DOM_HOOK.ECA.DELETE);
-            getEquivalence();
-            getStateDisplay();
-            getItemNameDisplay();
-            
-            self.context.html('');
+        }
+        
+        function getEquivalence() {
+            equivalence = 'is'; // change when we implement equivalences
+        }
+        
+        self.bridge1 = $('<div>If</div>');
+        self.itemNameField = $('<div></div>').addClass(APP.DOM_HOOK.ECA.FIELD_DIV);
+        self.equivalenceField = $('<div></div>').addClass(APP.DOM_HOOK.ECA.FIELD_DIV);
+        self.stateField = $('<div></div>').addClass(APP.DOM_HOOK.ECA.FIELD_DIV);
+        self.editButton = $('<button>Edit</button>');
+        self.deleteButton = $('<button>Delete</button>').addClass(APP.DOM_HOOK.ECA.DELETE);
+        getEquivalence();
+        getStateDisplay();
+        getItemNameDisplay();
+        
+        self.context.html('');
 
-            self.editButton.click(function() {
-                setToFormMode();
-            });
-            
-            self.deleteButton.click(function() {
-                var eventId = self.ruleId,
-                    conditionId = self.conditionObj[APP.API.EVENTS.RULE.CONDITION.CONDITION_ID];
-                self.context.addClass(APP.DOM_HOOK.UPDATING);
-                APP.ajax_delete_events_eventId_conditions_conditionId(eventId, conditionId,
-                    function(json) {
+        self.editButton.click(function() {
+            self.setToFormMode();
+        });
+        
+        self.deleteButton.click(function() {
+            var eventId = self.ruleId,
+                conditionId = self.conditionObj[APP.API.EVENTS.RULE.CONDITION.CONDITION_ID];
+            self.context.addClass(APP.DOM_HOOK.UPDATING);
+            APP.ajax_delete_events_eventId_conditions_conditionId(eventId, conditionId,
+                function() {
+                    self.ruleManager.update(function() {
                         self.context.removeClass(APP.DOM_HOOK.UPDATING);
+                    });
+                },
+                function() {
+                    // do nothing
+                }
+            );
+        });
+        
+        self.context.append(self.bridge1);
+        self.context.append(self.itemNameField.append(itemName));
+        self.context.append(self.equivalenceField.append(equivalence));
+        self.context.append(self.stateField.append(state));
+        self.context.append(self.editButton);
+        self.context.append(self.deleteButton);
+        
+    };
+    
+    this.setToFormMode = function() {
+        self.errorMessage = $('<div></div>').addClass(APP.DOM_HOOK.ERROR_MESSAGE_DISPLAY),
+        self.bridge1 = $('<div>If</div>'),
+        self.itemFieldset = $('<fieldset><legend>Step 1 - Set item</legend></fieldset>'),
+        self.itemWrapper = $('<div></div>').addClass('select-wrapper'),
+        self.itemField = $('<select></select>'),
+        self.equivalenceFieldset = $('<fieldset><legend>Step 2 - Set equiv</legend></fieldset>'),
+        self.equivalenceWrapper = $('<div></div>').addClass('select-wrapper'),
+        self.equivalenceField = $('<select></select>'),
+        self.stateFieldset = $('<fieldset><legend>Step 3 - Set state</legend></fieldset>'),
+        self.stateWrapper = $('<div></div>').addClass('select-wrapper')
+        self.stateField = $('<select></select>'),
+        self.editButton = $('<button>Add new condition</button>'),
+        self.cancelButton = $('<button>Cancel</button>'),
+        self.saveButton = $('<button>Save</button>');
+        
+        self.context.html('');
+        
+        self.populateItemField(self.conditionObj[APP.API.EVENTS.RULE.CONDITION.ITEM_ID]);
+        self.populateEquivalenceField(self.conditionObj[APP.API.EVENTS.RULE.CONDITION.ITEM_TYPE], equivalence);
+        self.populateStateField(self.conditionObj[APP.API.EVENTS.RULE.CONDITION.ITEM_TYPE], self.conditionObj[APP.API.EVENTS.RULE.CONDITION.VALUE]);
+
+        self.itemField.click(function() {
+            self.populateEquivalenceField(self.conditionObj[APP.API.EVENTS.RULE.CONDITION.ITEM_TYPE], equivalence);
+            self.populateStateField(self.conditionObj[APP.API.EVENTS.RULE.CONDITION.ITEM_TYPE], self.conditionObj[APP.API.EVENTS.RULE.CONDITION.VALUE]);
+        });
+        
+        self.cancelButton.click(function() {
+            self.setToDisplayMode();
+        });
+        
+        self.saveButton.click(function() {
+            var ruleId = self.ruleId,
+                conditionId = self.conditionObj[APP.API.EVENTS.RULE.CONDITION.CONDITION_ID],
+                itemId = self.itemField.children('option:selected').val(),
+                equivalence = self.equivalenceField.children('option:selected').val(),
+                state = self.stateField.children('option:selected').val();
+            if(itemId === 'undefined' || equivalence === 'undefined' || state === 'undefined') {
+                self.errorMessage.html('One or more fields are not set.');
+            } else {
+                self.errorMessage.html('');
+                self.context.addClass(APP.DOM_HOOK.UPDATING);
+                APP.ajax_put_events_eventId_conditions_conditionId(ruleId, conditionId, itemId, equivalence, state,
+                    function() {
+                        self.ruleManager.update(function() {
+                            self.context.removeClass(APP.DOM_HOOK.UPDATING);
+                        });
                     },
                     function() {
                         // do nothing
                     }
                 );
-            });
-            
-            self.context.append(self.bridge1);
-            self.context.append(self.itemNameField.append(itemName));
-            self.context.append(self.equivalenceField.append(equivalence));
-            self.context.append(self.stateField.append(state));
-            self.context.append(self.editButton);
-            self.context.append(self.deleteButton);
-            
-        }
+            }
+        });
         
-        function setToFormMode() {
-            self.errorMessage = $('<div></div>').addClass(APP.DOM_HOOK.ERROR_MESSAGE_DISPLAY),
-            self.bridge1 = $('<div>If</div>'),
-            self.itemFieldset = $('<fieldset><legend>Step 1 - Set item</legend></fieldset>'),
-            self.itemWrapper = $('<div></div>').addClass('select-wrapper'),
-            self.itemField = $('<select></select>'),
-            self.equivalenceFieldset = $('<fieldset><legend>Step 2 - Set equiv</legend></fieldset>'),
-            self.equivalenceWrapper = $('<div></div>').addClass('select-wrapper'),
-            self.equivalenceField = $('<select></select>'),
-            self.stateFieldset = $('<fieldset><legend>Step 3 - Set state</legend></fieldset>'),
-            self.stateWrapper = $('<div></div>').addClass('select-wrapper')
-            self.stateField = $('<select></select>'),
-            self.editButton = $('<button>Add new condition</button>'),
-            self.cancelButton = $('<button>Cancel</button>'),
-            self.saveButton = $('<button>Save</button>');
-            
-            self.context.html('');
-            
-            self.populateItemField(self.conditionObj[APP.API.EVENTS.RULE.CONDITION.ITEM_ID]);
-            self.populateEquivalenceField(self.conditionObj[APP.API.EVENTS.RULE.CONDITION.ITEM_TYPE], equivalence);
-            self.populateStateField(self.conditionObj[APP.API.EVENTS.RULE.CONDITION.ITEM_TYPE], self.conditionObj[APP.API.EVENTS.RULE.CONDITION.VALUE]);
-
-            
-            self.itemField.click(function() {
-                self.populateEquivalenceField(self.conditionObj[APP.API.EVENTS.RULE.CONDITION.ITEM_TYPE], equivalence);
-                self.populateStateField(self.conditionObj[APP.API.EVENTS.RULE.CONDITION.ITEM_TYPE], self.conditionObj[APP.API.EVENTS.RULE.CONDITION.VALUE]);
-            });
-            
-            self.cancelButton.click(function() {
-                setToDisplayMode();
-            });
-            
-            self.saveButton.click(function() {
-                var ruleId = self.ruleId,
-                    conditionId = self.conditionObj[APP.API.EVENTS.RULE.CONDITION.CONDITION_ID],
-                    itemId = self.itemField.children('option:selected').val(),
-                    equivalence = self.equivalenceField.children('option:selected').val(),
-                    state = self.stateField.children('option:selected').val();
-                if(itemId === 'undefined' || equivalence === 'undefined' || state === 'undefined') {
-                    self.errorMessage.html('One or more fields are not set.');
-                } else {
-                    self.errorMessage.html('');
-                    self.context.addClass(APP.DOM_HOOK.UPDATING);
-                    APP.ajax_put_events_eventId_conditions_conditionId(ruleId, conditionId, itemId, equivalence, state,
-                        function() {
-                            self.context.removeClass(APP.DOM_HOOK.UPDATING);
-                            setToDisplayMode();
-                        },
-                        function() {
-                            // do nothing
-                        }
-                    );
-                }
-            });
-            
-            self.context.append(self.errorMessage);
-            self.context.append(self.bridge1);
-            self.context.append(self.itemFieldset.append(self.itemWrapper.append(self.itemField)));
-            self.context.append(self.equivalenceFieldset.append(self.equivalenceWrapper.append(self.equivalenceField)));
-            self.context.append(self.stateFieldset.append(self.stateWrapper.append(self.stateField)));
-            self.context.append(self.cancelButton);
-            self.context.append(self.saveButton);
-            
-        }
+        self.context.append(self.errorMessage);
+        self.context.append(self.bridge1);
+        self.context.append(self.itemFieldset.append(self.itemWrapper.append(self.itemField)));
+        self.context.append(self.equivalenceFieldset.append(self.equivalenceWrapper.append(self.equivalenceField)));
+        self.context.append(self.stateFieldset.append(self.stateWrapper.append(self.stateField)));
+        self.context.append(self.cancelButton);
+        self.context.append(self.saveButton);
         
-        setToDisplayMode();
+    };
+    
+    this.construct = function() {
+        self.setToDisplayMode();
         return this.context;
     };
     
-    this.update = function() {
-    
+    this.update = function(conditionObj) {
+        var isChanged = false;
+        for(var property in self.conditionObj) {
+            if(self.conditionObj.hasOwnProperty(property)) {
+                if(self.conditionObj[property] !== conditionObj[property]) {
+                    isChanged = true;
+                }
+            }
+        }
+        if(isChanged === true) {
+            self.conditionObj = conditionObj;
+            self.setToDisplayMode();
+        }
     };
     
     this.delete = function() {
-    
+        self.context.remove();
     };
     
 };
@@ -2694,11 +2716,11 @@ APP.ECAConditionDisplay.prototype.populateStateField = function(selectedItemType
 /**
  *
  */
-APP.ECANewConditionDisplay = function(ruleId, stage) {
+APP.ECANewConditionDisplay = function(ruleId, ruleManager) {
     var self = this;
     
     this.ruleId = ruleId;
-    this.stage = stage;
+    this.ruleManager = ruleManager;
     
     this.errorMessage;
     this.bridge1;
@@ -2717,83 +2739,84 @@ APP.ECANewConditionDisplay = function(ruleId, stage) {
     this.cancelButton;
     this.context = $('<div></div>').addClass(APP.DOM_HOOK.ECA.CONDITION_DISPLAY);
     
-    this.construct = function() {
+    this.setToDisplayMode = function() {
+        self.addButton = $('<button>Add new condition</button>');
         
-        function setToDisplayMode() {
-            self.addButton = $('<button>Add new condition</button>');
-            
-            self.context.html('');
-            
-            self.addButton.click(function() {
-                setToFormMode();
-            });
-            
-            self.context.append(self.addButton);
-        }
+        self.context.html('');
         
-        function setToFormMode() {
-            self.errorMessage = $('<div></div>').addClass(APP.DOM_HOOK.ERROR_MESSAGE_DISPLAY),
-            self.bridge1 = $('<div>If</div>'),
-            self.itemFieldset = $('<fieldset><legend>Step 1 - Set item</legend></fieldset>'),
-            self.itemWrapper = $('<div></div>').addClass('select-wrapper'),
-            self.itemField = $('<select></select>'),
-            self.equivalenceFieldset = $('<fieldset><legend>Step 2 - Set equiv</legend></fieldset>'),
-            self.equivalenceWrapper = $('<div></div>').addClass('select-wrapper'),
-            self.equivalenceField = $('<select></select>'),
-            self.stateFieldset = $('<fieldset><legend>Step 3 - Set state</legend></fieldset>'),
-            self.stateWrapper = $('<div></div>').addClass('select-wrapper')
-            self.stateField = $('<select></select>'),
-            self.cancelButton = $('<button>Cancel</button>'),
-            self.saveButton = $('<button>Save</button>');
-            
-            self.context.html('');
-            self.populateItemField();
+        self.addButton.click(function() {
+            self.setToFormMode();
+        });
+        
+        self.context.append(self.addButton);
+    };
+    
+    this.setToFormMode = function() {
+        self.errorMessage = $('<div></div>').addClass(APP.DOM_HOOK.ERROR_MESSAGE_DISPLAY),
+        self.bridge1 = $('<div>If</div>'),
+        self.itemFieldset = $('<fieldset><legend>Step 1 - Set item</legend></fieldset>'),
+        self.itemWrapper = $('<div></div>').addClass('select-wrapper'),
+        self.itemField = $('<select></select>'),
+        self.equivalenceFieldset = $('<fieldset><legend>Step 2 - Set equiv</legend></fieldset>'),
+        self.equivalenceWrapper = $('<div></div>').addClass('select-wrapper'),
+        self.equivalenceField = $('<select></select>'),
+        self.stateFieldset = $('<fieldset><legend>Step 3 - Set state</legend></fieldset>'),
+        self.stateWrapper = $('<div></div>').addClass('select-wrapper')
+        self.stateField = $('<select></select>'),
+        self.cancelButton = $('<button>Cancel</button>'),
+        self.saveButton = $('<button>Save</button>');
+        
+        self.context.html('');
+        self.populateItemField();
+        self.populateEquivalenceField();
+        self.populateStateField();
+        
+        self.itemField.click(function() {
             self.populateEquivalenceField();
             self.populateStateField();
-            
-            self.itemField.click(function() {
-                self.populateEquivalenceField();
-                self.populateStateField();
-            });
-            
-            self.cancelButton.click(function() {
-                setToDisplayMode();
-            });
-            
-            self.saveButton.click(function() {
-                var dis = $(this),
-                    ruleId = self.ruleId,
-                    itemId = self.itemField.children('option:selected').val(),
-                    equivalence = self.equivalenceField.children('option:selected').val(),
-                    state = self.stateField.children('option:selected').val();
-                if(itemId === 'undefined' || equivalence === 'undefined' || state === 'undefined') {
-                    self.errorMessage.html('One or more fields are not set.');
-                } else {
-                    self.errorMessage.html('');
-                    dis.parent().addClass(APP.DOM_HOOK.UPDATING);
-                     APP.ajax_post_events_eventId_conditions(ruleId, itemId, equivalence, state,
-                        function() {
-                            dis.parent().removeClass(APP.DOM_HOOK.UPDATING);
-                            setToDisplayMode(); // TODO remove this
-                        },
-                        function() {
-                            // do nothing
-                        }
-                    );
-                }
-            });
-            
-            self.context.append(self.errorMessage);
-            self.context.append(self.bridge1);
-            self.context.append(self.itemFieldset.append(self.itemWrapper.append(self.itemField)));
-            self.context.append(self.equivalenceFieldset.append(self.equivalenceWrapper.append(self.equivalenceField)));
-            self.context.append(self.stateFieldset.append(self.stateWrapper.append(self.stateField)));
-            self.context.append(self.cancelButton);
-            self.context.append(self.saveButton);
-            
-        }
+        });
         
-        setToDisplayMode();
+        self.cancelButton.click(function() {
+            self.setToDisplayMode();
+        });
+        
+        self.saveButton.click(function() {
+            var dis = $(this),
+                ruleId = self.ruleId,
+                itemId = self.itemField.children('option:selected').val(),
+                equivalence = self.equivalenceField.children('option:selected').val(),
+                state = self.stateField.children('option:selected').val();
+            if(itemId === 'undefined' || equivalence === 'undefined' || state === 'undefined') {
+                self.errorMessage.html('One or more fields are not set.');
+            } else {
+                self.errorMessage.html('');
+                dis.parent().addClass(APP.DOM_HOOK.UPDATING);
+                 APP.ajax_post_events_eventId_conditions(ruleId, itemId, equivalence, state,
+                    function() {
+                        self.ruleManager.update(function() {
+                            self.context.removeClass(APP.DOM_HOOK.UPDATING);
+                            self.setToDisplayMode();
+                        });
+                    },
+                    function() {
+                        // do nothing
+                    }
+                );
+            }
+        });
+        
+        self.context.append(self.errorMessage);
+        self.context.append(self.bridge1);
+        self.context.append(self.itemFieldset.append(self.itemWrapper.append(self.itemField)));
+        self.context.append(self.equivalenceFieldset.append(self.equivalenceWrapper.append(self.equivalenceField)));
+        self.context.append(self.stateFieldset.append(self.stateWrapper.append(self.stateField)));
+        self.context.append(self.cancelButton);
+        self.context.append(self.saveButton);
+        
+    };
+    
+    this.construct = function() {
+        self.setToDisplayMode();
         return this.context;
     };
         
@@ -2809,19 +2832,41 @@ APP.inherit(APP.ECANewConditionDisplay, APP.ECAConditionDisplay);
 /**
  *
  */
-APP.ECAActionManager = function(ruleId, actionArray, stage) {
+APP.ECAActionManager = function(ruleId, actionArray, ruleManager) {
     var self = this;
     
     this.ruleId = ruleId;
     this.actionArray = actionArray;
-    this.stage = stage;
+    this.ruleManager = ruleManager;
     
     this.actionDisplays = [];
     for(var i = 0; i < this.actionArray.length; i++) {
-        this.actionDisplays.push(new APP.ECAActionDisplay(ruleId, this.actionArray[i]));
+        this.actionDisplays.push(new APP.ECAActionDisplay(ruleId, this.actionArray[i], self.ruleManager));
     }
-    this.newActionDisplay = new APP.ECANewActionDisplay(ruleId);
+    this.newActionDisplay = new APP.ECANewActionDisplay(ruleId, self.ruleManager);
     this.context = $('<div></div>').addClass(APP.DOM_HOOK.ECA.ACTION);
+    
+    this.addECAActionDisplays = function(actionArray) {
+        var actionDisplay;
+        
+        for(var i = 0; i < actionArray.length; i++) {
+            actionDisplay = new APP.ECAActionDisplay(self.ruleId, actionArray[i], self.ruleManager);
+            self.actionDisplays.push(actionDisplay);
+            self.context.append(actionDisplay.construct());
+        }
+        // move the newConditionDisplay to the bottom
+        self.context.append(self.newActionDisplay.context);
+    };
+    
+    this.removeECAActionDisplays = function(actionId) {
+        for(var i = 0; i < self.actionDisplays.length; i++) {
+            if(self.actionDisplays[i].actionObj[APP.API.EVENTS.RULE.ACTION.ID] === actionId) {
+                self.actionDisplays[i].delete();
+                self.actionDisplays.splice(i, 1);
+                break;
+            }
+        }
+    };
     
     this.construct = function() {
         for(var i = 0; i < self.actionArray.length; i++) {
@@ -2831,8 +2876,45 @@ APP.ECAActionManager = function(ruleId, actionArray, stage) {
         return self.context;
     };
     
-    this.update = function() {
-    
+    this.update = function(actionArray) {
+        var ruleId,
+            actions,
+            actionsCopy,
+            actionsCopyLength,
+            actionDisplaysCopy,
+            actionDisplaysCopyLength;
+        
+        actions = actionArray,
+        actionsCopy = actions.slice(0),
+        actionsCopyLength = actionsCopy.length,
+        actionDisplays = this.actionDisplays,
+        actionDisplaysCopy = actionDisplays.slice(0),
+        actionDisplaysCopyLength = actionDisplays.length;
+        
+        for(var i = 0; i < actionDisplaysCopyLength; i++) {
+            inner:
+            for(var j = 0; j < actionsCopyLength; j++) {
+                if(actionDisplaysCopy[i].actionObj[APP.API.EVENTS.RULE.ACTION.ACTION_ID] === actionsCopy[j][APP.API.EVENTS.RULE.ACTION.ACTION_ID]) {
+                    actionDisplaysCopy[i].update(actionsCopy[j]);
+                    actionDisplaysCopy.splice(i, 1);
+                    actionsCopy.splice(j, 1);
+                    actionDisplaysCopyLength = actionDisplaysCopy.length;
+                    actionsCopyLength = actionsCopy.length;
+                    i--;
+                    j--;
+                    break inner;
+                }
+            }
+        }
+        
+        // If there are any unmatched actionDisplays, it means they need to be removed
+        for(var i = 0; i < actionDisplaysCopy.length; i++) {
+            self.removeECAActionDisplay(actionDisplaysCopy[i].actionObj[APP.API.EVENTS.RULE.ACTION.ACTION_ID]);
+        }
+        
+        // If there are any unmatched actions, it means they need to be added
+        self.addECAActionDisplays(actionsCopy);
+        
     };
     
 };
@@ -2841,12 +2923,15 @@ APP.ECAActionManager = function(ruleId, actionArray, stage) {
  * @class APP.ECAActionNode
  * @constructor
  */
-APP.ECAActionDisplay = function(ruleId, actionObj) {
+APP.ECAActionDisplay = function(ruleId, actionObj, ruleManager) {
     
     var self = this;
     
     this.ruleId = ruleId;
     this.actionObj = actionObj;
+    this.ruleManager = ruleManager;
+    
+    console.log(actionObj);
     
     this.errorMessage;
     this.methodFieldset;
@@ -2866,183 +2951,196 @@ APP.ECAActionDisplay = function(ruleId, actionObj) {
     this.cancelButton;
     this.context = $('<div></div>').addClass(APP.DOM_HOOK.ECA.ACTION_DISPLAY);
     
-    this.construct = function() {
+    this.setToDisplayMode = function() {
+    
+        function getMethodField() {
+            self.methodField.html(self.actionObj[APP.API.EVENTS.RULE.ACTION.METHOD]);
+        }
         
-        function setToDisplayMode() {
+        function getItemTypeField() {
+            itemType = self.actionObj[APP.API.EVENTS.RULE.ACTION.ITEM_TYPE];
+            self.itemTypeField.html(itemType);
+        }
         
-            function getMethodField() {
-                self.methodField.html(self.actionObj[APP.API.EVENTS.RULE.ACTION.METHOD]);
-            }
-            
-            function getItemTypeField() {
-                itemType = self.actionObj[APP.API.EVENTS.RULE.ACTION.ITEM_TYPE];
-                self.itemTypeField.html(itemType);
-            }
-            
-            function getScopeFieldAndBridges() {
-                switch (self.actionObj[APP.API.EVENTS.RULE.ACTION.SCOPE]) {
-                case 'item':
-                    for(var i = 0; i < APP.data.houseStructure[APP.API.STATE.ROOMS].length; i++) {
-                        for(var j = 0; j < APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ITEMS].length; j++) {
-                            if(self.actionObj[APP.API.EVENTS.RULE.ACTION.ID] === APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ITEMS][j][APP.API.STATE.ROOM.ITEM.ID]) {
-                                self.scopeField.html(APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ITEMS][j][APP.API.STATE.ROOM.ITEM.NAME]);
-                                break;
-                            }
-                        }
-                    }
-                    self.bridge1.html('the');
-                    self.bridge2.html('');
-                    break;
-                case 'room':
-                    for(var i = 0; i < APP.data.houseStructure[APP.API.STATE.ROOMS].length; i++) {
-                        if(self.actionObj[APP.API.EVENTS.RULE.ACTION.ID] === APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ID]) {
-                            self.scopeField.html(APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.NAME]);
+        function getScopeFieldAndBridges() {
+            switch (self.actionObj[APP.API.EVENTS.RULE.ACTION.SCOPE]) {
+            case 'item':
+                for(var i = 0; i < APP.data.houseStructure[APP.API.STATE.ROOMS].length; i++) {
+                    for(var j = 0; j < APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ITEMS].length; j++) {
+                        if(self.actionObj[APP.API.EVENTS.RULE.ACTION.ID] === APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ITEMS][j][APP.API.STATE.ROOM.ITEM.ID]) {
+                            self.scopeField.html(APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ITEMS][j][APP.API.STATE.ROOM.ITEM.NAME]);
                             break;
                         }
                     }
-                    break;
-                case 'house':
-                    self.scopeField.html('the house');
-                    break;
                 }
+                self.bridge1.html('the');
+                self.bridge2.html('');
+                break;
+            case 'room':
+                for(var i = 0; i < APP.data.houseStructure[APP.API.STATE.ROOMS].length; i++) {
+                    if(self.actionObj[APP.API.EVENTS.RULE.ACTION.ID] === APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.ID]) {
+                        self.scopeField.html(APP.data.houseStructure[APP.API.STATE.ROOMS][i][APP.API.STATE.ROOM.NAME]);
+                        break;
+                    }
+                }
+                break;
+            case 'house':
+                self.scopeField.html('the house');
+                break;
             }
-            
-            self.methodField = $('<div></div>').addClass(APP.DOM_HOOK.ECA.FIELD_DIV);
-            self.bridge1 = $('<div>all</div>');
-            self.itemTypeField = $('<div></div>').addClass(APP.DOM_HOOK.ECA.FIELD_DIV);
-            self.bridge2 = $('<div>s&nbsp;&nbsp;in</div>');
-            self.scopeField = $('<div></div>').addClass(APP.DOM_HOOK.ECA.FIELD_DIV);
-            self.editButton = $('<button>Edit</button>');
-            self.deleteButton = $('<button>Delete</button>').addClass(APP.DOM_HOOK.ECA.DELETE);
-            
-            self.context.html('');
-            
-            self.editButton.click(function() {
-                setToFormMode();
-            });
-            
-            self.deleteButton.click(function() {
-                var eventId = self.ruleId,
-                    actionId = self.actionObj[APP.API.EVENTS.RULE.ACTION.ACTION_ID];
-                self.context.addClass(APP.DOM_HOOK.UPDATING);
-                APP.ajax_delete_events_eventId_actions_actionId(eventId, actionId,
-                    function() {
+        }
+        
+        self.methodField = $('<div></div>').addClass(APP.DOM_HOOK.ECA.FIELD_DIV);
+        self.bridge1 = $('<div>all</div>');
+        self.itemTypeField = $('<div></div>').addClass(APP.DOM_HOOK.ECA.FIELD_DIV);
+        self.bridge2 = $('<div>s&nbsp;&nbsp;in</div>');
+        self.scopeField = $('<div></div>').addClass(APP.DOM_HOOK.ECA.FIELD_DIV);
+        self.editButton = $('<button>Edit</button>');
+        self.deleteButton = $('<button>Delete</button>').addClass(APP.DOM_HOOK.ECA.DELETE);
+        
+        self.context.html('');
+        
+        self.editButton.click(function() {
+            self.setToFormMode();
+        });
+        
+        self.deleteButton.click(function() {
+            var eventId = self.ruleId,
+                actionId = self.actionObj[APP.API.EVENTS.RULE.ACTION.ACTION_ID];
+            self.context.addClass(APP.DOM_HOOK.UPDATING);
+            APP.ajax_delete_events_eventId_actions_actionId(eventId, actionId,
+                function() {
+                    self.ruleManager.update(function() {
                         self.context.removeClass(APP.DOM_HOOK.UPDATING);
-                        // TODO
+                    });
+                },
+                function() {
+                    // do nothing
+                }
+            );
+        });
+        
+        getMethodField();
+        getItemTypeField();
+        getScopeFieldAndBridges();
+        
+        self.context.append(self.methodField);
+        self.context.append(self.bridge1);
+        self.context.append(self.itemTypeField);
+        self.context.append(self.bridge2);
+        self.context.append(self.scopeField);
+        self.context.append(self.editButton);
+        self.context.append(self.deleteButton);
+    };
+    
+    this.setToFormMode = function() {
+        
+        function setBridges() {
+            var scope = self.scopeField.find('option:selected').val();
+            if(scope === 'room' || scope === 'house') {
+                self.bridge1.html('all');
+                self.bridge2.html('s&nbsp;&nbsp;in');
+            } else if(scope === 'item') {
+                self.bridge1.html('the');
+                self.bridge2.html('');
+            } else {
+                self.bridge1.html('');
+                self.bridge2.html('');
+            }
+        }
+        
+        self.errorMessage = $('<div></div>').addClass(APP.DOM_HOOK.ERROR_MESSAGE_DISPLAY),
+        self.methodFieldset = $('<fieldset><legend>Step 3 - Set method</legend></fieldset>'),
+        self.methodWrapper = $('<div></div>').addClass('select-wrapper'),
+        self.methodField = $('<select></select>'),
+        self.bridge1 = $('<div></div>'),
+        self.itemTypeFieldset = $('<fieldset><legend>Step 1 - Set type</legend></fieldset>'),
+        self.itemTypeWrapper = $('<div></div>').addClass('select-wrapper'),
+        self.itemTypeField = $('<select></select>'),
+        self.bridge2 = $('<div></div>'),
+        self.scopeFieldset = $('<fieldset><legend>Step 2 - Set scope</legend></fieldset>'),
+        self.scopeWrapper = $('<div></div>').addClass('select-wrapper')
+        self.scopeField = $('<select></select>'),
+        self.cancelButton = $('<button>Cancel</button>'),
+        self.saveButton = $('<button>Save</button>');
+        
+        self.context.html('');
+        self.populateItemTypeField(self.actionObj[APP.API.EVENTS.RULE.ACTION.ITEM_TYPE]);
+        self.populateScopeField(self.actionObj[APP.API.EVENTS.RULE.ACTION.ACTION_ID], self.actionObj[APP.API.EVENTS.RULE.ACTION.SCOPE]);
+        self.populateMethodField(self.actionObj[APP.API.EVENTS.RULE.ACTION.METHOD]);
+        setBridges();
+        
+        self.itemTypeField.click(function() {
+            self.populateScopeField(self.actionObj[APP.API.EVENTS.RULE.ACTION.ACTION_ID], self.actionObj[APP.API.EVENTS.RULE.ACTION.SCOPE]);
+            self.populateMethodField(self.actionObj[APP.API.EVENTS.RULE.ACTION.METHOD]);
+        });
+        
+        self.scopeField.click(function() {
+            setBridges();
+        });
+        
+        self.cancelButton.click(function() {
+            self.setToDisplayMode();
+        });
+        
+        self.saveButton.click(function() {
+            var ruleId = self.ruleId,
+                actionId = self.actionObj[APP.API.EVENTS.RULE.ACTION.ACTION_ID],
+                scope = self.scopeField.find('option:selected').val(),
+                id = self.scopeField.find('option:selected').attr('data-id'),
+                itemType = self.itemTypeField.find('option:selected').val(),
+                method = self.methodField.find('option:selected').val();
+            if(scope === 'undefined' || itemType === 'undefined' || method === 'undefined') {
+                self.errorMessage.html('One or more fields are not defined.');
+            } else {
+                self.errorMessage.html('');
+                self.context.addClass(APP.DOM_HOOK.UPDATING);
+                APP.ajax_put_events_eventId_actions_actionId(ruleId, actionId, id, scope, itemType, method,
+                    function() {
+                        self.ruleManager.update(function() {
+                            self.context.removeClass(APP.DOM_HOOK.UPDATING);
+                            self.setToDisplayMode();
+                        });
                     },
                     function() {
                         // do nothing
                     }
                 );
-            });
-            
-            getMethodField();
-            getItemTypeField();
-            getScopeFieldAndBridges();
-            
-            self.context.append(self.methodField);
-            self.context.append(self.bridge1);
-            self.context.append(self.itemTypeField);
-            self.context.append(self.bridge2);
-            self.context.append(self.scopeField);
-            self.context.append(self.editButton);
-            self.context.append(self.deleteButton);
-        }
-        
-        function setToFormMode() {
-            
-            function setBridges() {
-                var scope = self.scopeField.find('option:selected').val();
-                if(scope === 'room' || scope === 'house') {
-                    self.bridge1.html('all');
-                    self.bridge2.html('s&nbsp;&nbsp;in');
-                } else if(scope === 'item') {
-                    self.bridge1.html('the');
-                    self.bridge2.html('');
-                } else {
-                    self.bridge1.html('');
-                    self.bridge2.html('');
-                }
             }
-            
-            self.errorMessage = $('<div></div>').addClass(APP.DOM_HOOK.ERROR_MESSAGE_DISPLAY),
-            self.methodFieldset = $('<fieldset><legend>Step 3 - Set method</legend></fieldset>'),
-            self.methodWrapper = $('<div></div>').addClass('select-wrapper'),
-            self.methodField = $('<select></select>'),
-            self.bridge1 = $('<div></div>'),
-            self.itemTypeFieldset = $('<fieldset><legend>Step 1 - Set type</legend></fieldset>'),
-            self.itemTypeWrapper = $('<div></div>').addClass('select-wrapper'),
-            self.itemTypeField = $('<select></select>'),
-            self.bridge2 = $('<div></div>'),
-            self.scopeFieldset = $('<fieldset><legend>Step 2 - Set scope</legend></fieldset>'),
-            self.scopeWrapper = $('<div></div>').addClass('select-wrapper')
-            self.scopeField = $('<select></select>'),
-            self.cancelButton = $('<button>Cancel</button>'),
-            self.saveButton = $('<button>Save</button>');
-            
-            self.context.html('');
-            self.populateItemTypeField(self.actionObj[APP.API.EVENTS.RULE.ACTION.ITEM_TYPE]);
-            self.populateScopeField(self.actionObj[APP.API.EVENTS.RULE.ACTION.ACTION_ID], self.actionObj[APP.API.EVENTS.RULE.ACTION.SCOPE]);
-            self.populateMethodField(self.actionObj[APP.API.EVENTS.RULE.ACTION.METHOD]);
-            setBridges();
-            
-            self.itemTypeField.click(function() {
-                self.populateScopeField(self.actionObj[APP.API.EVENTS.RULE.ACTION.ACTION_ID], self.actionObj[APP.API.EVENTS.RULE.ACTION.SCOPE]);
-                self.populateMethodField(self.actionObj[APP.API.EVENTS.RULE.ACTION.METHOD]);
-            });
-            
-            self.scopeField.click(function() {
-                setBridges();
-            });
-            
-            self.cancelButton.click(function() {
-                setToDisplayMode();
-            });
-            
-            self.saveButton.click(function() {
-                var ruleId = self.ruleId,
-                    actionId = self.actionObj[APP.API.EVENTS.RULE.ACTION.ACTION_ID],
-                    scope = self.scopeField.find('option:selected').val(),
-                    id = self.scopeField.find('option:selected').attr('data-id'),
-                    itemType = self.itemTypeField.find('option:selected').val(),
-                    method = self.methodField.find('option:selected').val();
-                if(scope === 'undefined' || itemType === 'undefined' || method === 'undefined') {
-                    self.errorMessage.html('One or more fields are not defined.');
-                } else {
-                    self.errorMessage.html('');
-                    self.context.addClass(APP.DOM_HOOK.UPDATING);
-                    APP.ajax_put_events_eventId_actions_actionId(ruleId, actionId, id, scope, itemType, method,
-                        function() {
-                            self.context.removeClass(APP.DOM_HOOK.UPDATING);
-                            setToDisplayMode();
-                        },
-                        function() {
-                            // do nothing
-                        }
-                    );
-                }
-            });
-            
-            self.context.append(self.errorMessage);
-            self.context.append(self.methodFieldset.append(self.methodWrapper.append(self.methodField)));
-            self.context.append(self.bridge1);
-            self.context.append(self.itemTypeFieldset.append(self.itemTypeWrapper.append(self.itemTypeField)));
-            self.context.append(self.bridge2);
-            self.context.append(self.scopeFieldset.append(self.scopeWrapper.append(self.scopeField)));
-            self.context.append(self.cancelButton);
-            self.context.append(self.saveButton);
-        }
+        });
         
-        setToDisplayMode();
+        self.context.append(self.errorMessage);
+        self.context.append(self.methodFieldset.append(self.methodWrapper.append(self.methodField)));
+        self.context.append(self.bridge1);
+        self.context.append(self.itemTypeFieldset.append(self.itemTypeWrapper.append(self.itemTypeField)));
+        self.context.append(self.bridge2);
+        self.context.append(self.scopeFieldset.append(self.scopeWrapper.append(self.scopeField)));
+        self.context.append(self.cancelButton);
+        self.context.append(self.saveButton);
+    };
+    
+    this.construct = function() {
+        self.setToDisplayMode();
         return this.context;
     };
     
-    this.update = function() {
-    
+    this.update = function(actionObj) {
+        var isChanged = false;
+        for(var property in self.actionObj) {
+            if(self.actionObj.hasOwnProperty(property)) {
+                if(self.actionObj[property] !== actionObj[property]) {
+                    isChanged = true;
+                }
+            }
+        }
+        if(isChanged === true) {
+            self.actionObj = actionObj;
+            self.setToDisplayMode();
+        }
     };
     
     this.delete = function() {
-    
+        self.context.remove();
     };
     
 };
@@ -3098,11 +3196,11 @@ APP.ECAActionDisplay.prototype.populateMethodField = function(selectedItemType) 
 /**
  *
  */
-APP.ECANewActionDisplay = function(ruleId, stage) {
+APP.ECANewActionDisplay = function(ruleId, ruleManager) {
     var self = this;
     
     this.ruleId = ruleId;
-    this.stage = stage;
+    this.ruleManager =ruleManager;
     
     this.errorMessage;
     this.methodFieldset;
@@ -3122,106 +3220,98 @@ APP.ECANewActionDisplay = function(ruleId, stage) {
     this.cancelButton;
     this.context = $('<div></div>').addClass(APP.DOM_HOOK.ECA.ACTION_DISPLAY);
     
-    this.construct = function() {
+    this.setToDisplayMode = function() {
+        self.addButton = $('<button>Add new action</button>');
         
-        function setToDisplayMode() {
-            self.addButton = $('<button>Add new action</button>');
-            
-            self.context.html('');
-            self.addButton.click(function() {
-                setToFormMode();
-            });
-            
-            self.context.append(self.addButton);
-        }
+        self.context.html('');
+        self.addButton.click(function() {
+            self.setToFormMode();
+        });
         
-        function setToFormMode() {
-            self.errorMessage = $('<div></div>').addClass(APP.DOM_HOOK.ERROR_MESSAGE_DISPLAY),
-            self.methodFieldset = $('<fieldset><legend>Step 3 - Set method</legend></fieldset>'),
-            self.methodWrapper = $('<div></div>').addClass('select-wrapper'),
-            self.methodField = $('<select></select>'),
-            self.bridge1 = $('<div></div>'),
-            self.itemTypeFieldset = $('<fieldset><legend>Step 1 - Set type</legend></fieldset>'),
-            self.itemTypeWrapper = $('<div></div>').addClass('select-wrapper'),
-            self.itemTypeField = $('<select></select>'),
-            self.bridge2 = $('<div></div>'),
-            self.scopeFieldset = $('<fieldset><legend>Step 2 - Set scope</legend></fieldset>'),
-            self.scopeWrapper = $('<div></div>').addClass('select-wrapper')
-            self.scopeField = $('<select></select>'),
-            self.cancelButton = $('<button>Cancel</button>'),
-            self.saveButton = $('<button>Save</button>');
-            
-            self.context.html('');
-            self.populateItemTypeField();
+        self.context.append(self.addButton);
+    };
+    
+    this.setToFormMode = function() {
+        self.errorMessage = $('<div></div>').addClass(APP.DOM_HOOK.ERROR_MESSAGE_DISPLAY),
+        self.methodFieldset = $('<fieldset><legend>Step 3 - Set method</legend></fieldset>'),
+        self.methodWrapper = $('<div></div>').addClass('select-wrapper'),
+        self.methodField = $('<select></select>'),
+        self.bridge1 = $('<div></div>'),
+        self.itemTypeFieldset = $('<fieldset><legend>Step 1 - Set type</legend></fieldset>'),
+        self.itemTypeWrapper = $('<div></div>').addClass('select-wrapper'),
+        self.itemTypeField = $('<select></select>'),
+        self.bridge2 = $('<div></div>'),
+        self.scopeFieldset = $('<fieldset><legend>Step 2 - Set scope</legend></fieldset>'),
+        self.scopeWrapper = $('<div></div>').addClass('select-wrapper')
+        self.scopeField = $('<select></select>'),
+        self.cancelButton = $('<button>Cancel</button>'),
+        self.saveButton = $('<button>Save</button>');
+        
+        self.context.html('');
+        self.populateItemTypeField();
+        self.populateScopeField();
+        self.populateMethodField();
+        
+        self.itemTypeField.click(function() {
+            self.bridge1.html('');
+            self.bridge2.html('');
             self.populateScopeField();
             self.populateMethodField();
-            
-            self.itemTypeField.click(function() {
-                self.bridge1.html('');
-                self.bridge2.html('');
-                self.populateScopeField();
-                self.populateMethodField();
-            });
-            
-            self.scopeField.click(function() {
-                var scope = $(this).find('option:selected').val();
-                if(scope === 'room' || scope === 'house') {
-                    self.bridge1.html('all');
-                    self.bridge2.html('s&nbsp;&nbsp;in');
-                } else if(scope === 'item') {
-                    self.bridge1.html('the');
-                    self.bridge2.html('');
-                }
-            });
-            
-            self.cancelButton.click(function() {
-                setToDisplayMode();
-            });
-            
-            self.saveButton.click(function() {
-                var ruleId = self.ruleId,
-                    scope = self.scopeField.find('option:selected').val(),
-                    id = self.scopeField.find('option:selected').attr('data-id'),
-                    itemType = self.itemTypeField.find('option:selected').val(),
-                    method = self.methodField.find('option:selected').val();
-                if(scope === 'undefined' || itemType === 'undefined' || method === 'undefined') {
-                    self.errorMessage.html('One or more fields are not defined.');
-                } else {
-                    self.errorMessage.html('');
-                    self.context.addClass(APP.DOM_HOOK.UPDATING);
-                    APP.ajax_post_events_eventId_actions(ruleId, id, scope, itemType, method,
-                        function() {
-                            self.context.removeClass(APP.DOM_HOOK.UPDATING);
-                            setToDisplayMode();
-                            self.stage.update();
-                        },
-                        function() {
-                            // do nothing
-                        }
-                    );
-                }
-            });
-            
-            self.context.append(self.errorMessage);
-            self.context.append(self.methodFieldset.append(self.methodWrapper.append(self.methodField)));
-            self.context.append(self.bridge1);
-            self.context.append(self.itemTypeFieldset.append(self.itemTypeWrapper.append(self.itemTypeField)));
-            self.context.append(self.bridge2);
-            self.context.append(self.scopeFieldset.append(self.scopeWrapper.append(self.scopeField)));
-            self.context.append(self.cancelButton);
-            self.context.append(self.saveButton);
-        }
+        });
         
-        setToDisplayMode();
+        self.scopeField.click(function() {
+            var scope = $(this).find('option:selected').val();
+            if(scope === 'room' || scope === 'house') {
+                self.bridge1.html('all');
+                self.bridge2.html('s&nbsp;&nbsp;in');
+            } else if(scope === 'item') {
+                self.bridge1.html('the');
+                self.bridge2.html('');
+            }
+        });
+        
+        self.cancelButton.click(function() {
+            self.setToDisplayMode();
+        });
+        
+        self.saveButton.click(function() {
+            var ruleId = self.ruleId,
+                scope = self.scopeField.find('option:selected').val(),
+                id = self.scopeField.find('option:selected').attr('data-id'),
+                itemType = self.itemTypeField.find('option:selected').val(),
+                method = self.methodField.find('option:selected').val();
+            if(scope === 'undefined' || itemType === 'undefined' || method === 'undefined') {
+                self.errorMessage.html('One or more fields are not defined.');
+            } else {
+                self.errorMessage.html('');
+                self.context.addClass(APP.DOM_HOOK.UPDATING);
+                APP.ajax_post_events_eventId_actions(ruleId, id, scope, itemType, method,
+                    function() {
+                        self.ruleManager.update(function() {
+                            self.context.removeClass(APP.DOM_HOOK.UPDATING);
+                            self.setToDisplayMode();
+                        });
+                    },
+                    function() {
+                        // do nothing
+                    }
+                );
+            }
+        });
+        
+        self.context.append(self.errorMessage);
+        self.context.append(self.methodFieldset.append(self.methodWrapper.append(self.methodField)));
+        self.context.append(self.bridge1);
+        self.context.append(self.itemTypeFieldset.append(self.itemTypeWrapper.append(self.itemTypeField)));
+        self.context.append(self.bridge2);
+        self.context.append(self.scopeFieldset.append(self.scopeWrapper.append(self.scopeField)));
+        self.context.append(self.cancelButton);
+        self.context.append(self.saveButton);
+    };
+    
+    this.construct = function() {        
+        self.setToDisplayMode();
         return this.context;
-    };
-    
-    this.update = function() {
-    
-    };
-    
-    this.delete = function() {
-    
     };
     
 };
