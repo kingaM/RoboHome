@@ -2858,9 +2858,9 @@ APP.ECAActionManager = function(ruleId, actionArray, ruleManager) {
         self.context.append(self.newActionDisplay.context);
     };
     
-    this.removeECAActionDisplays = function(actionId) {
+    this.removeECAActionDisplay = function(actionId) {
         for(var i = 0; i < self.actionDisplays.length; i++) {
-            if(self.actionDisplays[i].actionObj[APP.API.EVENTS.RULE.ACTION.ID] === actionId) {
+            if(self.actionDisplays[i].actionObj[APP.API.EVENTS.RULE.ACTION.ACTION_ID] === actionId) {
                 self.actionDisplays[i].delete();
                 self.actionDisplays.splice(i, 1);
                 break;
@@ -4096,6 +4096,7 @@ APP.StageManager = function() {
             function constructWithoutError() {
                 stageMessage.html('');
                 construct();
+                stage.poller.startPolling();
             }
             
             function connectionError() {
@@ -4131,7 +4132,7 @@ APP.StageManager = function() {
             // default
         });
         stage.setPollFunction(1000, function() {
-            
+            APP.ajax_get_state(stage.update, stage.updateError);
         });
     };
     
