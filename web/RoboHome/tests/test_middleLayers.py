@@ -31,7 +31,7 @@ class TestMiddleLayer(unittest.TestCase):
     def test_stateChangesTriggered(self):
         db = MockDB()
         house = House(db)
-        item = Openable(1, "item1", "arduino", "door", "192.168.0.100", house.listenerManager)
+        item = Openable(1, "item1", "mock", "door", "192.168.0.100", house.listenerManager)
         item.stateChanged = MethCallLogger(item.stateChanged)
         room = MockRoom(1, "lounge")
         room.items = {1: item}
@@ -49,7 +49,7 @@ class TestMiddleLayer(unittest.TestCase):
         house = House(db)
         house.reactToEvent = MethCallLogger(house.reactToEvent)
         house.listenerManager.addListener(house.reactToEvent)
-        item = Openable(1, "item1", "arduino", "door", "192.168.0.101", house.listenerManager)
+        item = Openable(1, "item1", "mock", "door", "192.168.0.101", house.listenerManager)
         room = MockRoom(1, "lounge")
         room.items = {1: item}
         house.rooms = {1: room}

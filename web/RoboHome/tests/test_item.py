@@ -20,7 +20,7 @@ class TestItem(unittest.TestCase):
     def test_Item_init_ordered(self):
         _id = 1
         name = "test"
-        brand = "RF"
+        brand = "mock"
         _type = "door"
         ip = "0.0.0.0"
         ml = MockListener()
@@ -35,7 +35,7 @@ class TestItem(unittest.TestCase):
     def test_Item_init_unordered(self):
         _id = 1
         name = "test"
-        brand = "RF"
+        brand = "mock"
         _type = "door"
         ip = "0.0.0.0"
         ml = MockListener()
@@ -50,7 +50,7 @@ class TestItem(unittest.TestCase):
     def test_Item_init_invalid(self):
         _id = 1
         name = "test"
-        brand = "RF"
+        brand = "mock"
         ip = "0.0.0.0"
         ml = MockListener()
         self.assertRaises(TypeError, Item, _id, name, brand, ip, ml)
@@ -58,7 +58,7 @@ class TestItem(unittest.TestCase):
     def test_getState(self):
         _id = 1
         name = "test"
-        brand = "RF"
+        brand = "mock"
         _type = "door"
         ip = "0.0.0.0"
         ml = MockListener()
@@ -72,7 +72,7 @@ class TestOpenable(unittest.TestCase):
     def test_Openable_init_ordered(self):
         _id = 1
         name = "test"
-        brand = "RF"
+        brand = "mock"
         _type = "door"
         ip = "0.0.0.0"
         ml = MockListener()
@@ -87,7 +87,7 @@ class TestOpenable(unittest.TestCase):
     def test_Openable_init_unordered(self):
         _id = 1
         name = "test"
-        brand = "RF"
+        brand = "mock"
         _type = "door"
         ip = "0.0.0.0"
         ml = MockListener()
@@ -102,7 +102,7 @@ class TestOpenable(unittest.TestCase):
     def test_Openable_init_invalid(self):
         _id = 1
         name = "test"
-        brand = "RF"
+        brand = "mock"
         ip = "0.0.0.0"
         ml = MockListener()
         self.assertRaises(TypeError, Openable, _id, name, brand, ip, ml)
@@ -110,7 +110,7 @@ class TestOpenable(unittest.TestCase):
     def test_getState(self):
         _id = 1
         name = "test"
-        brand = "RF"
+        brand = "mock"
         _type = "door"
         ip = "0.0.0.0"
         ml = MockListener()
@@ -122,7 +122,7 @@ class TestOpenable(unittest.TestCase):
     def test_open(self):
         _id = 1
         name = "test"
-        brand = "RF"
+        brand = "mock"
         _type = "door"
         ip = "0.0.0.0"
         ml = MockListener()
@@ -134,7 +134,7 @@ class TestOpenable(unittest.TestCase):
     def test_close(self):
         _id = 1
         name = "test"
-        brand = "RF"
+        brand = "mock"
         _type = "door"
         ip = "0.0.0.0"
         ml = MockListener()
@@ -146,7 +146,7 @@ class TestOpenable(unittest.TestCase):
     def test_setOpen(self):
         _id = 1
         name = "test"
-        brand = "RF"
+        brand = "mock"
         _type = "door"
         ip = "0.0.0.0"
         ml = MockListener()
@@ -159,7 +159,7 @@ class TestOpenable(unittest.TestCase):
     def test_setOpen_noarg(self):
         _id = 1
         name = "test"
-        brand = "RF"
+        brand = "mock"
         _type = "door"
         ip = "0.0.0.0"
         ml = MockListener()

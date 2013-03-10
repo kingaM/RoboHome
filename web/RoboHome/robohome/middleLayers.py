@@ -1,5 +1,7 @@
 import time
 import threading
+import requests
+import json
 
 # These classes mock how the middle layers interact with items until hardware is available
 
@@ -32,10 +34,10 @@ class MiddleLayer(object):
         return self.state
 
 
-class ArduinoLayer(MiddleLayer):
+class MockLayer(MiddleLayer):
 
     def __init__(self, ip, item):
-        super(ArduinoLayer, self).__init__(ip, item)
+        super(MockLayer, self).__init__(ip, item)
 
     def checkState(self):
         return self.mockState
@@ -65,6 +67,32 @@ class ArduinoLayer(MiddleLayer):
         self.mockState = temperature
 
 
+class ArduinoLayer(MiddleLayer):
+    def __init__(self, ip, item):
+        super(ArduinoLayer, self).__init__(ip, item)
+
+    def checkState(self):
+        try:
+            response = requests.get('http://'+self.ip+'/status')
+            return json.loads(response.content)['status']
+        except Exception:
+            return self.mockState        
+
+    def send(self, command, *args):
+        return getattr(self, command)(*args)
+
+    def open(self):
+        requests.get('http://'+self.ip+'/open')
+
+    def close(self):
+        requests.get('http://'+self.ip+'/close')
+
+    def on(self):
+        requests.get('http://'+self.ip+'/on')
+
+    def off(self):
+        requests.get('http://'+self.ip+'/off')
+
 class WemoLayer():
     def send(self, command):
         pass
@@ -75,4 +103,4 @@ class LightwaveRFLayer():
         pass
 
 
-brands = {'arduino': ArduinoLayer, 'wemo': WemoLayer, 'lightwaveRF': LightwaveRFLayer, 'RF': ArduinoLayer, 'rf': ArduinoLayer}
+brands = {'mock': MockLayer, 'arduino': ArduinoLayer, 'wemo': WemoLayer, 'lightwaveRF': LightwaveRFLayer, 'RF': MockLayer, 'rf': MockLayer}
