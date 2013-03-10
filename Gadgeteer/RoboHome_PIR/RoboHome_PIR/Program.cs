@@ -13,7 +13,7 @@ using GTM = Gadgeteer.Modules;
 using Gadgeteer.Modules.GHIElectronics;
 using GHI.Premium.Net;
 
-namespace RoboHome_LightSensor
+namespace RoboHome_PIR
 {
     public partial class Program
     {
@@ -61,7 +61,7 @@ namespace RoboHome_LightSensor
             WebEvent state = WebServer.SetupWebEvent("state");
             state.WebEventReceived += new WebEvent.ReceivedWebEventHandler(state_WebEventReceived);
 
-            Thread t = new Thread(new ThreadStart(pollLight));
+            Thread t = new Thread(new ThreadStart(pollState));
             t.Start();
         }
 
@@ -75,15 +75,13 @@ namespace RoboHome_LightSensor
             responder.Respond(sensorState);
         }
 
-        void pollLight()
+        void pollState()
         {
             while (true)
             {
-                double lightPercent = lightSensor.ReadLightSensorPercentage();
-                Debug.Print(lightPercent.ToString());
-                String newState = (lightPercent >= 50) ? "1" : "0";
-                Debug.Print(newState);
-                if (!sensorState.Equals(newState))
+                String newState = (pir.SensorStillActive) ? "1" : "0";
+
+                if (!newState.Equals(sensorState))
                 {
                     sensorState = newState;
                     Debug.Print(sensorState);
