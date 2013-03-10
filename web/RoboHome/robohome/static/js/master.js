@@ -2931,8 +2931,6 @@ APP.ECAActionDisplay = function(ruleId, actionObj, ruleManager) {
     this.actionObj = actionObj;
     this.ruleManager = ruleManager;
     
-    console.log(actionObj);
-    
     this.errorMessage;
     this.methodFieldset;
     this.methodWrapper;
