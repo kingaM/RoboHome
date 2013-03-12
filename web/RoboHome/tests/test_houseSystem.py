@@ -158,7 +158,7 @@ class MockItemsTable:
         return MockItemsTable.i
 
     def retrieveForRoomId(self, id):
-        return ((1, "sensor", "rf", "0.0.0.0", id, 1),)
+        return ((1, "sensor", "mock", "0.0.0.0", id, 1),)
 
     def updateEntry(self, id, name, brand, ip, roomId, typeId):
         self.updateEntryCalled = True
@@ -216,7 +216,7 @@ class TestHouse(unittest.TestCase):
         db = MockDatabase()
         h = House(db)
         h.addRoom("lounge")
-        h.addItem(0, "sensor", "rf", "motionSensor", "0.0.0.0")
+        h.addItem(0, "sensor", "mock", "motionSensor", "0.0.0.0")
         self.assertEqual(h.rooms[db.room.i].items[MockItemsTable.i]._id, db.items.entries[MockItemsTable.i]._id)
         self.assertEqual(h.rooms[db.room.i].items[MockItemsTable.i].name, db.items.entries[MockItemsTable.i].name)
         self.assertEqual(h.rooms[db.room.i].items[MockItemsTable.i]._type, "motionSensor")
@@ -235,7 +235,7 @@ class TestHouse(unittest.TestCase):
         h = House(db)
         roomId = h.addRoom("lounge")
         id = 0
-        itemId = h.addItem(id, "sensor", "rf", "motionSensor", "0.0.0.0")
+        itemId = h.addItem(id, "sensor", "mock", "motionSensor", "0.0.0.0")
         room = h.getRoomByItemId(itemId)
         self.assertEqual(room.name, "lounge")
         self.assertEqual(room.id, roomId)
@@ -245,13 +245,13 @@ class TestHouse(unittest.TestCase):
         h = House(db)
         h.addRoom("lounge")
         id = 0
-        itemId = h.addItem(id, "sensor", "rf", "motionSensor", "0.0.0.0")
+        itemId = h.addItem(id, "sensor", "mock", "motionSensor", "0.0.0.0")
         item = h.getItemById(itemId)
         self.assertEqual(item.name, "sensor")
         self.assertEqual(item._type, "motionSensor")
         self.assertEqual(item._id, itemId)
         self.assertEqual(item.ip, "0.0.0.0")
-        self.assertEqual(item.brand, "rf")
+        self.assertEqual(item.brand, "mock")
 
     def test_getItemByIP(self):
         h = MockHouse()

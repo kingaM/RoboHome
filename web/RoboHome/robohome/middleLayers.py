@@ -2,6 +2,8 @@ import time
 import threading
 import requests
 import json
+import platform
+from wemo import WemoHelper
 
 # These classes mock how the middle layers interact with items until hardware is available
 
@@ -93,9 +95,30 @@ class ArduinoLayer(MiddleLayer):
     def off(self):
         requests.get('http://'+self.ip+'/off')
 
-class WemoLayer():
-    def send(self, command):
-        pass
+class WemoLayer(MiddleLayer):
+    
+    def __init__(self, ip, item):
+        super(WemoLayer, self).__init__(ip, item)
+        if platform.system() == 'Linux' or platform.system() == 'Darwin':   
+            self.wemoHelper = WemoHelper(ip)
+
+    def send(self, command, *args):
+        return getattr(self, command)(*args)
+
+    def checkState(self):
+        if platform.system() == 'Linux' or platform.system() == 'Darwin':    
+            return self.wemoHelper.getState()
+        return self.mockState
+
+    def on(self):
+        if platform.system == 'Linux' or platform.system == 'Darwin':    
+            self.wemoHelper.on()
+        self.mockState = 1
+
+    def off(self):
+        if platform.system == 'Linux' or platform.system == 'Darwin':    
+            return self.wemoHelper.off()
+        self.mockState = 0
 
 
 class LightwaveRFLayer():
@@ -103,4 +126,4 @@ class LightwaveRFLayer():
         pass
 
 
-brands = {'mock': MockLayer, 'arduino': ArduinoLayer, 'wemo': WemoLayer, 'lightwaveRF': LightwaveRFLayer, 'RF': MockLayer, 'rf': MockLayer}
+brands = {'mock': MockLayer, 'arduino': ArduinoLayer, 'wemo': WemoLayer, 'lightwaveRF': LightwaveRFLayer}
