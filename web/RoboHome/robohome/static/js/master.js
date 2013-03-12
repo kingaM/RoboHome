@@ -216,7 +216,7 @@ APP.Map = function() {
 /**
  * @for APP.Map
  * @method hash
- * @param {any} value Any object or primitive to be hashed
+ * @param {Object | primitive} value Any object or primitive to be hashed
  * @return {String} hash of given value
  * Hash function from
  * http://stackoverflow.com/questions/368280/javascript-hashmap-equivalent
@@ -311,7 +311,7 @@ APP.Map.prototype.getAll = function() {
 APP.Map.prototype.getKeys = function() {
     var hash,
         itemList = [];
-    for(var item in this.items) {
+    for(var item in this.__items) {
         itemList.push(item);
     }
     return itemList;
@@ -479,7 +479,7 @@ APP.ajax_get_version = function(callback, error) {
  */
 APP.ajax_post_rooms = function(roomName, callback, error) {
     APP.ajax('POST', APP.URL.ROOMS + '?' + 
-    APP.API.ROOMS.NAME + '=' + encodeURIComponent(roomName),
+        APP.API.ROOMS.NAME + '=' + encodeURIComponent(roomName),
     '',
     callback,
     error
@@ -494,9 +494,9 @@ APP.ajax_post_rooms = function(roomName, callback, error) {
  */
 APP.ajax_delete_rooms_roomId = function(roomId, callback, error) {
     APP.ajax('DELETE', APP.URL.ROOMS_ROOMID(roomId),
-    '',
-    callback,
-    error
+        '',
+        callback,
+        error
     );
 };
 
@@ -573,13 +573,13 @@ APP.ajax_get_events = function(callback, error) {
  */
 APP.ajax_post_events = function(ruleName, enabled, id, itemType, scope, equivalence, value, callback, error) {
     APP.ajax('POST', APP.URL.EVENTS + '?' + 
-        APP.API.EVENTS.RULE.RULE_NAME + '=' + encodeURIComponent(ruleName) + '&' +
-        APP.API.EVENTS.RULE.ENABLED + '=' + encodeURIComponent(enabled) + '&' +
-        APP.API.EVENTS.RULE.EVENT.ID + '=' + encodeURIComponent(id) + '&' +
-        APP.API.EVENTS.RULE.EVENT.ITEM_TYPE + '=' + encodeURIComponent(itemType) + '&' +
-        APP.API.EVENTS.RULE.EVENT.SCOPE + '=' + encodeURIComponent(scope) + '&' +
-        APP.API.EVENTS.RULE.EVENT.EQUIVALENCE + '=' + encodeURIComponent(equivalence) + '&' +
-        APP.API.EVENTS.RULE.EVENT.VALUE + '=' + encodeURIComponent(value),
+            APP.API.EVENTS.RULE.RULE_NAME + '=' + encodeURIComponent(ruleName) + '&' +
+            APP.API.EVENTS.RULE.ENABLED + '=' + encodeURIComponent(enabled) + '&' +
+            APP.API.EVENTS.RULE.EVENT.ID + '=' + encodeURIComponent(id) + '&' +
+            APP.API.EVENTS.RULE.EVENT.ITEM_TYPE + '=' + encodeURIComponent(itemType) + '&' +
+            APP.API.EVENTS.RULE.EVENT.SCOPE + '=' + encodeURIComponent(scope) + '&' +
+            APP.API.EVENTS.RULE.EVENT.EQUIVALENCE + '=' + encodeURIComponent(equivalence) + '&' +
+            APP.API.EVENTS.RULE.EVENT.VALUE + '=' + encodeURIComponent(value),
         '',
         callback,
         error
@@ -591,13 +591,13 @@ APP.ajax_post_events = function(ruleName, enabled, id, itemType, scope, equivale
  */
 APP.ajax_put_events_eventId = function(eventId, ruleName, enabled, id, itemType, scope, equivalence, value, callback, error) {
     APP.ajax('PUT', APP.URL.EVENTS_EVENTID(eventId) + '?' + 
-        APP.API.EVENTS.RULE.RULE_NAME + '=' + encodeURIComponent(ruleName) + '&' +
-        APP.API.EVENTS.RULE.ENABLED + '=' + encodeURIComponent(enabled) + '&' +
-        APP.API.EVENTS.RULE.EVENT.ID + '=' + encodeURIComponent(id) + '&' +
-        APP.API.EVENTS.RULE.EVENT.ITEM_TYPE + '=' + encodeURIComponent(itemType) + '&' +
-        APP.API.EVENTS.RULE.EVENT.SCOPE + '=' + encodeURIComponent(scope) + '&' +
-        APP.API.EVENTS.RULE.EVENT.EQUIVALENCE + '=' + encodeURIComponent(equivalence) + '&' +
-        APP.API.EVENTS.RULE.EVENT.VALUE + '=' + encodeURIComponent(value),
+            APP.API.EVENTS.RULE.RULE_NAME + '=' + encodeURIComponent(ruleName) + '&' +
+            APP.API.EVENTS.RULE.ENABLED + '=' + encodeURIComponent(enabled) + '&' +
+            APP.API.EVENTS.RULE.EVENT.ID + '=' + encodeURIComponent(id) + '&' +
+            APP.API.EVENTS.RULE.EVENT.ITEM_TYPE + '=' + encodeURIComponent(itemType) + '&' +
+            APP.API.EVENTS.RULE.EVENT.SCOPE + '=' + encodeURIComponent(scope) + '&' +
+            APP.API.EVENTS.RULE.EVENT.EQUIVALENCE + '=' + encodeURIComponent(equivalence) + '&' +
+            APP.API.EVENTS.RULE.EVENT.VALUE + '=' + encodeURIComponent(value),
         '',
         callback,
         error
@@ -609,9 +609,9 @@ APP.ajax_put_events_eventId = function(eventId, ruleName, enabled, id, itemType,
  */
 APP.ajax_delete_events_eventId = function(eventId, callback, error) {
     APP.ajax('DELETE', APP.URL.EVENTS_EVENTID(eventId),
-    '',
-    callback,
-    error
+        '',
+        callback,
+        error
     );
 };
 
@@ -620,12 +620,12 @@ APP.ajax_delete_events_eventId = function(eventId, callback, error) {
  */
 APP.ajax_post_events_eventId_conditions = function(eventId, itemId, equivalence, value, callback, error) {
     APP.ajax('POST', APP.URL.EVENTS_EVENTID_CONDITIONS(eventId) + '?' + 
-    APP.API.EVENTS.RULE.CONDITION.ITEM_ID + '=' + encodeURIComponent(itemId) + '&' + 
-    APP.API.EVENTS.RULE.CONDITION.EQUIVALENCE + '=' + encodeURIComponent(equivalence) + '&' + 
-    APP.API.EVENTS.RULE.CONDITION.VALUE + '=' + encodeURIComponent(value),
-    '',
-    callback,
-    error
+            APP.API.EVENTS.RULE.CONDITION.ITEM_ID + '=' + encodeURIComponent(itemId) + '&' + 
+            APP.API.EVENTS.RULE.CONDITION.EQUIVALENCE + '=' + encodeURIComponent(equivalence) + '&' + 
+            APP.API.EVENTS.RULE.CONDITION.VALUE + '=' + encodeURIComponent(value),
+        '',
+        callback,
+        error
     );
 };
 
@@ -634,13 +634,13 @@ APP.ajax_post_events_eventId_conditions = function(eventId, itemId, equivalence,
  */
 APP.ajax_put_events_eventId_conditions_conditionId = function(eventId, conditionId, itemId, equivalence, value, callback, error) {
     APP.ajax('PUT', APP.URL.EVENTS_EVENTID_CONDITIONS_CONDITIONID(eventId, conditionId) + '?' + 
-    APP.API.EVENTS.RULE.CONDITION.ITEM_ID + '=' + encodeURIComponent(itemId) + '&' + 
-    APP.API.EVENTS.RULE.CONDITION.CONDITION_ID + '=' + encodeURIComponent(conditionId) + '&' + 
-    APP.API.EVENTS.RULE.CONDITION.EQUIVALENCE + '=' + encodeURIComponent(equivalence) + '&' + 
-    APP.API.EVENTS.RULE.CONDITION.VALUE + '=' + encodeURIComponent(value),
-    '',
-    callback,
-    error
+            APP.API.EVENTS.RULE.CONDITION.ITEM_ID + '=' + encodeURIComponent(itemId) + '&' + 
+            APP.API.EVENTS.RULE.CONDITION.CONDITION_ID + '=' + encodeURIComponent(conditionId) + '&' + 
+            APP.API.EVENTS.RULE.CONDITION.EQUIVALENCE + '=' + encodeURIComponent(equivalence) + '&' + 
+            APP.API.EVENTS.RULE.CONDITION.VALUE + '=' + encodeURIComponent(value),
+        '',
+        callback,
+        error
     );
 };
 
@@ -649,9 +649,9 @@ APP.ajax_put_events_eventId_conditions_conditionId = function(eventId, condition
  */
 APP.ajax_delete_events_eventId_conditions_conditionId = function(eventId, conditionId, callback, error) {
     APP.ajax('DELETE', APP.URL.EVENTS_EVENTID_CONDITIONS_CONDITIONID(eventId, conditionId),
-    '',
-    callback,
-    error
+        '',
+        callback,
+        error
     );
 }
 
@@ -660,13 +660,13 @@ APP.ajax_delete_events_eventId_conditions_conditionId = function(eventId, condit
  */
 APP.ajax_post_events_eventId_actions = function(eventId, id, scope, itemType, method, callback, error) {
     APP.ajax('POST', APP.URL.EVENTS_EVENTID_ACTIONS(eventId) + '?' + 
-    APP.API.EVENTS.RULE.ACTION.ID + '=' + encodeURIComponent(id) + '&' + 
-    APP.API.EVENTS.RULE.ACTION.SCOPE + '=' + encodeURIComponent(scope) + '&' + 
-    APP.API.EVENTS.RULE.ACTION.ITEM_TYPE + '=' + encodeURIComponent(itemType) + '&' + 
-    APP.API.EVENTS.RULE.ACTION.METHOD + '=' + encodeURIComponent(method),
-    '',
-    callback,
-    error
+            APP.API.EVENTS.RULE.ACTION.ID + '=' + encodeURIComponent(id) + '&' + 
+            APP.API.EVENTS.RULE.ACTION.SCOPE + '=' + encodeURIComponent(scope) + '&' + 
+            APP.API.EVENTS.RULE.ACTION.ITEM_TYPE + '=' + encodeURIComponent(itemType) + '&' + 
+            APP.API.EVENTS.RULE.ACTION.METHOD + '=' + encodeURIComponent(method),
+        '',
+        callback,
+        error
     );
 };
 
@@ -675,13 +675,13 @@ APP.ajax_post_events_eventId_actions = function(eventId, id, scope, itemType, me
  */
 APP.ajax_put_events_eventId_actions_actionId = function(eventId, actionId, id, scope, itemType, method, callback, error) {
     APP.ajax('PUT', APP.URL.EVENTS_EVENTID_ACTIONS_ACTIONID(eventId, actionId) + '?' + 
-    APP.API.EVENTS.RULE.ACTION.ID + '=' + encodeURIComponent(id) + '&' + 
-    APP.API.EVENTS.RULE.ACTION.SCOPE + '=' + encodeURIComponent(scope) + '&' + 
-    APP.API.EVENTS.RULE.ACTION.ITEM_TYPE + '=' + encodeURIComponent(itemType) + '&' + 
-    APP.API.EVENTS.RULE.ACTION.METHOD + '=' + encodeURIComponent(method),
-    '',
-    callback,
-    error
+            APP.API.EVENTS.RULE.ACTION.ID + '=' + encodeURIComponent(id) + '&' + 
+            APP.API.EVENTS.RULE.ACTION.SCOPE + '=' + encodeURIComponent(scope) + '&' + 
+            APP.API.EVENTS.RULE.ACTION.ITEM_TYPE + '=' + encodeURIComponent(itemType) + '&' + 
+            APP.API.EVENTS.RULE.ACTION.METHOD + '=' + encodeURIComponent(method),
+        '',
+        callback,
+        error
     );
 };
 
@@ -690,9 +690,9 @@ APP.ajax_put_events_eventId_actions_actionId = function(eventId, actionId, id, s
  */
 APP.ajax_delete_events_eventId_actions_actionId = function(eventId, actionId, callback, error) {
     APP.ajax('DELETE', APP.URL.EVENTS_EVENTID_ACTIONS_ACTIONID(eventId, actionId),
-    '',
-    callback,
-    error
+        '',
+        callback,
+        error
     );
 };
 
@@ -704,8 +704,8 @@ APP.ajax_delete_events_eventId_actions_actionId = function(eventId, actionId, ca
  */
 APP.ajax_get_whitelist = function(callback, error) {
     APP.ajax('GET', APP.URL.WHITELIST, '',
-    callback,
-    error
+        callback,
+        error
     );
 };
 
@@ -718,10 +718,10 @@ APP.ajax_get_whitelist = function(callback, error) {
  */
 APP.ajax_post_whitelist = function(email, callback, error) {
     APP.ajax('POST', APP.URL.WHITELIST + '?' + 
-    APP.API.WHITELIST.EMAIL + '=' + encodeURIComponent(email),
-    '',
-    callback,
-    error
+            APP.API.WHITELIST.EMAIL + '=' + encodeURIComponent(email),
+        '',
+        callback,
+        error
     );
 };
 
@@ -734,10 +734,10 @@ APP.ajax_post_whitelist = function(email, callback, error) {
  */
 APP.ajax_delete_whitelist = function(email, callback, error) {
     APP.ajax('DELETE', APP.URL.WHITELIST + '?' + 
-    APP.API.WHITELIST.EMAIL + '=' + encodeURIComponent(email),
-    '',
-    callback,
-    error
+            APP.API.WHITELIST.EMAIL + '=' + encodeURIComponent(email),
+        '',
+        callback,
+        error
     );
 };
 
