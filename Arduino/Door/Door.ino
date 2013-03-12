@@ -184,6 +184,10 @@ void loop() {
   Serial.println(motionDetected);
   if(newMotion && motionDetected) {
     Serial.println("NEW MOTION DETECTED"); 
+    //Stub for future motor integration
+    //openDoor();
+    //delay(100000);
+    //closeDoor();
   }
   newMotion = false;
   delay(1000);
