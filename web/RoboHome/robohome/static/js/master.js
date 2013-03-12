@@ -1,5 +1,7 @@
 /**
- * JavaScript for home automation system prototype
+ * master.js
+ *
+ * JavaScript for Robohome
  * Author: Li Quan Khoo
  * Documentation in YUIDoc format
  *   http://yui.github.com/yuidoc/syntax/index.html
@@ -216,7 +218,7 @@ APP.Map = function() {
 /**
  * @for APP.Map
  * @method hash
- * @param {Object | primitive} value Any object or primitive to be hashed
+ * @param {Object | Function | string | number} value Any object or primitive to be hashed. In particular, anything that has a valid .toString() call
  * @return {String} hash of given value
  * Hash function from
  * http://stackoverflow.com/questions/368280/javascript-hashmap-equivalent
@@ -241,7 +243,7 @@ APP.Map.prototype.clear = function() {
 /**
  * @for APP.Map
  * @method put
- * @param {any} key Key
+ * @param {Object | Function | string | number} key Any object or primitive to be hashed. In particular, anything that has a valid .toString() call
  * @param {any} value Value
  * Adds a key-value pair to the hashmap
  */
@@ -258,7 +260,7 @@ APP.Map.prototype.put = function(key, value) {
 /**
  * @for APP.Map
  * @method remove
- * @param {any} key Key of entry to remove
+ * @param {Object | Function | string | number} key Key of value to be removed
  * Remove an entry from the hashmap
  */
 APP.Map.prototype.remove = function(key) {
@@ -275,8 +277,8 @@ APP.Map.prototype.remove = function(key) {
 /**
  * @for APP.Map
  * @method get
- * @param {any} key Key of entry to retrieve
- * @return {any} Value of key
+ * @param {Object | Function | string | number} key Key to be retrieved
+ * @return {any} Value of specified key
  * Retrieve the value of the specified key in the hashmap
  */
 APP.Map.prototype.get = function(key) {
@@ -491,6 +493,7 @@ APP.ajax_post_rooms = function(roomName, callback, error) {
  * @param {int} roomId          RoomId
  * @param {Function} callback   Callback function to execute after response is received
  * @param {Function} error      Function to execute if AJAX request fails
+ * Deletes a room
  */
 APP.ajax_delete_rooms_roomId = function(roomId, callback, error) {
     APP.ajax('DELETE', APP.URL.ROOMS_ROOMID(roomId),
@@ -540,11 +543,11 @@ APP.ajax_delete_rooms_roomId_items_itemId = function(roomId, itemId, callback, e
 
 /**
  * @method APP.ajax_put_rooms_roomId_items_itemId_cmd
- * @param {int} roomId        ID of room
- * @param {int} itemId        ID of item
- * @param {String} cmd        Command to send to the item
- * @param {Function} callback Callback function to execute after response is received
- * @param {Function} error    Function to execute if AJAX request fails
+ * @param {int} roomId          ID of room
+ * @param {int} itemId          ID of item
+ * @param {String} cmd          Command to send to the item
+ * @param {Function} callback   Callback function to execute after response is received
+ * @param {Function} error      Function to execute if AJAX request fails
  * Updates the specified item in the room with the new state
  */
 APP.ajax_put_rooms_roomId_items_itemId_cmd = function(roomId, itemId, cmd, callback, error) {
@@ -555,7 +558,10 @@ APP.ajax_put_rooms_roomId_items_itemId_cmd = function(roomId, itemId, cmd, callb
 }
 
 /**
- *
+ * @method APP.ajax_get_events
+ * @param {Function} callback   Callback function to execute after response is received
+ * @param {Function} error      Function to execute if AJAX request fails
+ * Gets list of events
  */
 APP.ajax_get_events = function(callback, error) {
     APP.ajax('GET', APP.URL.EVENTS, '',
@@ -569,7 +575,17 @@ APP.ajax_get_events = function(callback, error) {
 };
 
 /**
- *
+ * @method APP.ajax_post_events
+ * @param {string} ruleName     Name of rule
+ * @param {string} enabled      'true' or 'false', whether the rule is enabled or not
+ * @param {int} id              Id of scope, either itemId or roomId or 'null', depending on scope
+ * @param {string} itemType     Type of item
+ * @param {string} scope        Scope code, either 'item', 'room', or 'house'
+ * @param {string} equivalence  Equivalence
+ * @param {int} value           Triggering state for given itemType
+ * @param {Function} callback   Callback function to execute after response is received
+ * @param {Function} error      Function to execute if AJAX request fails
+ * Adds a new event, with no conditions or actions
  */
 APP.ajax_post_events = function(ruleName, enabled, id, itemType, scope, equivalence, value, callback, error) {
     APP.ajax('POST', APP.URL.EVENTS + '?' + 
@@ -587,7 +603,18 @@ APP.ajax_post_events = function(ruleName, enabled, id, itemType, scope, equivale
 };
 
 /**
- *
+ * @method APP.ajax_put_events_eventId
+ * @param {int} eventId         Id of event
+ * @param {string} ruleName     Name of rule
+ * @param {string} enabled      'true' or 'false', whether the rule is enabled or not
+ * @param {int} id              Id of scope, either itemId or roomId or 'null', depending on scope
+ * @param {string} itemType     Type of item
+ * @param {string} scope        Scope code, either 'item', 'room', or 'house'
+ * @param {string} equivalence  Equivalence
+ * @param {int} value           Triggering state for given itemType
+ * @param {Function} callback   Callback function to execute after response is received
+ * @param {Function} error      Function to execute if AJAX request fails
+ * Updates a given event. This leaves its events and actions unchanged
  */
 APP.ajax_put_events_eventId = function(eventId, ruleName, enabled, id, itemType, scope, equivalence, value, callback, error) {
     APP.ajax('PUT', APP.URL.EVENTS_EVENTID(eventId) + '?' + 
@@ -605,7 +632,11 @@ APP.ajax_put_events_eventId = function(eventId, ruleName, enabled, id, itemType,
 };
 
 /**
- *
+ * @method APP.ajax_delete_events_eventId
+ * @param {int} eventId         Id of event  
+ * @param {Function} callback   Callback function to execute after response is received
+ * @param {Function} error      Function to execute if AJAX request fails
+ * Deletes the given event
  */
 APP.ajax_delete_events_eventId = function(eventId, callback, error) {
     APP.ajax('DELETE', APP.URL.EVENTS_EVENTID(eventId),
@@ -616,7 +647,14 @@ APP.ajax_delete_events_eventId = function(eventId, callback, error) {
 };
 
 /**
- *
+ * @method APP.ajax_post_events_eventId_conditions
+ * @param {int} eventId         Id of event
+ * @param {int} itemId          Id of item
+ * @param {string} equivalence  Equivalence
+ * @param {int} value           Triggering state for given itemType
+ * @param {Function} callback   Callback function to execute after response is received
+ * @param {Function} error      Function to execute if AJAX request fails
+ * Adds a new condition to a given event
  */
 APP.ajax_post_events_eventId_conditions = function(eventId, itemId, equivalence, value, callback, error) {
     APP.ajax('POST', APP.URL.EVENTS_EVENTID_CONDITIONS(eventId) + '?' + 
@@ -630,7 +668,15 @@ APP.ajax_post_events_eventId_conditions = function(eventId, itemId, equivalence,
 };
 
 /**
- *
+ * @method APP.ajax_put_events_eventId_conditions_conditionId
+ * @param {int} eventId         Id of event
+ * @param {int} conditionId     Id of condition
+ * @param {int} itemId          Id of item
+ * @param {string} equivalence  Equivalence
+ * @param {int} value           Triggering state for given item
+ * @param {Function} callback   Callback function to execute after response is received
+ * @param {Function} error      Function to execute if AJAX request fails
+ * Updates a condition in the given event
  */
 APP.ajax_put_events_eventId_conditions_conditionId = function(eventId, conditionId, itemId, equivalence, value, callback, error) {
     APP.ajax('PUT', APP.URL.EVENTS_EVENTID_CONDITIONS_CONDITIONID(eventId, conditionId) + '?' + 
@@ -645,7 +691,12 @@ APP.ajax_put_events_eventId_conditions_conditionId = function(eventId, condition
 };
 
 /**
- *
+ * @method APP.ajax_delete_events_eventId_conditions_conditionId
+ * @param {int} eventId         Id of event
+ * @param {int} conditionId     Id of condition
+ * @param {Function} callback   Callback function to execute after response is received
+ * @param {Function} error      Function to execute if AJAX request fails
+ * Deletes a condition in the given event
  */
 APP.ajax_delete_events_eventId_conditions_conditionId = function(eventId, conditionId, callback, error) {
     APP.ajax('DELETE', APP.URL.EVENTS_EVENTID_CONDITIONS_CONDITIONID(eventId, conditionId),
@@ -656,7 +707,15 @@ APP.ajax_delete_events_eventId_conditions_conditionId = function(eventId, condit
 }
 
 /**
- *
+ * @method APP.ajax_post_events_eventId_actions
+ * @param {int} eventId         Id of event
+ * @param {int} id              Id of scope, either itemId or roomId or 'null', depending on scope
+ * @param {string} scope        Scope code, either 'item', 'room', or 'house'       
+ * @param {string} itemType     itemType
+ * @param {string} method       Method to execute for the given itemType
+ * @param {Function} callback   Callback function to execute after response is received
+ * @param {Function} error      Function to execute if AJAX request fails
+ * Adds a condition to a given event
  */
 APP.ajax_post_events_eventId_actions = function(eventId, id, scope, itemType, method, callback, error) {
     APP.ajax('POST', APP.URL.EVENTS_EVENTID_ACTIONS(eventId) + '?' + 
@@ -671,7 +730,16 @@ APP.ajax_post_events_eventId_actions = function(eventId, id, scope, itemType, me
 };
 
 /**
- *
+ * @method APP.ajax_put_events_eventId_actions_actionId
+ * @param {int} eventId         Id of event
+ * @param {int} actionId        Id of action
+ * @param {int} id              Id of scope, either itemId or roomId or 'null', depending on scope           
+ * @param {string} scope        Scope code, either 'item', 'room', or 'house'
+ * @param {string} itemType     itemType
+ * @param {string} method       Method to execute for the given itemType
+ * @param {Function} callback   Callback function to execute after response is received
+ * @param {Function} error      Function to execute if AJAX request fails
+ * Updates an action in a given event
  */
 APP.ajax_put_events_eventId_actions_actionId = function(eventId, actionId, id, scope, itemType, method, callback, error) {
     APP.ajax('PUT', APP.URL.EVENTS_EVENTID_ACTIONS_ACTIONID(eventId, actionId) + '?' + 
@@ -686,7 +754,12 @@ APP.ajax_put_events_eventId_actions_actionId = function(eventId, actionId, id, s
 };
 
 /**
- *
+ * @method APP.ajax_delete_events_eventId_actions_actionId
+ * @param {int} eventId         Id of event
+ * @param {int} actionId        Id of action
+ * @param {Function} callback   Callback function to execute after response is received
+ * @param {Function} error      Function to execute if AJAX request fails
+ * Deletes an action in a given event
  */
 APP.ajax_delete_events_eventId_actions_actionId = function(eventId, actionId, callback, error) {
     APP.ajax('DELETE', APP.URL.EVENTS_EVENTID_ACTIONS_ACTIONID(eventId, actionId),
@@ -4508,6 +4581,7 @@ APP.clock = {
     /**
      * @for APP.clock
      * @method getCurrentDate
+     * @return {Date} current date object
      * returns the current date object
      */
     getCurrentDate: function() {
@@ -4517,7 +4591,7 @@ APP.clock = {
     /**
      * @for APP.clock
      * @method getTimestamp
-     * @param {Date} dateInput Input Date object. If not defined, this method uses the current date
+     * @param {Date | undefined} dateInput Input Date object. If not defined, this method uses the current date
      * @return {String} String formatted to represent current time, from hours to milliseconds
      */
     getTimestamp: function(dateInput) {
