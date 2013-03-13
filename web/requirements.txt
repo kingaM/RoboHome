@@ -4,3 +4,4 @@ Werkzeug==0.8.3
 flask-openid==1.1
 python-openid==2.2.5
 IPy==0.75
+requests==0.14.2
