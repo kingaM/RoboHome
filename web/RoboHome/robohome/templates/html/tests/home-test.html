@@ -1,84 +1,31 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8;" />
-        <title>RoboHome</title>
-        <link type="image/x-icon" rel="shortcut icon" href="../static/img/favicon.png" />
-        <link type="text/css" rel="stylesheet" href="../../../static/css/master.css" />
-        <script type="text/javascript" src="../../../static/js/jquery-1.8.3.min.js"></script>
-        <script type="text/javascript" src="../../../static/js/master.js"></script>
-        
-        <!-- qunit -->
-        <link type="text/css" rel="stylesheet" href="../../../static/css/tests/qunit-1.11.0.css" />
-        <style>
-            body {
-                overflow: auto;
-            }
-            #debug {
-                height: 250px; overflow: auto;
-            }
-            #wrapper-screen {
-                overflow-y: auto !important;
-            }
-            </style>
-        <script type="text/javascript" src="../../../static/js/tests/qunit-1.11.0.js"></script>
-        <script type="text/javascript" src="../../../static/js/tests/master-unit-tests.js"></script>
-        <script type="text/javascript" src="../../../static/js/tests/master-functionality-tests.js"></script>
-        <!-- home-test.js -->
-        <script type="text/javascript" src="../../../static/js/tests/home-test.js"></script>
-    </head>
-    <body>
-        <div id="debug">
-            <!-- qunit -->
-            <div id="qunit"></div>
-            <div id="qunit-fixture"></div>
-            </div>
-        <div id="wrapper-screen" class="wrapper">
-            <div id="wrapper-left" class="wrapper">
-                <div id="bar-left" class="bar">
-                    <div id="chronograph">
-                        <div id="time">
-                            <div id="clock">
-                                <span id="hours-minutes"></span>
-                                <span id="seconds"></span>
-                                <span id="am-pm"></span>
-                                </div>
-                            </div>
-                        <div id="day"></div>
-                        <div id="date"></div>
-                        <div class="pretty-border horizontal">
-                            <div class="left"></div>
-                            <div class="middle"></div>
-                            <div class="right"></div>
-                            </div>
-                        </div>
-                    <div id="left-panel">
-                        <div id="context-menu">
-                            <!-- dynamically-generated -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            <div class="pretty-border vertical float-left">
-                <div class="top"></div>
-                <div class="middle"></div>
-                <div class="bottom"></div>
-                </div>
-            <div id="wrapper-right" class="wrapper">
-                <div id="wrapper-primary" class="wrapper menu-wrapper">
-                    <ul id="menu-primary" class="menu horizontal">
-                        <!-- dynamically-generated -->
-                        </ul>
-                    </div>
-                <div id="wrapper-secondary" class="wrapper menu-wrapper">
-                        <!-- dynamically-generated -->
-                    </div>
-                <div id="wrapper-stage" class="wrapper">
-                    <div id="stages">
-                        <!-- dynamically-generated -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-    </body>
-</html>
+{% extends "html/home.html" %}
+
+{% block head %}    
+    <link type="text/css" rel="stylesheet" href="../../../static/css/master.css" />
+    <script type="text/javascript" src="../../../static/js/jquery-1.8.3.min.js"></script>
+    <script type="text/javascript" src="../../../static/js/master.js"></script>
+
+    <!-- qunit -->
+    <link type="text/css" rel="stylesheet" href="../../../static/css/tests/qunit-1.11.0.css" />
+    <style>
+        body {
+            overflow: auto;
+        }
+        #debug {
+            height: 250px; overflow: auto;
+        }
+        #wrapper-screen {
+            overflow-y: auto !important;
+        }
+        </style>
+    <script type="text/javascript" src="../../../static/js/tests/qunit-1.11.0.js"></script>
+    <script type="text/javascript" src="../../../static/js/tests/master-unit-tests.js"></script>
+    <script type="text/javascript" src="../../../static/js/tests/master-functionality-tests.js"></script>
+    <!-- home-test.js -->
+    <script type="text/javascript" src="../../../static/js/tests/home-test.js"></script>
+{% endblock %}
+
+{% block debug %}
+    <div id="qunit"></div>
+    <div id="qunit-fixture"></div>
+{% endblock %}
