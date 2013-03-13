@@ -1228,7 +1228,19 @@ a.yellow.selected,
     #wrapper-secondary {
         font-size: 3em;
     }
-
+    .stage {
+        font-size: 2em;
+    }
+    #stage-rules-eca {
+        font-size: 4em;
+    }
+    .stage-content .eca-rule .eca-form-box {
+        margin-left: 0.5em;
+        min-width: 16.5em;
+    }
+    .stage-content .eca-form-box div {
+        min-width: 60%;
+    }
     .stage-content .eca-delete {
         display: inline-block;
         float: none;
