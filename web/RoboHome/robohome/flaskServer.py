@@ -313,7 +313,7 @@ def isIpOnLocalNetwork():
     network127 = IP("127.0.0.0/24")
     return getIp() in network10 or getIp() in network192 or getIp() in network127
 
-@app.route('/login/', methods=['GET', 'POST'])
+@app.route('/login', methods=['GET', 'POST'])
 @oid.loginhandler
 def login():
     # Does the login via OpenID.
