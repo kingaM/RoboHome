@@ -1,40 +1,48 @@
 /**
- * QUnit tests for master.js
+ * Data / DOM-independent QUnit tests for master.js
+ * These tests can be run independently of the server by opening qunit.html offline, locally
  *
  * JavaScript for Robohome
  * Author: Li Quan Khoo
  */
 
-module('APP.Map');
+/** APP.Map */
 (function() {
+    
+    var map;
+    
+    module('APP.Map', {
+        setup: function() {
+            map = new APP.Map();
+        },
+        teardown: function() {
+            map = undefined;
+        }
+    });
 
     test('constructor', function() {
         equal(typeof(APP.Map), 'function', 'Constructor type === "function"');
         equal(typeof(APP.Map()), 'undefined', 'Constructor return type === "undefined"');
         equal(APP.Map(), undefined, 'Constructor returns undefined');
 
-        var map = new APP.Map();
-        equal(typeof(map), 'object', 'Initialized object is of type object');
+        equal(typeof(map), 'object', 'Initialized object is of type "object"');
         equal(map.size, 0, 'Size of map initialized to 0');
         deepEqual(map.__items, {}, 'Items in map initialized to blank object {}');
     });
         
     test('property size', function() {
-        var map = new APP.Map();
         equal(typeof(map.size), 'number', 'Property is initialized to type "number"');
         
         equal(map.size, 0, 'Property is initialized to 0');
     });
     
     test('property __items', function() {
-        var map = new APP.Map();
         equal(typeof(map.__items), 'object', 'Property is initialized to type "object"');
         
         deepEqual(map.__items, {}, 'Property is initialized to blank object {}');
     });
     
     test('method hash', function() {
-        var map = new APP.Map();
         equal(typeof(map.hash), 'function', 'Method type === "function"');
         equal(typeof(map.hash(1)), 'string', 'Method return type === "string"');
         
@@ -49,7 +57,6 @@ module('APP.Map');
     });
     
     test('method clear', function() {
-        var map = new APP.Map();
         equal(typeof(map.clear), 'function', 'Method type === "function"');
         equal(typeof(map.clear()), 'undefined', 'Method return type === "undefined"');
         equal(map.clear(), undefined, 'Method returns undefined');
@@ -64,7 +71,6 @@ module('APP.Map');
     });
     
     test('method put', function() {
-        var map = new APP.Map();
         equal(typeof(map.put), 'function', 'Method type === "function"');
         equal(typeof(map.put(1)), 'undefined', 'Method return type === "undefined"');
         equal(map.put(1), undefined, 'Method returns undefined');
@@ -86,7 +92,6 @@ module('APP.Map');
     });
     
     test('method remove', function() {
-        var map = new APP.Map();
         equal(typeof(map.remove), 'function', 'Method type === "function"');
         equal(typeof(map.remove(1)), 'undefined', 'Method return type === "undefined"');
         equal(map.remove(1), undefined, 'Method returns undefined');
@@ -101,7 +106,6 @@ module('APP.Map');
     });
     
     test('method get', function() {
-        var map = new APP.Map();
         equal(typeof(map.get), 'function', 'Method type === "function"');
         // variable return type
         
@@ -117,7 +121,6 @@ module('APP.Map');
     });
     
     test('method getAll', function() {
-        var map = new APP.Map();
         equal(typeof(map.getAll), 'function', 'Method type === "function"');
         equal(typeof(map.getAll()), 'object', 'Method return type === "object (array)"');
         
@@ -131,7 +134,6 @@ module('APP.Map');
     });
     
     test('method getKeys', function() {
-        var map = new APP.Map();
         equal(typeof(map.getKeys), 'function', 'Method type === "function"');
         equal(typeof(map.getKeys()), 'object', 'Method return type === "array (array)"');
         
@@ -146,8 +148,9 @@ module('APP.Map');
     
 })();
 
-module('APP.pack');
+/** APP.pack */
 (function() {
+    module('APP.pack');
 
     test('static method pack', function() {
         equal(typeof(APP.pack), 'function', 'Method type === "function"');
@@ -160,8 +163,9 @@ module('APP.pack');
     
 })();
 
-module('APP.packToJSON');
+/** APP.packToJSON */
 (function() {
+module('APP.packToJSON');
     
     test('static method packToJSON', function() {
         equal(typeof(APP.packToJSON), 'function', 'Method type === "function"');
@@ -174,8 +178,9 @@ module('APP.packToJSON');
 
 })();
 
-module('APP.unpack');
+/** APP.unpack */
 (function() {
+    module('APP.unpack');
     
     test('static method unpack', function() {
         equal(typeof(APP.unpack), 'function', 'Method type === "function"');
@@ -187,8 +192,9 @@ module('APP.unpack');
     
 })();
 
-module('APP.unpackToPayload');
+/** APP.unpackToPayload */
 (function() {
+    module('APP.unpackToPayload');
     
     test('static method unpackToPayload', function() {
         equal(typeof(APP.unpackToPayload), 'function', 'Method type === "function"');
@@ -201,10 +207,131 @@ module('APP.unpackToPayload');
     
 })();
 
-
-
-module('APP.clock');
+/** APP.ContextMenu */
 (function() {
+    
+    var cm;
+    
+    module('APP.ContextMenu', {
+        setup: function() {
+            cm = new APP.ContextMenu();
+        },
+        teardown: function() {
+            cm = undefined;
+        }
+    });
+    
+    test('constructor', function() {
+        equal(typeof(APP.ContextMenu), 'function', 'Constructor type === "function"');
+        equal(typeof(APP.ContextMenu()), 'undefined', 'Constructor return type === "undefined"');
+        equal(APP.ContextMenu(), undefined, 'Constructor returns undefined');
+        equal(typeof(cm), 'object', 'Initialized object is of type "object"');
+        ok(cm instanceof APP.ContextMenu, 'Initialized object is instanceof APP.ContextMenu');
+    });
+    
+    test('method getContext', function() {
+        equal(typeof(cm.getContext), 'function', 'Method type === "function"');
+        equal(typeof(cm.getContext), 'function', 'Method return type === "function (jQuery object)"');
+    });
+    
+    test('method construct', function() {
+        equal(typeof(cm.construct), 'function', 'Method type === "function"');
+        equal(typeof(cm.construct()), 'undefined', 'Method return type === "undefined"');
+        equal(cm.construct(), undefined, 'Method returns undefined');
+    });
+    
+    test('method setConstruct', function() {
+        equal(typeof(cm.setConstruct), 'function', 'Method type === "function"');
+        equal(typeof(cm.setConstruct()), 'undefined', 'Method return type === "undefined"');
+        equal(cm.setConstruct(), undefined, 'Method returns undefined');
+        
+        var func = function() {};
+        cm.setConstruct(func);
+        deepEqual(cm.construct, func, 'Set contruct function === retrieved construct function');
+    });
+    
+    test('method tearDown', function() {
+        equal(typeof(cm.tearDown), 'function', 'Method type === "function"');
+        equal(typeof(cm.tearDown()), 'undefined', 'Method return type === "undefined"');
+        equal(cm.tearDown(), undefined, 'Method returns undefined');
+    });
+    
+})();
+
+/** APP.Poller */
+(function() {
+    
+    var poller;
+    
+    module('APP.Poller', {
+        setup: function() {
+            poller = new APP.Poller();
+        },
+        teardown: function() {
+            poller.stopPolling();
+            poller = undefined;
+        }
+    });
+    
+    test('constructor', function() {
+        equal(typeof(APP.Poller), 'function', 'Constructor type === "function"');
+        equal(typeof(APP.Poller()), 'undefined', 'Constructor return type === "undefined"');
+        equal(APP.Poller(), undefined, 'Constructor returns undefined');
+        equal(typeof(poller), 'object', 'Initialized object is of type "object"');
+        ok(poller instanceof APP.Poller, 'Initialized object isinstanceof APP.Poller');
+        
+        equal(poller.intervalId, undefined, 'property intervalId initialized to undefined');
+        equal(poller.frequency, undefined, 'property frequency initialized to undefined');
+        equal(typeof(poller.poll), 'function', 'property poll initialized to type "function"');
+        
+    });
+    
+    test('method startPolling', function() {
+        equal(typeof(poller.startPolling), 'function', 'Method type === "function"');
+        equal(typeof(poller.startPolling()), 'undefined', 'Method return type === "undefined"');
+        equal(poller.startPolling(), undefined, 'Method returns undefined');
+        
+        // start polling without calling setPoll()
+        poller.startPolling()
+        equal(poller.intervalId, undefined, 'setPoll not called before -- window.setInterval not called, intervalId not defined');
+        
+        var frequency = 1000,
+            func = function() {};
+            
+        poller.setPoll(frequency, func);
+        poller.startPolling();
+        notEqual(poller.intervalId, undefined, 'setPoll called -- window.setInterval called, intervalId === window.setInterval return');
+        poller.stopPolling();
+        
+    });
+    
+    test('method stopPolling', function() {
+        equal(typeof(poller.stopPolling), 'function', 'Method type === "function"');
+        equal(typeof(poller.stopPolling()), 'undefined', 'Method return type === "undefined"');
+        equal(poller.stopPolling(), undefined, 'Method returns undefined');
+        
+        // cannot test window.clearInterval()
+        
+    });
+    
+    test('method setPoll', function() {
+        equal(typeof(poller.setPoll), 'function', 'Method type === "function"');
+        equal(typeof(poller.setPoll()), 'undefined', 'Method return type === "undefined"');
+        equal(poller.setPoll(), undefined, 'Method returns undefined');
+        
+        var frequency = 1000,
+            func = function() {};
+        
+        poller.setPoll(frequency, func);
+        equal(poller.frequency, frequency, 'Set frequency === retrieved frequency');
+        deepEqual(poller.poll, func, 'Set poll function === retrieved poll function');
+    });
+    
+})();
+
+/** APP.clock */
+(function() {
+    module('APP.clock');
     
     test('static class', function() {
         equal(typeof(APP.clock), 'object', 'Static class is of type "object"');
@@ -236,7 +363,4 @@ module('APP.clock');
     });
     
 })();
-
-
-
 

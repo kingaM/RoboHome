@@ -67,6 +67,13 @@ def home():
         # Fetch the base HTML page and scripts
         return render_template('html/home.html')
 
+
+@app.route('/home-test', methods=['GET'])
+def home_test():
+    if request.method == 'GET':
+        return render_template('html/tests/home-test.html');
+
+
 @app.route('/update/', methods=['POST'])
 def update():
     if request.method == 'POST':
