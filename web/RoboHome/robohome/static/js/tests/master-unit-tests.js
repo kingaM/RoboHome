@@ -6,11 +6,11 @@
  * Author: Li Quan Khoo
  */
 
-/** APP.Map */
+/* APP.Map */
 (function() {
     
     var map;
-    
+
     module('APP.Map', {
         setup: function() {
             map = new APP.Map();
@@ -148,66 +148,7 @@
     
 })();
 
-/** APP.pack */
-(function() {
-    module('APP.pack');
-
-    test('static method pack', function() {
-        equal(typeof(APP.pack), 'function', 'Method type === "function"');
-        equal(typeof(APP.pack('')), 'object', 'Method return type === "object"');
-        
-        var obj = {};
-        obj[APP.API.WRAPPER.CONTENT] = 'payload';
-        deepEqual(APP.pack('payload'), obj, 'Value packed === value unpacked');
-    });
-    
-})();
-
-/** APP.packToJSON */
-(function() {
-module('APP.packToJSON');
-    
-    test('static method packToJSON', function() {
-        equal(typeof(APP.packToJSON), 'function', 'Method type === "function"');
-        equal(typeof(APP.packToJSON('')), 'string', 'Method return type === "string"');
-        
-        var obj = {};
-        obj[APP.API.WRAPPER.CONTENT] = 'payload';
-        deepEqual(APP.packToJSON('payload'), JSON.stringify(obj), 'Value packed === value unpacked');
-    });
-
-})();
-
-/** APP.unpack */
-(function() {
-    module('APP.unpack');
-    
-    test('static method unpack', function() {
-        equal(typeof(APP.unpack), 'function', 'Method type === "function"');
-        // variable return type
-        var obj = {};
-        obj[APP.API.WRAPPER.CONTENT] = 'payload';
-        deepEqual(APP.unpack(JSON.stringify(obj)), obj, 'Value packed === value unpacked');
-    });
-    
-})();
-
-/** APP.unpackToPayload */
-(function() {
-    module('APP.unpackToPayload');
-    
-    test('static method unpackToPayload', function() {
-        equal(typeof(APP.unpackToPayload), 'function', 'Method type === "function"');
-        // variable return type
-        
-        var obj = {};
-        obj[APP.API.WRAPPER.CONTENT] = 'payload';
-        deepEqual(APP.unpackToPayload(JSON.stringify(obj)), 'payload', 'Value packed === value unpacked');
-    });
-    
-})();
-
-/** APP.ContextMenu */
+/* APP.ContextMenu */
 (function() {
     
     var cm;
@@ -258,7 +199,7 @@ module('APP.packToJSON');
     
 })();
 
-/** APP.Poller */
+/* APP.Poller */
 (function() {
     
     var poller;
@@ -329,7 +270,7 @@ module('APP.packToJSON');
     
 })();
 
-/** APP.clock */
+/* APP.clock */
 (function() {
     module('APP.clock');
     
@@ -364,3 +305,50 @@ module('APP.packToJSON');
     
 })();
 
+/* static methods */
+(function() {
+    module('static methods');
+    test('static method APP.url_args', function() {
+        equal(typeof(APP.url_args), 'function', 'Method type === "function"');
+        equal(typeof(APP.url_args({})), 'string', 'Method return type === "string"');
+        equal(APP.url_args({}), '', 'Empty argument object');
+        equal(APP.url_args({foo: 'foo'}), '?foo=foo', 'Single argument');
+        equal(APP.url_args({foo: 'foo', bar: 'bar', baz: 'baz'}), '?foo=foo&bar=bar&baz=baz', 'Multiple arguments');
+    });
+    
+    test('static method APP.pack', function() {
+        equal(typeof(APP.pack), 'function', 'Method type === "function"');
+        equal(typeof(APP.pack('')), 'object', 'Method return type === "object"');
+        
+        var obj = {};
+        obj[APP.API.WRAPPER.CONTENT] = 'payload';
+        deepEqual(APP.pack('payload'), obj, 'Value packed === value unpacked');
+    });
+    
+    test('static method APP.packToJSON', function() {
+        equal(typeof(APP.packToJSON), 'function', 'Method type === "function"');
+        equal(typeof(APP.packToJSON('')), 'string', 'Method return type === "string"');
+        
+        var obj = {};
+        obj[APP.API.WRAPPER.CONTENT] = 'payload';
+        deepEqual(APP.packToJSON('payload'), JSON.stringify(obj), 'Value packed === value unpacked');
+    });
+    
+    test('static method APP.unpack', function() {
+        equal(typeof(APP.unpack), 'function', 'Method type === "function"');
+        // variable return type
+        var obj = {};
+        obj[APP.API.WRAPPER.CONTENT] = 'payload';
+        deepEqual(APP.unpack(JSON.stringify(obj)), obj, 'Value packed === value unpacked');
+    });
+    
+    test('static method APP.unpackToPayload', function() {
+        equal(typeof(APP.unpackToPayload), 'function', 'Method type === "function"');
+        // variable return type
+        
+        var obj = {};
+        obj[APP.API.WRAPPER.CONTENT] = 'payload';
+        deepEqual(APP.unpackToPayload(JSON.stringify(obj)), 'payload', 'Value packed === value unpacked');
+    });
+    
+})();

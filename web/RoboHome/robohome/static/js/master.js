@@ -152,6 +152,7 @@ APP.API.WHITELIST.EMAILS = 'emails';
 // RESTful API URL specification
 // Remember to specify the trailing slash so Flask does not have to redirect
 APP.URL = {};
+
 APP.URL.VERSION = '/version/';
 APP.URL.STATE = '/version/' + APP.CONSTANTS.VERSION + '/state/';
 APP.URL.ROOMS = '/version/' + APP.CONSTANTS.VERSION + '/rooms/';
@@ -184,6 +185,21 @@ APP.URL.EVENTS_EVENTID_ACTIONS_ACTIONID = function(eventId, actionId) {
     return '/version/' + APP.CONSTANTS.VERSION + '/events/' + eventId + '/actions/' + actionId + '/';
 };
 APP.URL.WHITELIST = '/version/' + APP.CONSTANTS.VERSION + '/whitelist/';
+
+APP.url_args = function(obj) {
+    var i = 0,
+        str = '',
+        arg;
+    for(var property in obj) {
+        if(obj.hasOwnProperty(property)) {
+            if(i === 0) { str += '?' } else { str += '&' }
+            arg = property + '=' + encodeURIComponent(obj[property]);
+            str += arg;
+            i++;
+        }
+    }
+    return str
+};
 
 // ---------------------------------------------------------------------
 // Data structures
@@ -331,6 +347,7 @@ APP.data = {
         lastNoSuccess: undefined
     },
     retrieved: { // stores Date objects marking the age of AJAX-retrieved data
+        version: undefined,
         houseStructure: undefined,
         events: undefined
     },
@@ -465,7 +482,7 @@ APP.ajax_get_version = function(callback, error) {
         function(json) {
             var obj = APP.unpackToPayload(json);
             APP.data.cache = obj;
-            APP.data.retrieved.events = new Date(APP.data.connection.lastSuccess);
+            APP.data.retrieved.version = new Date(APP.data.connection.lastSuccess);
             callback();
         },
         error
@@ -480,11 +497,13 @@ APP.ajax_get_version = function(callback, error) {
  * Adds a new room
  */
 APP.ajax_post_rooms = function(roomName, callback, error) {
-    APP.ajax('POST', APP.URL.ROOMS + '?' + 
-        APP.API.ROOMS.NAME + '=' + encodeURIComponent(roomName),
-    '',
-    callback,
-    error
+    
+    var args = {};
+    args[APP.API.ROOMS.NAME] = roomName;
+    
+    APP.ajax('POST', APP.URL.ROOMS + APP.url_args(args), '',
+        callback,
+        error
     );
 };
 
@@ -496,8 +515,7 @@ APP.ajax_post_rooms = function(roomName, callback, error) {
  * Deletes a room
  */
 APP.ajax_delete_rooms_roomId = function(roomId, callback, error) {
-    APP.ajax('DELETE', APP.URL.ROOMS_ROOMID(roomId),
-        '',
+    APP.ajax('DELETE', APP.URL.ROOMS_ROOMID(roomId), '',
         callback,
         error
     );
@@ -515,12 +533,14 @@ APP.ajax_delete_rooms_roomId = function(roomId, callback, error) {
  * Add new item to room
  */
 APP.ajax_post_rooms_roomId_items = function(roomId, itemBrand, itemIP, itemName, itemType, callback, error) {
-    APP.ajax('POST', APP.URL.ROOMS_ROOMID_ITEMS(roomId) + '?' + 
-        APP.API.ITEMS.BRAND + '=' + encodeURIComponent(itemBrand) + '&' + 
-        APP.API.ITEMS.IP + '=' + encodeURIComponent(itemIP) + '&' + 
-        APP.API.ITEMS.NAME + '=' + encodeURIComponent(itemName) + '&' + 
-        APP.API.ITEMS.ITEM_TYPE + '=' + encodeURIComponent(itemType),
-        '',
+    
+    var args = {};
+    args[APP.API.ITEMS.BRAND] = itemBrand;
+    args[APP.API.ITEMS.IP] = itemIP;
+    args[APP.API.ITEMS.NAME] = itemName;
+    args[APP.API.ITEMS.ITEM_TYPE] = itemType;
+        
+    APP.ajax('POST', APP.URL.ROOMS_ROOMID_ITEMS(roomId) + APP.url_args(args), '',
         callback,
         error
     );
@@ -568,6 +588,8 @@ APP.ajax_get_events = function(callback, error) {
         function(json) {
             var obj = APP.unpackToPayload(json);
             APP.data.events = obj[APP.API.EVENTS.RULES];
+            APP.data.retrieved.events = new Date(APP.data.connection.lastSuccess);
+            console.log(APP.data.retrieved.events);
             callback();
         },
         error
@@ -588,15 +610,17 @@ APP.ajax_get_events = function(callback, error) {
  * Adds a new event, with no conditions or actions
  */
 APP.ajax_post_events = function(ruleName, enabled, id, itemType, scope, equivalence, value, callback, error) {
-    APP.ajax('POST', APP.URL.EVENTS + '?' + 
-            APP.API.EVENTS.RULE.RULE_NAME + '=' + encodeURIComponent(ruleName) + '&' +
-            APP.API.EVENTS.RULE.ENABLED + '=' + encodeURIComponent(enabled) + '&' +
-            APP.API.EVENTS.RULE.EVENT.ID + '=' + encodeURIComponent(id) + '&' +
-            APP.API.EVENTS.RULE.EVENT.ITEM_TYPE + '=' + encodeURIComponent(itemType) + '&' +
-            APP.API.EVENTS.RULE.EVENT.SCOPE + '=' + encodeURIComponent(scope) + '&' +
-            APP.API.EVENTS.RULE.EVENT.EQUIVALENCE + '=' + encodeURIComponent(equivalence) + '&' +
-            APP.API.EVENTS.RULE.EVENT.VALUE + '=' + encodeURIComponent(value),
-        '',
+    
+    var args = {};    
+    args[APP.API.EVENTS.RULE.RULE_NAME] = ruleName;
+    args[APP.API.EVENTS.RULE.ENABLED] = enabled;
+    args[APP.API.EVENTS.RULE.EVENT.ID] = id;
+    args[APP.API.EVENTS.RULE.EVENT.ITEM_TYPE] = itemType;
+    args[APP.API.EVENTS.RULE.EVENT.SCOPE] = scope;
+    args[APP.API.EVENTS.RULE.EVENT.EQUIVALENCE] = equivalence;
+    args[APP.API.EVENTS.RULE.EVENT.VALUE] = value;
+    
+    APP.ajax('POST', APP.URL.EVENTS + APP.url_args(args), '',
         callback,
         error
     );
@@ -617,15 +641,17 @@ APP.ajax_post_events = function(ruleName, enabled, id, itemType, scope, equivale
  * Updates a given event. This leaves its events and actions unchanged
  */
 APP.ajax_put_events_eventId = function(eventId, ruleName, enabled, id, itemType, scope, equivalence, value, callback, error) {
-    APP.ajax('PUT', APP.URL.EVENTS_EVENTID(eventId) + '?' + 
-            APP.API.EVENTS.RULE.RULE_NAME + '=' + encodeURIComponent(ruleName) + '&' +
-            APP.API.EVENTS.RULE.ENABLED + '=' + encodeURIComponent(enabled) + '&' +
-            APP.API.EVENTS.RULE.EVENT.ID + '=' + encodeURIComponent(id) + '&' +
-            APP.API.EVENTS.RULE.EVENT.ITEM_TYPE + '=' + encodeURIComponent(itemType) + '&' +
-            APP.API.EVENTS.RULE.EVENT.SCOPE + '=' + encodeURIComponent(scope) + '&' +
-            APP.API.EVENTS.RULE.EVENT.EQUIVALENCE + '=' + encodeURIComponent(equivalence) + '&' +
-            APP.API.EVENTS.RULE.EVENT.VALUE + '=' + encodeURIComponent(value),
-        '',
+
+    var args = {};    
+    args[APP.API.EVENTS.RULE.RULE_NAME] = ruleName;
+    args[APP.API.EVENTS.RULE.ENABLED] = enabled;
+    args[APP.API.EVENTS.RULE.EVENT.ID] = id;
+    args[APP.API.EVENTS.RULE.EVENT.ITEM_TYPE] = itemType;
+    args[APP.API.EVENTS.RULE.EVENT.SCOPE] = scope;
+    args[APP.API.EVENTS.RULE.EVENT.EQUIVALENCE] = equivalence;
+    args[APP.API.EVENTS.RULE.EVENT.VALUE] = value;
+
+    APP.ajax('PUT', APP.URL.EVENTS_EVENTID(eventId) + APP.url_args(args), '',
         callback,
         error
     );
@@ -639,8 +665,7 @@ APP.ajax_put_events_eventId = function(eventId, ruleName, enabled, id, itemType,
  * Deletes the given event
  */
 APP.ajax_delete_events_eventId = function(eventId, callback, error) {
-    APP.ajax('DELETE', APP.URL.EVENTS_EVENTID(eventId),
-        '',
+    APP.ajax('DELETE', APP.URL.EVENTS_EVENTID(eventId), '',
         callback,
         error
     );
@@ -657,11 +682,13 @@ APP.ajax_delete_events_eventId = function(eventId, callback, error) {
  * Adds a new condition to a given event
  */
 APP.ajax_post_events_eventId_conditions = function(eventId, itemId, equivalence, value, callback, error) {
-    APP.ajax('POST', APP.URL.EVENTS_EVENTID_CONDITIONS(eventId) + '?' + 
-            APP.API.EVENTS.RULE.CONDITION.ITEM_ID + '=' + encodeURIComponent(itemId) + '&' + 
-            APP.API.EVENTS.RULE.CONDITION.EQUIVALENCE + '=' + encodeURIComponent(equivalence) + '&' + 
-            APP.API.EVENTS.RULE.CONDITION.VALUE + '=' + encodeURIComponent(value),
-        '',
+    
+    var args = {};
+    args[APP.API.EVENTS.RULE.CONDITION.ITEM_ID] = itemId;
+    args[APP.API.EVENTS.RULE.CONDITION.EQUIVALENCE] = equivalence;
+    args[APP.API.EVENTS.RULE.CONDITION.VALUE] = value;
+
+    APP.ajax('POST', APP.URL.EVENTS_EVENTID_CONDITIONS(eventId) + APP.url_args(args), '',
         callback,
         error
     );
@@ -679,12 +706,13 @@ APP.ajax_post_events_eventId_conditions = function(eventId, itemId, equivalence,
  * Updates a condition in the given event
  */
 APP.ajax_put_events_eventId_conditions_conditionId = function(eventId, conditionId, itemId, equivalence, value, callback, error) {
-    APP.ajax('PUT', APP.URL.EVENTS_EVENTID_CONDITIONS_CONDITIONID(eventId, conditionId) + '?' + 
-            APP.API.EVENTS.RULE.CONDITION.ITEM_ID + '=' + encodeURIComponent(itemId) + '&' + 
-            APP.API.EVENTS.RULE.CONDITION.CONDITION_ID + '=' + encodeURIComponent(conditionId) + '&' + 
-            APP.API.EVENTS.RULE.CONDITION.EQUIVALENCE + '=' + encodeURIComponent(equivalence) + '&' + 
-            APP.API.EVENTS.RULE.CONDITION.VALUE + '=' + encodeURIComponent(value),
-        '',
+    
+    var args = {};
+    args[APP.API.EVENTS.RULE.CONDITION.ITEM_ID] = itemId;
+    args[APP.API.EVENTS.RULE.CONDITION.EQUIVALENCE] = equivalence;
+    args[APP.API.EVENTS.RULE.CONDITION.VALUE] = value;
+        
+    APP.ajax('PUT', APP.URL.EVENTS_EVENTID_CONDITIONS_CONDITIONID(eventId, conditionId) + APP.url_args(args), '',
         callback,
         error
     );
@@ -699,8 +727,7 @@ APP.ajax_put_events_eventId_conditions_conditionId = function(eventId, condition
  * Deletes a condition in the given event
  */
 APP.ajax_delete_events_eventId_conditions_conditionId = function(eventId, conditionId, callback, error) {
-    APP.ajax('DELETE', APP.URL.EVENTS_EVENTID_CONDITIONS_CONDITIONID(eventId, conditionId),
-        '',
+    APP.ajax('DELETE', APP.URL.EVENTS_EVENTID_CONDITIONS_CONDITIONID(eventId, conditionId), '',
         callback,
         error
     );
@@ -718,12 +745,14 @@ APP.ajax_delete_events_eventId_conditions_conditionId = function(eventId, condit
  * Adds a condition to a given event
  */
 APP.ajax_post_events_eventId_actions = function(eventId, id, scope, itemType, method, callback, error) {
-    APP.ajax('POST', APP.URL.EVENTS_EVENTID_ACTIONS(eventId) + '?' + 
-            APP.API.EVENTS.RULE.ACTION.ID + '=' + encodeURIComponent(id) + '&' + 
-            APP.API.EVENTS.RULE.ACTION.SCOPE + '=' + encodeURIComponent(scope) + '&' + 
-            APP.API.EVENTS.RULE.ACTION.ITEM_TYPE + '=' + encodeURIComponent(itemType) + '&' + 
-            APP.API.EVENTS.RULE.ACTION.METHOD + '=' + encodeURIComponent(method),
-        '',
+    
+    var args = {};
+    args[APP.API.EVENTS.RULE.ACTION.ID] = id;
+    args[APP.API.EVENTS.RULE.ACTION.SCOPE] = scope;
+    args[APP.API.EVENTS.RULE.ACTION.ITEM_TYPE] = itemType;
+    args[APP.API.EVENTS.RULE.ACTION.METHOD] = method;
+
+    APP.ajax('POST', APP.URL.EVENTS_EVENTID_ACTIONS(eventId) + APP.url_args(args), '',
         callback,
         error
     );
@@ -742,12 +771,14 @@ APP.ajax_post_events_eventId_actions = function(eventId, id, scope, itemType, me
  * Updates an action in a given event
  */
 APP.ajax_put_events_eventId_actions_actionId = function(eventId, actionId, id, scope, itemType, method, callback, error) {
-    APP.ajax('PUT', APP.URL.EVENTS_EVENTID_ACTIONS_ACTIONID(eventId, actionId) + '?' + 
-            APP.API.EVENTS.RULE.ACTION.ID + '=' + encodeURIComponent(id) + '&' + 
-            APP.API.EVENTS.RULE.ACTION.SCOPE + '=' + encodeURIComponent(scope) + '&' + 
-            APP.API.EVENTS.RULE.ACTION.ITEM_TYPE + '=' + encodeURIComponent(itemType) + '&' + 
-            APP.API.EVENTS.RULE.ACTION.METHOD + '=' + encodeURIComponent(method),
-        '',
+
+    var args = {};
+    args[APP.API.EVENTS.RULE.ACTION.ID] = id;
+    args[APP.API.EVENTS.RULE.ACTION.SCOPE] = scope;
+    args[APP.API.EVENTS.RULE.ACTION.ITEM_TYPE] = itemType;
+    args[APP.API.EVENTS.RULE.ACTION.METHOD] = method;
+
+    APP.ajax('PUT', APP.URL.EVENTS_EVENTID_ACTIONS_ACTIONID(eventId, actionId) + APP.url_args(args), '',
         callback,
         error
     );
@@ -762,8 +793,7 @@ APP.ajax_put_events_eventId_actions_actionId = function(eventId, actionId, id, s
  * Deletes an action in a given event
  */
 APP.ajax_delete_events_eventId_actions_actionId = function(eventId, actionId, callback, error) {
-    APP.ajax('DELETE', APP.URL.EVENTS_EVENTID_ACTIONS_ACTIONID(eventId, actionId),
-        '',
+    APP.ajax('DELETE', APP.URL.EVENTS_EVENTID_ACTIONS_ACTIONID(eventId, actionId), '',
         callback,
         error
     );
@@ -790,9 +820,11 @@ APP.ajax_get_whitelist = function(callback, error) {
  * Adds an email address to the whitelist
  */
 APP.ajax_post_whitelist = function(email, callback, error) {
-    APP.ajax('POST', APP.URL.WHITELIST + '?' + 
-            APP.API.WHITELIST.EMAIL + '=' + encodeURIComponent(email),
-        '',
+
+    var args = {};
+    args[APP.API.WHITELIST.EMAIL] = email;
+
+    APP.ajax('POST', APP.URL.WHITELIST + APP.url_args(args), '',
         callback,
         error
     );
@@ -806,9 +838,11 @@ APP.ajax_post_whitelist = function(email, callback, error) {
  * Deletes an email address from the whitelist
  */
 APP.ajax_delete_whitelist = function(email, callback, error) {
-    APP.ajax('DELETE', APP.URL.WHITELIST + '?' + 
-            APP.API.WHITELIST.EMAIL + '=' + encodeURIComponent(email),
-        '',
+    
+    var args = {};
+    args[APP.API.WHITELIST.EMAIL] = email;
+
+    APP.ajax('DELETE', APP.URL.WHITELIST + APP.url_args(args), '',
         callback,
         error
     );
@@ -3416,7 +3450,7 @@ APP.MenuManager = function(stageManager) {
             }
             this.buttons[stage.menuId].push({buttonId: stage.buttonId, stageId: stage.stageId, data: stage.data});
         } else {
-            console.warn('WARNING: ' + stage.buttonId + ' already exists! Button remapped.');
+            // console.warn('WARNING: ' + stage.buttonId + ' already exists! Button remapped.');
             // console.trace(this);
             button = $('#' + stage.buttonId);
             for(var prop in this.buttons) {
