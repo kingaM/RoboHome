@@ -978,6 +978,9 @@ APP.Stage = function(menuId, buttonId, buttonText, stageId) {
     this.poller = __poller;
     this.colorClass = __colorClass;
     
+    this.isReady = false;
+    this.constructing = false;
+    
     /**
      * @for APP.Stage
      * @property data
@@ -986,6 +989,21 @@ APP.Stage = function(menuId, buttonId, buttonText, stageId) {
      * Data specific to this stage
      */
     this.data = {};
+    
+    /**
+     *
+     */
+    this.ready = function() {
+        this.isReady = true;
+        this.constructing = false;
+    };
+    
+    /**
+     *
+     */
+    this.notReady = function() {
+        this.isReady = false;
+    };
     
     /**
      * @for APP.Stage
@@ -1022,6 +1040,7 @@ APP.Stage = function(menuId, buttonId, buttonText, stageId) {
      * Set this via setConstruct()
      */
     this.construct = function() {
+        self.constructing = true;
         self.contextMenu.construct();
     };
     
@@ -1116,6 +1135,7 @@ APP.Stage.prototype.setConstruct = function(func) {
     this.construct = function() {
         console.log(self.stageId + ' construct() called');
         // console.trace(this);
+        self.constructing = true;
         func();
         self.contextMenu.construct();
     }
@@ -1132,12 +1152,24 @@ APP.Stage.prototype.setConstruct = function(func) {
 APP.Stage.prototype.setTearDown = function(func) {
     var self = this;
     this.tearDown = function() {
+        var interval;
+        function tear() {
+            self.isReady = false;
+            if(interval !== undefined) { window.clearInterval(interval); }
+            self.getContext().html('');
+            self.contextMenu.tearDown();
+            self.poller.stopPolling();
+            func();
+        }
+        
         console.log(self.stageId + ' tearDown() called');
         // console.trace(this);
-        self.getContext().html('');
-        self.contextMenu.tearDown();
-        self.poller.stopPolling();
-        func();
+        if(self.isReady !== true) {
+            console.warn('But stage has not yet finished being constructed! Delaying tearDown() call');
+            interval = window.setInterval(tear, 1000);
+        } else {
+            tear();
+        }
     }
 };
 
@@ -3466,12 +3498,17 @@ APP.MenuManager = function(stageManager) {
                 secondaryButtonSelector = '#wrapper-secondary > ul > li > a';
             
             // toggle clicked button
-            $(this).toggleClass('selected');
-            // toggle sibling buttons
-            $(primaryButtonSelector).not($(this)).removeClass('selected');
-            $(secondaryButtonSelector).not($(this)).removeClass('selected');
-            // toggle stages
-            stageManager.toggleStage(stage.stageId);
+            if(stage.constructing !== true) {
+                $(this).toggleClass('selected');
+                // toggle sibling buttons
+                $(primaryButtonSelector).not($(this)).removeClass('selected');
+                $(secondaryButtonSelector).not($(this)).removeClass('selected');
+                // toggle stages
+                stageManager.toggleStage(stage.stageId);
+            } else {
+                console.warn('Stage ' + stage.stageId + ' is still constructing! Button press ignored');
+                return false;
+            }
         });
     };
     
@@ -3541,6 +3578,7 @@ APP.StageManager = function() {
     };
     
     // menu manager
+    this.stages = stages;
     this.menuManager = new APP.MenuManager(this);
     
     // public methods
@@ -3633,7 +3671,7 @@ APP.StageManager = function() {
             // default
         });
         stage.setConstruct(function() {
-            // default
+            stage.ready();
         });
         stage.setTearDown(function() {
             // default
@@ -3702,6 +3740,7 @@ APP.StageManager = function() {
             box.append(input);
             box.append(button);
             stage.getContext().append(box);
+            stage.ready();
         });
         stage.setTearDown(function() {
             // default
@@ -4104,6 +4143,7 @@ APP.StageManager = function() {
                 }
             }
             stage.poller.startPolling();
+            stage.ready();
         });
         stage.setTearDown(function() {
             // default
@@ -4198,12 +4238,14 @@ APP.StageManager = function() {
                 stageMessage.html('Caution: Connection to server cannot be established. New commands will not be sent to the server. Data being shown is retrieved at ' + APP.data.retrieved.events + '.');
                 stageMessage.addClass(APP.DOM_HOOK.ERROR_MESSAGE_DISPLAY);
                 construct();
+                stage.ready();
             }
             
             function constructWithoutError() {
                 stageMessage.html('');
                 construct();
                 stage.poller.startPolling();
+                stage.ready();
             }
             
             function connectionError() {
@@ -4260,7 +4302,7 @@ APP.StageManager = function() {
             // default
         });
         stage.setConstruct(function() {
-            // default
+            stage.ready();
         });
         stage.setTearDown(function() {
             // default
@@ -4363,6 +4405,7 @@ APP.StageManager = function() {
                     }
                     constructAddForm();
                     
+                    stage.ready();
                 },
                 function() {
                     // do nothing
@@ -4433,7 +4476,7 @@ APP.StageManager = function() {
             // default
         });
         stage.setConstruct(function() {
-            // default
+            stage.ready();
         });
         stage.setTearDown(function() {
             // default
@@ -4466,7 +4509,7 @@ APP.StageManager = function() {
             // default
         });
         stage.setConstruct(function() {
-            // default
+            stage.ready();
         });
         stage.setTearDown(function() {
             // default

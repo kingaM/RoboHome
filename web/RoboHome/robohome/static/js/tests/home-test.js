@@ -14,10 +14,9 @@ $(document).ready(function() {
         APP.windowResizeListener.listen();
         APP.resizer.resizeAll();
         
+        if(APP.runFunctionalityTests) {
+            APP.runFunctionalityTests();
+        }
+        
     });
-    
-    if(APP.runFunctionalityTests) {
-        APP.runFunctionalityTests();
-    }
-    
 });
