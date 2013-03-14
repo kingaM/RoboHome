@@ -6,8 +6,8 @@ WiFiServer server(80);
 MyServer myServer("name", "pass");
 
 void handleCommand(WiFiClient client, char* cmd) {
-    if (strcmp(cmd, "status") == 0) {
-      Serial.println("status");
+    if (strcmp(cmd, "state") == 0) {
+      Serial.println("state");
       myServer.sendStatus(client, "{}");
     } else if (strcmp(cmd, "arm") == 0) {
       Serial.println("arm");

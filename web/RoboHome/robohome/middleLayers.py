@@ -75,8 +75,8 @@ class ArduinoLayer(MiddleLayer):
 
     def checkState(self):
         try:
-            response = requests.get('http://'+self.ip+'/status')
-            return json.loads(response.content)['status']
+            response = requests.get('http://'+self.ip+'/state')
+            return json.loads(response.content)['state']
         except Exception:
             return self.mockState        
 
