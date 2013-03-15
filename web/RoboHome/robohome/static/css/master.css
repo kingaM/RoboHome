@@ -403,20 +403,6 @@ div.stage {
          -o-transition-duration: 0.5s;
 }
 
-@media only screen and (max-width: 1200px) {
-    .stage-content > .entity-display.item-type {
-        width: 41.5%;
-        font-size: 180%;
-    }
-}
-
-@media only screen and (max-width: 600px) {
-    .stage-content > .entity-display.item-type {
-        width: 88%;
-        font-size: 300%;
-    }
-}
-
 .stage-content .entity-display .item {
     cursor: pointer;
     background-color: rgba(0,200,200,0.1);
@@ -606,6 +592,7 @@ div.stage {
 .stage-content .eca-rule input:ms-input-placeholder { #color: rgba(132,169,14,1); }
 
 .stage-content .eca-rule {
+            overflow: auto;
             padding: 0.5em;
             margin: 1em 0.5em;
             border: 1px solid #666666;
@@ -635,6 +622,10 @@ div.stage {
 .stage-content .eca-condition .error-message-display,
 .stage-content .eca-action .error-message-display {
     display: block;
+}
+
+.stage-content .eca-rule-title + div {
+    clear: both;
 }
 
 .stage-content .eca-form-box div {
@@ -920,13 +911,6 @@ div.eca-field-div {
     width: 30%;
 }
 
-@media only screen and (max-width: 1200px) {
-    .whitelist-display {
-        font-size: 2.6em;
-        width: 70%;
-    }
-}
-
 .whitelist-display div {
     padding: 0.4em;
     overflow: auto;
@@ -1198,4 +1182,67 @@ a.yellow.selected,
     background-color: rgba(255,233,21,0.5);
 }
 
+@media only screen and (max-width: 1200px) {
+    .stage-content > .entity-display.item-type {
+        width: 41.5%;
+        font-size: 180%;
+    }
+    .whitelist-display {
+        font-size: 2.6em;
+        width: 70%;
+    }
+}
 
+@media only screen and (max-width: 800px) {
+    .stage-content > .entity-display.item-type {
+        width: 88%;
+        font-size: 300%;
+    }
+    #wrapper-left {
+        display: none;
+    }
+    #wrapper-right {
+        width: 99%;
+    }
+    #wrapper-primary {
+        font-size: 2em;
+    }
+    #wrapper-secondary {
+        font-size: 2em;
+    }
+    .stage {
+        font-size: 1em;
+    }
+    #stage-rules-eca {
+        font-size: 2em;
+    }
+    #stage-whitelist {
+        font-size: 1.5em;
+    }
+}
+
+@media only screen and (max-width: 500px) {
+    #wrapper-primary {
+        font-size: 3em;
+    }
+    #wrapper-secondary {
+        font-size: 3em;
+    }
+    .stage {
+        font-size: 2em;
+    }
+    #stage-rules-eca {
+        font-size: 4em;
+    }
+    .stage-content .eca-rule .eca-form-box {
+        margin-left: 0.5em;
+        min-width: 16.5em;
+    }
+    .stage-content .eca-form-box div {
+        min-width: 60%;
+    }
+    .stage-content .eca-delete {
+        display: inline-block;
+        float: none;
+    }
+}

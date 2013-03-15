@@ -67,6 +67,7 @@ def home():
         # Fetch the base HTML page and scripts
         return render_template('html/home.html')
 
+
 @app.route('/update/', methods=['POST'])
 def update():
     if request.method == 'POST':
@@ -117,6 +118,7 @@ def rooms_roomId(version, roomId):
         # Update room
         args = request.args.to_dict()
         house.updateRoom(roomId, args['name'])
+        return jsonify(pack('success'))
 
     if request.method == 'DELETE':
         # Delete room
@@ -146,6 +148,7 @@ def rooms_roomId_items_itemId(version, roomId, itemId):
         # Request update of state of item
         args = request.args.to_dict()
         house.updateItem(roomId, itemId, args['name'], args['brand'], args['type'], args['ip'])
+        return jsonify(pack('success'))
 
     if request.method == 'DELETE':
         # Remove specified item
@@ -347,20 +350,23 @@ def create_or_login(resp):
         return render_template('html/loginerror.html')
 
 
-##################################
-# For illustration purposes only #
-##################################
-@app.route('/test/version/<string:version>/rooms/<int:roomId>/<string:itemType>/<int:itemId>/<string:action>/', methods=['GET', 'POST'])
-def command(version, roomId, itemType, itemId, action):
-    if request.method == 'POST':
-        #
-        pass
+# Pages handling server-dependent JS unit tests
+@app.route('/test/', methods=['GET'])
+def test():
+    if request.method == 'GET':
+        return render_template('html/tests/home-test.html');
 
-    elif request.method == 'GET':
-        # Test method. To be removed along with method in @app.route
-        strBuffer = str(roomId) + ' ' + itemType + ' ' + str(itemId) + ' ' + action + ' ' + str(request.args.to_dict())
-        print strBuffer
-        return strBuffer
+
+@app.route('/test/parrot/', methods=['GET', 'POST', 'PUT', 'DELETE'])
+def test_parrot():
+        
+    dict = {
+        'method': request.method,
+        'payload': request.data,
+        'args': request.args.to_dict()
+    }
+    
+    return jsonify(dict)
 
 # Run ---------------------------------------------------------------------
 

@@ -1,8 +1,8 @@
-#include <MyServerM.h>
+#include <MyServer.h>
 #include <WiFi.h>
 
 WiFiServer server(80);
-MyServerM myServer("name", "pass");
+MyServer myServer("name", "pass");
 int reedOpenPin = 5;
 int reedClosePin = 6;
 boolean currentOpen = LOW;
@@ -21,16 +21,16 @@ boolean takeHighTime = true;
 int pir1Pin = 2;
 int pir2Pin = 3;
 
-/* Sends status back to the server, depending on the readings
+/* Sends state back to the server, depending on the readings
  * Args:
  * client -- WiFi client to send the respons to
  */
-void getStatus(WiFiClient client) {
+void getState(WiFiClient client) {
   if (currentOpen == 1 && currentClose == 0) {
-    myServer.sendStatus(client, "{status : 1}");
+    myServer.sendStatus(client, "{state : 1}");
   } 
   else {
-    myServer.sendStatus(client, "{status : 0}");
+    myServer.sendStatus(client, "{state : 0}");
   }
 }
 
@@ -70,18 +70,18 @@ void closeDoor() {
  * cmd -- the RESTful command
  */
 void handleCommand(WiFiClient client, char* cmd) {
-  if (strcmp(cmd, "status") == 0) {
+  if (strcmp(cmd, "state") == 0) {
     Serial.println(currentOpen);
     Serial.println(currentClose);
-    getStatus(client);
+    getState(client);
   } 
   else if (strcmp(cmd, "open") == 0) {
     openDoor();
-	getStatus(client);
+	  getState(client);
   }
   else if (strcmp(cmd, "close") == 0) {
     closeDoor();
-	getStatus(client);
+	  getState(client);
   }
   else {
     myServer.send404(client);
@@ -173,10 +173,10 @@ void loop() {
   currentOpen = debounce(reedOpenPin);
   currentClose = debounce(reedClosePin);
   if (currentOpen == 1 && currentClose == 0) {
-    Serial.println("{status : 1}");
+    Serial.println("{state : 1}");
   } 
   else {
-    Serial.println("{status : 0}");
+    Serial.println("{state : 0}");
   }
   pir(pir1Pin);
   pir(pir2Pin);
@@ -184,6 +184,10 @@ void loop() {
   Serial.println(motionDetected);
   if(newMotion && motionDetected) {
     Serial.println("NEW MOTION DETECTED"); 
+    //Stub for future motor integration
+    //openDoor();
+    //delay(100000);
+    //closeDoor();
   }
   newMotion = false;
   delay(1000);

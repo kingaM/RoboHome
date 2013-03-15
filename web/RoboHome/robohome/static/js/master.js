@@ -1,5 +1,7 @@
 /**
- * JavaScript for home automation system prototype
+ * master.js
+ *
+ * JavaScript for Robohome
  * Author: Li Quan Khoo
  * Documentation in YUIDoc format
  *   http://yui.github.com/yuidoc/syntax/index.html
@@ -150,6 +152,7 @@ APP.API.WHITELIST.EMAILS = 'emails';
 // RESTful API URL specification
 // Remember to specify the trailing slash so Flask does not have to redirect
 APP.URL = {};
+
 APP.URL.VERSION = '/version/';
 APP.URL.STATE = '/version/' + APP.CONSTANTS.VERSION + '/state/';
 APP.URL.ROOMS = '/version/' + APP.CONSTANTS.VERSION + '/rooms/';
@@ -182,6 +185,21 @@ APP.URL.EVENTS_EVENTID_ACTIONS_ACTIONID = function(eventId, actionId) {
     return '/version/' + APP.CONSTANTS.VERSION + '/events/' + eventId + '/actions/' + actionId + '/';
 };
 APP.URL.WHITELIST = '/version/' + APP.CONSTANTS.VERSION + '/whitelist/';
+
+APP.url_args = function(obj) {
+    var i = 0,
+        str = '',
+        arg;
+    for(var property in obj) {
+        if(obj.hasOwnProperty(property)) {
+            if(i === 0) { str += '?' } else { str += '&' }
+            arg = property + '=' + encodeURIComponent(obj[property]);
+            str += arg;
+            i++;
+        }
+    }
+    return str
+};
 
 // ---------------------------------------------------------------------
 // Data structures
@@ -216,7 +234,7 @@ APP.Map = function() {
 /**
  * @for APP.Map
  * @method hash
- * @param {any} value Any object or primitive to be hashed
+ * @param {Object | Function | string | number} value Any object or primitive to be hashed. In particular, anything that has a valid .toString() call
  * @return {String} hash of given value
  * Hash function from
  * http://stackoverflow.com/questions/368280/javascript-hashmap-equivalent
@@ -241,7 +259,7 @@ APP.Map.prototype.clear = function() {
 /**
  * @for APP.Map
  * @method put
- * @param {any} key Key
+ * @param {Object | Function | string | number} key Any object or primitive to be hashed. In particular, anything that has a valid .toString() call
  * @param {any} value Value
  * Adds a key-value pair to the hashmap
  */
@@ -258,7 +276,7 @@ APP.Map.prototype.put = function(key, value) {
 /**
  * @for APP.Map
  * @method remove
- * @param {any} key Key of entry to remove
+ * @param {Object | Function | string | number} key Key of value to be removed
  * Remove an entry from the hashmap
  */
 APP.Map.prototype.remove = function(key) {
@@ -275,8 +293,8 @@ APP.Map.prototype.remove = function(key) {
 /**
  * @for APP.Map
  * @method get
- * @param {any} key Key of entry to retrieve
- * @return {any} Value of key
+ * @param {Object | Function | string | number} key Key to be retrieved
+ * @return {any} Value of specified key
  * Retrieve the value of the specified key in the hashmap
  */
 APP.Map.prototype.get = function(key) {
@@ -311,7 +329,7 @@ APP.Map.prototype.getAll = function() {
 APP.Map.prototype.getKeys = function() {
     var hash,
         itemList = [];
-    for(var item in this.items) {
+    for(var item in this.__items) {
         itemList.push(item);
     }
     return itemList;
@@ -329,6 +347,7 @@ APP.data = {
         lastNoSuccess: undefined
     },
     retrieved: { // stores Date objects marking the age of AJAX-retrieved data
+        version: undefined,
         houseStructure: undefined,
         events: undefined
     },
@@ -362,7 +381,7 @@ APP.pack = function(payload) {
  * Packs given object into JSON string in API message format
  */
 APP.packToJSON = function(payload) {
-    return JSON.stringify(APP.pack(payload))
+    return JSON.stringify(APP.pack(payload));
 };
 
 /**
@@ -463,7 +482,7 @@ APP.ajax_get_version = function(callback, error) {
         function(json) {
             var obj = APP.unpackToPayload(json);
             APP.data.cache = obj;
-            APP.data.retrieved.events = new Date(APP.data.connection.lastSuccess);
+            APP.data.retrieved.version = new Date(APP.data.connection.lastSuccess);
             callback();
         },
         error
@@ -478,11 +497,13 @@ APP.ajax_get_version = function(callback, error) {
  * Adds a new room
  */
 APP.ajax_post_rooms = function(roomName, callback, error) {
-    APP.ajax('POST', APP.URL.ROOMS + '?' + 
-    APP.API.ROOMS.NAME + '=' + encodeURIComponent(roomName),
-    '',
-    callback,
-    error
+    
+    var args = {};
+    args[APP.API.ROOMS.NAME] = roomName;
+    
+    APP.ajax('POST', APP.URL.ROOMS + APP.url_args(args), '',
+        callback,
+        error
     );
 };
 
@@ -491,12 +512,12 @@ APP.ajax_post_rooms = function(roomName, callback, error) {
  * @param {int} roomId          RoomId
  * @param {Function} callback   Callback function to execute after response is received
  * @param {Function} error      Function to execute if AJAX request fails
+ * Deletes a room
  */
 APP.ajax_delete_rooms_roomId = function(roomId, callback, error) {
-    APP.ajax('DELETE', APP.URL.ROOMS_ROOMID(roomId),
-    '',
-    callback,
-    error
+    APP.ajax('DELETE', APP.URL.ROOMS_ROOMID(roomId), '',
+        callback,
+        error
     );
 };
 
@@ -512,12 +533,14 @@ APP.ajax_delete_rooms_roomId = function(roomId, callback, error) {
  * Add new item to room
  */
 APP.ajax_post_rooms_roomId_items = function(roomId, itemBrand, itemIP, itemName, itemType, callback, error) {
-    APP.ajax('POST', APP.URL.ROOMS_ROOMID_ITEMS(roomId) + '?' + 
-        APP.API.ITEMS.BRAND + '=' + encodeURIComponent(itemBrand) + '&' + 
-        APP.API.ITEMS.IP + '=' + encodeURIComponent(itemIP) + '&' + 
-        APP.API.ITEMS.NAME + '=' + encodeURIComponent(itemName) + '&' + 
-        APP.API.ITEMS.ITEM_TYPE + '=' + encodeURIComponent(itemType),
-        '',
+    
+    var args = {};
+    args[APP.API.ITEMS.BRAND] = itemBrand;
+    args[APP.API.ITEMS.IP] = itemIP;
+    args[APP.API.ITEMS.NAME] = itemName;
+    args[APP.API.ITEMS.ITEM_TYPE] = itemType;
+        
+    APP.ajax('POST', APP.URL.ROOMS_ROOMID_ITEMS(roomId) + APP.url_args(args), '',
         callback,
         error
     );
@@ -540,11 +563,11 @@ APP.ajax_delete_rooms_roomId_items_itemId = function(roomId, itemId, callback, e
 
 /**
  * @method APP.ajax_put_rooms_roomId_items_itemId_cmd
- * @param {int} roomId        ID of room
- * @param {int} itemId        ID of item
- * @param {String} cmd        Command to send to the item
- * @param {Function} callback Callback function to execute after response is received
- * @param {Function} error    Function to execute if AJAX request fails
+ * @param {int} roomId          ID of room
+ * @param {int} itemId          ID of item
+ * @param {String} cmd          Command to send to the item
+ * @param {Function} callback   Callback function to execute after response is received
+ * @param {Function} error      Function to execute if AJAX request fails
  * Updates the specified item in the room with the new state
  */
 APP.ajax_put_rooms_roomId_items_itemId_cmd = function(roomId, itemId, cmd, callback, error) {
@@ -555,13 +578,18 @@ APP.ajax_put_rooms_roomId_items_itemId_cmd = function(roomId, itemId, cmd, callb
 }
 
 /**
- *
+ * @method APP.ajax_get_events
+ * @param {Function} callback   Callback function to execute after response is received
+ * @param {Function} error      Function to execute if AJAX request fails
+ * Gets list of events
  */
 APP.ajax_get_events = function(callback, error) {
     APP.ajax('GET', APP.URL.EVENTS, '',
         function(json) {
             var obj = APP.unpackToPayload(json);
             APP.data.events = obj[APP.API.EVENTS.RULES];
+            APP.data.retrieved.events = new Date(APP.data.connection.lastSuccess);
+            console.log(APP.data.retrieved.events);
             callback();
         },
         error
@@ -569,130 +597,205 @@ APP.ajax_get_events = function(callback, error) {
 };
 
 /**
- *
+ * @method APP.ajax_post_events
+ * @param {string} ruleName     Name of rule
+ * @param {string} enabled      'true' or 'false', whether the rule is enabled or not
+ * @param {int} id              Id of scope, either itemId or roomId or 'null', depending on scope
+ * @param {string} itemType     Type of item
+ * @param {string} scope        Scope code, either 'item', 'room', or 'house'
+ * @param {string} equivalence  Equivalence
+ * @param {int} value           Triggering state for given itemType
+ * @param {Function} callback   Callback function to execute after response is received
+ * @param {Function} error      Function to execute if AJAX request fails
+ * Adds a new event, with no conditions or actions
  */
 APP.ajax_post_events = function(ruleName, enabled, id, itemType, scope, equivalence, value, callback, error) {
-    APP.ajax('POST', APP.URL.EVENTS + '?' + 
-        APP.API.EVENTS.RULE.RULE_NAME + '=' + encodeURIComponent(ruleName) + '&' +
-        APP.API.EVENTS.RULE.ENABLED + '=' + encodeURIComponent(enabled) + '&' +
-        APP.API.EVENTS.RULE.EVENT.ID + '=' + encodeURIComponent(id) + '&' +
-        APP.API.EVENTS.RULE.EVENT.ITEM_TYPE + '=' + encodeURIComponent(itemType) + '&' +
-        APP.API.EVENTS.RULE.EVENT.SCOPE + '=' + encodeURIComponent(scope) + '&' +
-        APP.API.EVENTS.RULE.EVENT.EQUIVALENCE + '=' + encodeURIComponent(equivalence) + '&' +
-        APP.API.EVENTS.RULE.EVENT.VALUE + '=' + encodeURIComponent(value),
-        '',
+    
+    var args = {};    
+    args[APP.API.EVENTS.RULE.RULE_NAME] = ruleName;
+    args[APP.API.EVENTS.RULE.ENABLED] = enabled;
+    args[APP.API.EVENTS.RULE.EVENT.ID] = id;
+    args[APP.API.EVENTS.RULE.EVENT.ITEM_TYPE] = itemType;
+    args[APP.API.EVENTS.RULE.EVENT.SCOPE] = scope;
+    args[APP.API.EVENTS.RULE.EVENT.EQUIVALENCE] = equivalence;
+    args[APP.API.EVENTS.RULE.EVENT.VALUE] = value;
+    
+    APP.ajax('POST', APP.URL.EVENTS + APP.url_args(args), '',
         callback,
         error
     );
 };
 
 /**
- *
+ * @method APP.ajax_put_events_eventId
+ * @param {int} eventId         Id of event
+ * @param {string} ruleName     Name of rule
+ * @param {string} enabled      'true' or 'false', whether the rule is enabled or not
+ * @param {int} id              Id of scope, either itemId or roomId or 'null', depending on scope
+ * @param {string} itemType     Type of item
+ * @param {string} scope        Scope code, either 'item', 'room', or 'house'
+ * @param {string} equivalence  Equivalence
+ * @param {int} value           Triggering state for given itemType
+ * @param {Function} callback   Callback function to execute after response is received
+ * @param {Function} error      Function to execute if AJAX request fails
+ * Updates a given event. This leaves its events and actions unchanged
  */
 APP.ajax_put_events_eventId = function(eventId, ruleName, enabled, id, itemType, scope, equivalence, value, callback, error) {
-    APP.ajax('PUT', APP.URL.EVENTS_EVENTID(eventId) + '?' + 
-        APP.API.EVENTS.RULE.RULE_NAME + '=' + encodeURIComponent(ruleName) + '&' +
-        APP.API.EVENTS.RULE.ENABLED + '=' + encodeURIComponent(enabled) + '&' +
-        APP.API.EVENTS.RULE.EVENT.ID + '=' + encodeURIComponent(id) + '&' +
-        APP.API.EVENTS.RULE.EVENT.ITEM_TYPE + '=' + encodeURIComponent(itemType) + '&' +
-        APP.API.EVENTS.RULE.EVENT.SCOPE + '=' + encodeURIComponent(scope) + '&' +
-        APP.API.EVENTS.RULE.EVENT.EQUIVALENCE + '=' + encodeURIComponent(equivalence) + '&' +
-        APP.API.EVENTS.RULE.EVENT.VALUE + '=' + encodeURIComponent(value),
-        '',
+
+    var args = {};    
+    args[APP.API.EVENTS.RULE.RULE_NAME] = ruleName;
+    args[APP.API.EVENTS.RULE.ENABLED] = enabled;
+    args[APP.API.EVENTS.RULE.EVENT.ID] = id;
+    args[APP.API.EVENTS.RULE.EVENT.ITEM_TYPE] = itemType;
+    args[APP.API.EVENTS.RULE.EVENT.SCOPE] = scope;
+    args[APP.API.EVENTS.RULE.EVENT.EQUIVALENCE] = equivalence;
+    args[APP.API.EVENTS.RULE.EVENT.VALUE] = value;
+
+    APP.ajax('PUT', APP.URL.EVENTS_EVENTID(eventId) + APP.url_args(args), '',
         callback,
         error
     );
 };
 
 /**
- *
+ * @method APP.ajax_delete_events_eventId
+ * @param {int} eventId         Id of event  
+ * @param {Function} callback   Callback function to execute after response is received
+ * @param {Function} error      Function to execute if AJAX request fails
+ * Deletes the given event
  */
 APP.ajax_delete_events_eventId = function(eventId, callback, error) {
-    APP.ajax('DELETE', APP.URL.EVENTS_EVENTID(eventId),
-    '',
-    callback,
-    error
+    APP.ajax('DELETE', APP.URL.EVENTS_EVENTID(eventId), '',
+        callback,
+        error
     );
 };
 
 /**
- *
+ * @method APP.ajax_post_events_eventId_conditions
+ * @param {int} eventId         Id of event
+ * @param {int} itemId          Id of item
+ * @param {string} equivalence  Equivalence
+ * @param {int} value           Triggering state for given itemType
+ * @param {Function} callback   Callback function to execute after response is received
+ * @param {Function} error      Function to execute if AJAX request fails
+ * Adds a new condition to a given event
  */
 APP.ajax_post_events_eventId_conditions = function(eventId, itemId, equivalence, value, callback, error) {
-    APP.ajax('POST', APP.URL.EVENTS_EVENTID_CONDITIONS(eventId) + '?' + 
-    APP.API.EVENTS.RULE.CONDITION.ITEM_ID + '=' + encodeURIComponent(itemId) + '&' + 
-    APP.API.EVENTS.RULE.CONDITION.EQUIVALENCE + '=' + encodeURIComponent(equivalence) + '&' + 
-    APP.API.EVENTS.RULE.CONDITION.VALUE + '=' + encodeURIComponent(value),
-    '',
-    callback,
-    error
+    
+    var args = {};
+    args[APP.API.EVENTS.RULE.CONDITION.ITEM_ID] = itemId;
+    args[APP.API.EVENTS.RULE.CONDITION.EQUIVALENCE] = equivalence;
+    args[APP.API.EVENTS.RULE.CONDITION.VALUE] = value;
+
+    APP.ajax('POST', APP.URL.EVENTS_EVENTID_CONDITIONS(eventId) + APP.url_args(args), '',
+        callback,
+        error
     );
 };
 
 /**
- *
+ * @method APP.ajax_put_events_eventId_conditions_conditionId
+ * @param {int} eventId         Id of event
+ * @param {int} conditionId     Id of condition
+ * @param {int} itemId          Id of item
+ * @param {string} equivalence  Equivalence
+ * @param {int} value           Triggering state for given item
+ * @param {Function} callback   Callback function to execute after response is received
+ * @param {Function} error      Function to execute if AJAX request fails
+ * Updates a condition in the given event
  */
 APP.ajax_put_events_eventId_conditions_conditionId = function(eventId, conditionId, itemId, equivalence, value, callback, error) {
-    APP.ajax('PUT', APP.URL.EVENTS_EVENTID_CONDITIONS_CONDITIONID(eventId, conditionId) + '?' + 
-    APP.API.EVENTS.RULE.CONDITION.ITEM_ID + '=' + encodeURIComponent(itemId) + '&' + 
-    APP.API.EVENTS.RULE.CONDITION.CONDITION_ID + '=' + encodeURIComponent(conditionId) + '&' + 
-    APP.API.EVENTS.RULE.CONDITION.EQUIVALENCE + '=' + encodeURIComponent(equivalence) + '&' + 
-    APP.API.EVENTS.RULE.CONDITION.VALUE + '=' + encodeURIComponent(value),
-    '',
-    callback,
-    error
+    
+    var args = {};
+    args[APP.API.EVENTS.RULE.CONDITION.ITEM_ID] = itemId;
+    args[APP.API.EVENTS.RULE.CONDITION.EQUIVALENCE] = equivalence;
+    args[APP.API.EVENTS.RULE.CONDITION.VALUE] = value;
+        
+    APP.ajax('PUT', APP.URL.EVENTS_EVENTID_CONDITIONS_CONDITIONID(eventId, conditionId) + APP.url_args(args), '',
+        callback,
+        error
     );
 };
 
 /**
- *
+ * @method APP.ajax_delete_events_eventId_conditions_conditionId
+ * @param {int} eventId         Id of event
+ * @param {int} conditionId     Id of condition
+ * @param {Function} callback   Callback function to execute after response is received
+ * @param {Function} error      Function to execute if AJAX request fails
+ * Deletes a condition in the given event
  */
 APP.ajax_delete_events_eventId_conditions_conditionId = function(eventId, conditionId, callback, error) {
-    APP.ajax('DELETE', APP.URL.EVENTS_EVENTID_CONDITIONS_CONDITIONID(eventId, conditionId),
-    '',
-    callback,
-    error
+    APP.ajax('DELETE', APP.URL.EVENTS_EVENTID_CONDITIONS_CONDITIONID(eventId, conditionId), '',
+        callback,
+        error
     );
 }
 
 /**
- *
+ * @method APP.ajax_post_events_eventId_actions
+ * @param {int} eventId         Id of event
+ * @param {int} id              Id of scope, either itemId or roomId or 'null', depending on scope
+ * @param {string} scope        Scope code, either 'item', 'room', or 'house'       
+ * @param {string} itemType     itemType
+ * @param {string} method       Method to execute for the given itemType
+ * @param {Function} callback   Callback function to execute after response is received
+ * @param {Function} error      Function to execute if AJAX request fails
+ * Adds a condition to a given event
  */
 APP.ajax_post_events_eventId_actions = function(eventId, id, scope, itemType, method, callback, error) {
-    APP.ajax('POST', APP.URL.EVENTS_EVENTID_ACTIONS(eventId) + '?' + 
-    APP.API.EVENTS.RULE.ACTION.ID + '=' + encodeURIComponent(id) + '&' + 
-    APP.API.EVENTS.RULE.ACTION.SCOPE + '=' + encodeURIComponent(scope) + '&' + 
-    APP.API.EVENTS.RULE.ACTION.ITEM_TYPE + '=' + encodeURIComponent(itemType) + '&' + 
-    APP.API.EVENTS.RULE.ACTION.METHOD + '=' + encodeURIComponent(method),
-    '',
-    callback,
-    error
+    
+    var args = {};
+    args[APP.API.EVENTS.RULE.ACTION.ID] = id;
+    args[APP.API.EVENTS.RULE.ACTION.SCOPE] = scope;
+    args[APP.API.EVENTS.RULE.ACTION.ITEM_TYPE] = itemType;
+    args[APP.API.EVENTS.RULE.ACTION.METHOD] = method;
+
+    APP.ajax('POST', APP.URL.EVENTS_EVENTID_ACTIONS(eventId) + APP.url_args(args), '',
+        callback,
+        error
     );
 };
 
 /**
- *
+ * @method APP.ajax_put_events_eventId_actions_actionId
+ * @param {int} eventId         Id of event
+ * @param {int} actionId        Id of action
+ * @param {int} id              Id of scope, either itemId or roomId or 'null', depending on scope           
+ * @param {string} scope        Scope code, either 'item', 'room', or 'house'
+ * @param {string} itemType     itemType
+ * @param {string} method       Method to execute for the given itemType
+ * @param {Function} callback   Callback function to execute after response is received
+ * @param {Function} error      Function to execute if AJAX request fails
+ * Updates an action in a given event
  */
 APP.ajax_put_events_eventId_actions_actionId = function(eventId, actionId, id, scope, itemType, method, callback, error) {
-    APP.ajax('PUT', APP.URL.EVENTS_EVENTID_ACTIONS_ACTIONID(eventId, actionId) + '?' + 
-    APP.API.EVENTS.RULE.ACTION.ID + '=' + encodeURIComponent(id) + '&' + 
-    APP.API.EVENTS.RULE.ACTION.SCOPE + '=' + encodeURIComponent(scope) + '&' + 
-    APP.API.EVENTS.RULE.ACTION.ITEM_TYPE + '=' + encodeURIComponent(itemType) + '&' + 
-    APP.API.EVENTS.RULE.ACTION.METHOD + '=' + encodeURIComponent(method),
-    '',
-    callback,
-    error
+
+    var args = {};
+    args[APP.API.EVENTS.RULE.ACTION.ID] = id;
+    args[APP.API.EVENTS.RULE.ACTION.SCOPE] = scope;
+    args[APP.API.EVENTS.RULE.ACTION.ITEM_TYPE] = itemType;
+    args[APP.API.EVENTS.RULE.ACTION.METHOD] = method;
+
+    APP.ajax('PUT', APP.URL.EVENTS_EVENTID_ACTIONS_ACTIONID(eventId, actionId) + APP.url_args(args), '',
+        callback,
+        error
     );
 };
 
 /**
- *
+ * @method APP.ajax_delete_events_eventId_actions_actionId
+ * @param {int} eventId         Id of event
+ * @param {int} actionId        Id of action
+ * @param {Function} callback   Callback function to execute after response is received
+ * @param {Function} error      Function to execute if AJAX request fails
+ * Deletes an action in a given event
  */
 APP.ajax_delete_events_eventId_actions_actionId = function(eventId, actionId, callback, error) {
-    APP.ajax('DELETE', APP.URL.EVENTS_EVENTID_ACTIONS_ACTIONID(eventId, actionId),
-    '',
-    callback,
-    error
+    APP.ajax('DELETE', APP.URL.EVENTS_EVENTID_ACTIONS_ACTIONID(eventId, actionId), '',
+        callback,
+        error
     );
 };
 
@@ -704,8 +807,8 @@ APP.ajax_delete_events_eventId_actions_actionId = function(eventId, actionId, ca
  */
 APP.ajax_get_whitelist = function(callback, error) {
     APP.ajax('GET', APP.URL.WHITELIST, '',
-    callback,
-    error
+        callback,
+        error
     );
 };
 
@@ -717,11 +820,13 @@ APP.ajax_get_whitelist = function(callback, error) {
  * Adds an email address to the whitelist
  */
 APP.ajax_post_whitelist = function(email, callback, error) {
-    APP.ajax('POST', APP.URL.WHITELIST + '?' + 
-    APP.API.WHITELIST.EMAIL + '=' + encodeURIComponent(email),
-    '',
-    callback,
-    error
+
+    var args = {};
+    args[APP.API.WHITELIST.EMAIL] = email;
+
+    APP.ajax('POST', APP.URL.WHITELIST + APP.url_args(args), '',
+        callback,
+        error
     );
 };
 
@@ -733,11 +838,13 @@ APP.ajax_post_whitelist = function(email, callback, error) {
  * Deletes an email address from the whitelist
  */
 APP.ajax_delete_whitelist = function(email, callback, error) {
-    APP.ajax('DELETE', APP.URL.WHITELIST + '?' + 
-    APP.API.WHITELIST.EMAIL + '=' + encodeURIComponent(email),
-    '',
-    callback,
-    error
+    
+    var args = {};
+    args[APP.API.WHITELIST.EMAIL] = email;
+
+    APP.ajax('DELETE', APP.URL.WHITELIST + APP.url_args(args), '',
+        callback,
+        error
     );
 };
 
@@ -871,6 +978,9 @@ APP.Stage = function(menuId, buttonId, buttonText, stageId) {
     this.poller = __poller;
     this.colorClass = __colorClass;
     
+    this.isReady = false;
+    this.constructing = false;
+    
     /**
      * @for APP.Stage
      * @property data
@@ -879,6 +989,21 @@ APP.Stage = function(menuId, buttonId, buttonText, stageId) {
      * Data specific to this stage
      */
     this.data = {};
+    
+    /**
+     *
+     */
+    this.ready = function() {
+        this.isReady = true;
+        this.constructing = false;
+    };
+    
+    /**
+     *
+     */
+    this.notReady = function() {
+        this.isReady = false;
+    };
     
     /**
      * @for APP.Stage
@@ -915,6 +1040,7 @@ APP.Stage = function(menuId, buttonId, buttonText, stageId) {
      * Set this via setConstruct()
      */
     this.construct = function() {
+        self.constructing = true;
         self.contextMenu.construct();
     };
     
@@ -1009,6 +1135,7 @@ APP.Stage.prototype.setConstruct = function(func) {
     this.construct = function() {
         console.log(self.stageId + ' construct() called');
         // console.trace(this);
+        self.constructing = true;
         func();
         self.contextMenu.construct();
     }
@@ -1025,12 +1152,24 @@ APP.Stage.prototype.setConstruct = function(func) {
 APP.Stage.prototype.setTearDown = function(func) {
     var self = this;
     this.tearDown = function() {
+        var interval;
+        function tear() {
+            self.isReady = false;
+            if(interval !== undefined) { window.clearInterval(interval); }
+            self.getContext().html('');
+            self.contextMenu.tearDown();
+            self.poller.stopPolling();
+            func();
+        }
+        
         console.log(self.stageId + ' tearDown() called');
         // console.trace(this);
-        self.getContext().html('');
-        self.contextMenu.tearDown();
-        self.poller.stopPolling();
-        func();
+        if(self.isReady !== true) {
+            console.warn('But stage has not yet finished being constructed! Delaying tearDown() call');
+            interval = window.setInterval(tear, 1000);
+        } else {
+            tear();
+        }
     }
 };
 
@@ -3343,7 +3482,7 @@ APP.MenuManager = function(stageManager) {
             }
             this.buttons[stage.menuId].push({buttonId: stage.buttonId, stageId: stage.stageId, data: stage.data});
         } else {
-            console.warn('WARNING: ' + stage.buttonId + ' already exists! Button remapped.');
+            // console.warn('WARNING: ' + stage.buttonId + ' already exists! Button remapped.');
             // console.trace(this);
             button = $('#' + stage.buttonId);
             for(var prop in this.buttons) {
@@ -3359,12 +3498,17 @@ APP.MenuManager = function(stageManager) {
                 secondaryButtonSelector = '#wrapper-secondary > ul > li > a';
             
             // toggle clicked button
-            $(this).toggleClass('selected');
-            // toggle sibling buttons
-            $(primaryButtonSelector).not($(this)).removeClass('selected');
-            $(secondaryButtonSelector).not($(this)).removeClass('selected');
-            // toggle stages
-            stageManager.toggleStage(stage.stageId);
+            if(stage.constructing !== true) {
+                $(this).toggleClass('selected');
+                // toggle sibling buttons
+                $(primaryButtonSelector).not($(this)).removeClass('selected');
+                $(secondaryButtonSelector).not($(this)).removeClass('selected');
+                // toggle stages
+                stageManager.toggleStage(stage.stageId);
+            } else {
+                console.warn('Stage ' + stage.stageId + ' is still constructing! Button press ignored');
+                return false;
+            }
         });
     };
     
@@ -3434,6 +3578,7 @@ APP.StageManager = function() {
     };
     
     // menu manager
+    this.stages = stages;
     this.menuManager = new APP.MenuManager(this);
     
     // public methods
@@ -3526,7 +3671,7 @@ APP.StageManager = function() {
             // default
         });
         stage.setConstruct(function() {
-            // default
+            stage.ready();
         });
         stage.setTearDown(function() {
             // default
@@ -3595,6 +3740,7 @@ APP.StageManager = function() {
             box.append(input);
             box.append(button);
             stage.getContext().append(box);
+            stage.ready();
         });
         stage.setTearDown(function() {
             // default
@@ -3997,6 +4143,7 @@ APP.StageManager = function() {
                 }
             }
             stage.poller.startPolling();
+            stage.ready();
         });
         stage.setTearDown(function() {
             // default
@@ -4091,12 +4238,14 @@ APP.StageManager = function() {
                 stageMessage.html('Caution: Connection to server cannot be established. New commands will not be sent to the server. Data being shown is retrieved at ' + APP.data.retrieved.events + '.');
                 stageMessage.addClass(APP.DOM_HOOK.ERROR_MESSAGE_DISPLAY);
                 construct();
+                stage.ready();
             }
             
             function constructWithoutError() {
                 stageMessage.html('');
                 construct();
                 stage.poller.startPolling();
+                stage.ready();
             }
             
             function connectionError() {
@@ -4153,7 +4302,7 @@ APP.StageManager = function() {
             // default
         });
         stage.setConstruct(function() {
-            // default
+            stage.ready();
         });
         stage.setTearDown(function() {
             // default
@@ -4256,6 +4405,7 @@ APP.StageManager = function() {
                     }
                     constructAddForm();
                     
+                    stage.ready();
                 },
                 function() {
                     // do nothing
@@ -4326,7 +4476,7 @@ APP.StageManager = function() {
             // default
         });
         stage.setConstruct(function() {
-            // default
+            stage.ready();
         });
         stage.setTearDown(function() {
             // default
@@ -4359,7 +4509,7 @@ APP.StageManager = function() {
             // default
         });
         stage.setConstruct(function() {
-            // default
+            stage.ready();
         });
         stage.setTearDown(function() {
             // default
@@ -4508,6 +4658,7 @@ APP.clock = {
     /**
      * @for APP.clock
      * @method getCurrentDate
+     * @return {Date} current date object
      * returns the current date object
      */
     getCurrentDate: function() {
@@ -4517,7 +4668,7 @@ APP.clock = {
     /**
      * @for APP.clock
      * @method getTimestamp
-     * @param {Date} dateInput Input Date object. If not defined, this method uses the current date
+     * @param {Date | undefined} dateInput Input Date object. If not defined, this method uses the current date
      * @return {String} String formatted to represent current time, from hours to milliseconds
      */
     getTimestamp: function(dateInput) {
@@ -4665,22 +4816,3 @@ APP.resizer = {
     */
 };
 
-$(document).ready(function() {
-    
-    APP.ajax_get_version(function() {
-        // Instantiate manager objects
-        APP.data.stageManager = new APP.StageManager();
-        
-        // Initialize UI menus and stages
-        APP.data.stageManager.init();
-        
-        // Start clock
-        APP.clock.startClock();
-        
-        // Listen to size changes
-        APP.windowResizeListener.listen();
-        APP.resizer.resizeAll();
-        
-    });
-        
-});
