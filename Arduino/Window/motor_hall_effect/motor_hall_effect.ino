@@ -13,7 +13,7 @@ void setup() {
   pinMode(ledPin, OUTPUT);      
   // initialize the hall effect sensor pin as an input:
   pinMode(hallPin, INPUT);
-  motor.setSpeed(10);
+  motor.setSpeed(100);
 }
 
 void loop(){
