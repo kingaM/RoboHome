@@ -6,7 +6,7 @@
  * Author: Li Quan Khoo
  */
 
-APP.URL.PARROT = '/test/parrot/'
+APP.URL.PARROT = '/test/parrot/';
 
 /**
  * @method
@@ -14,13 +14,12 @@ APP.URL.PARROT = '/test/parrot/'
  * Runs the whole suite of tests. Make sure the UI has been wholly set up
  *   before calling this function
  */
-APP.runFunctionalityTests = function() {
+(function() {
     
     /* AJAX calls */
     (function() {
-        module('AJAX calls');
         
-        /* static metohd APP.ajax (success) */
+        /* static method APP.ajax (success) */
         (function() {
             var obj,
                 method = 'GET',
@@ -31,13 +30,15 @@ APP.runFunctionalityTests = function() {
                 function(json) {
                     obj = APP.unpack(json);
                     delete obj.args['_'];
+                    module('AJAX calls');
                     test('static method APP.ajax (success)', function() {
                         equal(obj.method, method, 'Method matches');
                         deepEqual(obj.args, args, 'Arguments match');
                         notEqual(lastSuccess, APP.data.connection.lastSuccess, 'APP.data.connection.lastSuccess updated');
                     });
                 },
-                function() {}
+                function() {},
+                false // synchronous call
             );
         })();
         
@@ -51,7 +52,8 @@ APP.runFunctionalityTests = function() {
                     test('static method APP.ajax (failure)', function() {
                         notEqual(lastNoSuccess, APP.data.connection.lastNoSuccess, 'APP.data.connection.lastNoSuccess updated');
                     });
-                }
+                },
+                false // synchronous call
             );
         })();
         
@@ -65,7 +67,8 @@ APP.runFunctionalityTests = function() {
                         notEqual(retrieved, APP.data.retrieved.houseStructure, 'APP.data.retrieved.houseStructure updated');
                     });
                 },
-                function() {}
+                function() {},
+                false // synchronous call
             );
         })();
         
@@ -78,7 +81,8 @@ APP.runFunctionalityTests = function() {
                         notEqual(retrieved, APP.data.retrieved.version, 'APP.data.retrieved.version updated');
                     });
                 },
-                function() {}
+                function() {},
+                false // synchronous call
             );
         })();
         
@@ -91,7 +95,8 @@ APP.runFunctionalityTests = function() {
                         notEqual(retrieved, APP.data.retrieved.events, 'APP.data.retrieved.events updated');
                     });
                 },
-                function() {}
+                function() {},
+                false  // synchronous call
             );
         })();
         
@@ -102,120 +107,122 @@ APP.runFunctionalityTests = function() {
     /* APP.StageManager */
     (function() {
         module('APP.StageManager');
-
-        test('Home button', function() {
-            var buttonId = 'button-home',
-                stageId = 'stage-home';
-                
-            equal($('#' + buttonId).length, 1, 'Button exists');
-            equal($('#' + stageId).length, 1, 'Stage exists');
-            ok(! $('#' + stageId).hasClass('active'), 'Stage is not active when set up');
-            $('#' + buttonId).click();
-            ok($('#' + stageId).hasClass('active'), 'Stage becomes active when button clicked');
-            $('#' + buttonId).click();
-            ok(! $('#' + stageId).hasClass('active'), 'Stage goes inactive when button clicked again');
-        });
         
-        test('Control button', function() {
-            var buttonId = 'button-control',
-                menuId = 'menu-control';
+        var timings = [0, 10, 30, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000],
+            maxTime = 1000;
+        
+        function primaryButtonTest(buttonId, stageId) {
+            
+            this.assertActive = function(pos) {
+                var self = this,
+                    timePos = pos || 0;
+                $('#' + buttonId).click();
+                if($('#' + stageId).hasClass('active')) {
+                    ok(true, 'Click event - Dependant (' + stageId + ') is active (' + timings[timePos] + 'ms)');
+                } else {
+                    ok(true, 'Click event - Dependant (' + stageId + ') is not ready (' + timings[timePos] + 'ms)');
+                    if(timings[timePos] <= maxTime) {
+                        window.setTimeout(self.assertActive(timePos + 1), timings[timePos + 1] - timings[timePos]);
+                    } else {
+                        ok(false, 'Click event - Dependant (' + stageId + ') is not ready after ' + maxTime);
+                    }
+                }
+            };
+            
+            this.assertInactive = function(pos) {
+                var self = this,
+                    timePos = pos || 0;
+                
+                $('#' + buttonId).click();
+                if(! $('#' + stageId).hasClass('active')) {
+                    ok(true, 'Click event - Dependant (' + stageId + ') is inactive (' + timings[timePos] + 'ms)');
+                } else {
+                    ok(true, 'Click event - Dependant (' + stageId + ') is not ready (' + timings[timePos] + 'ms)');
+                    if(timings[timePos] <= maxTime) {
+                        window.setTimeout(self.assertActive(timePos + 1), timings[timePos + 1] - timings[timePos]);
+                    } else {
+                        ok(false, 'Click event - Dependant (' + stageId + ') is not ready after ' + maxTime);
+                    }
+                }
+            };
+            
+            equal($('#' + buttonId).length, 1, 'Button (' + buttonId + ') exists');
+            equal($('#' + stageId).length, 1, 'Dependant (' + stageId + ') exists');
+            ok(! $('#' + stageId).hasClass('active'), 'Dependant (' + stageId + ') is not active when set up');
+            this.assertActive();
+            this.assertInactive();
+        }
+        
+        /*
+        function menuButtonTest(buttonId, menuId) {
+            
+            this.assertActive = function(pos) {
+                var self = this,
+                    timePos = pos || 0;
+                $('#' + buttonId).click();
+                if($('#' + menuId).hasClass('active')) {
+                    ok(true, 'Click event - Menu is active (' + timings[timePos] + 'ms)');
+                    console.log(APP.data.stageManager.menuManager.buttons);
+                    if(APP.data.stageManager.menuManager.buttons[menuId]) {
+                        ok(true, 'menuManager buttons populated (' + timings[timePos] + 'ms)');
+                        for(var i = 0; i < APP.data.stageManager.menuManager.buttons[menuId].length; i++) {
+                            stageButtonTest(buttonId, APP.data.stageManager.menuManager.buttons[menuId][i]);
+                        }
+                    } else {
+                        else(true, 'menuManager buttons not yet populated(' + timings[timePos] + 'ms)');
+                        
+                    }
+                } else {
+                    ok(true, 'Click event - Menu not ready (' + timings[timePos] + 'ms)');
+                    if(timings[timePos] <= maxTime) {
+                        window.setTimeout(self.assertActive(timePos + 1), timings[timePos + 1] - timings[timePos]);
+                    } else {
+                        ok(false, 'Click event - Menu not ready after ' + maxTime);
+                    }
+                }
+            };
+            
+            this.assertInactive = function(pos) {
+                var self = this,
+                    timePos = pos || 0;
+                
+                $('#' + buttonId).click();
+                if(! $('#' + menuId).hasClass('active')) {
+                    ok(true, 'Click event - Menu is inactive (' + timings[timePos] + 'ms)');
+                } else {
+                    ok(true, 'Click event - Menu not ready (' + timings[timePos] + 'ms)');
+                    if(timings[timePos] <= maxTime) {
+                        window.setTimeout(self.assertActive(timePos + 1), timings[timePos + 1] - timings[timePos]);
+                    } else {
+                        ok(false, 'Click event - Menu not ready after ' + maxTime);
+                    }
+                }
+            };
+            
             equal($('#' + buttonId).length, 1, 'Button exists');
             equal($('#' + menuId).length, 1, 'Menu exists');
             ok(! $('#' + menuId).hasClass('active'), 'Menu is not active when set up');
-            $('#' + buttonId).click();
-            ok($('#' + menuId).hasClass('active'), 'Menu becomes active when button clicked');
-            $('#' + buttonId).click();
-            ok(! $('#' + menuId).hasClass('active'), 'Menu becomes inactive when button clicked');
+            this.assertActive();
+            this.assertInactive();
+        }
+        */
+        
+        test('Home button', function() {
+            primaryButtonTest('button-home', 'stage-home');
         });
         
-        (function() {
-            var buttons = APP.data.stageManager.menuManager.buttons,
-                primaryButtonId = 'button-control',
-                menuId = 'menu-control',
-                buttonId,
-                stageId,
-                interval;
-            
-            $('#' + primaryButtonId).click(); // make the menu active
-            interval = window.setInterval(func, 500);
-            function func() {
-                if(buttons[menuId] !== undefined) {
-                    for(var i = 0; i < buttons[menuId].length; i++) {
-                        buttonId = buttons[menuId][i].buttonId;
-                        stageId = buttons[menuId][i].stageId;
-                        
-                        test('Control menu buttons test ' + buttonId, function() {
-                            ok(! $('#' + stageId).hasClass('active'), 'Stage is not active when set up');
-                            $('#' + buttonId).click();
-                            ok($('#' + stageId).hasClass('active'), 'Stage becomes active when button clicked');
-                            $('#' + buttonId).click();
-                            ok(! $('#' + stageId).hasClass('active'), 'Stage becomes inactive when button clicked');
-                        });
-                    }
-                    $('#' + primaryButtonId).click(); // make the menu inactive
-                    window.clearInterval(interval);
-                }
-            }
-        })();
+        test('Control button', function() {
+            primaryButtonTest('button-control', 'menu-control');
+        });
         
         test('Rules button', function() {
-            ok(! $('#menu-rules').hasClass('active'), 'Menu is not active when set up');
-            $('#button-rules').click();
-            ok($('#menu-rules').hasClass('active'), 'Menu becomes active when button clicked');
-            $('#button-rules').click();
-            ok(! $('#menu-rules').hasClass('active'), 'Menu becomes inactive when button clicked');
+            primaryButtonTest('button-rules', 'menu-rules');
         });
-        
-        (function() {
-            var buttons = APP.data.stageManager.menuManager.buttons,
-                primaryButtonId = 'button-rules',
-                menuId = 'menu-rules',
-                buttonId,
-                stageId;
-            $('#' + primaryButtonId).click(); // make the menu active
-            for(var i = 0; i < buttons[menuId].length; i++) {
-                buttonId = buttons[menuId][i].buttonId;
-                stageId = buttons[menuId][i].stageId;
-                test('Rules menu buttons test ' + buttonId, function() {
-                    ok(! $('#' + stageId).hasClass('active'), 'Stage is not active when set up');
-                    $('#' + buttonId).click();
-                    ok($('#' + stageId).hasClass('active'), 'Stage becomes active when button clicked');
-                    $('#' + buttonId).click();
-                    ok($('#' + stageId).hasClass('active'), 'Stage does not go away since it is still being constructed');
-                });
-            }
-            $('#' + primaryButtonId).click(); // make the menu inactive
-        })();
         
         test('Config button', function() {
-            ok(! $('#menu-config').hasClass('active'), 'Menu is not active when set up');
-            $('#button-config').click();
-            ok($('#menu-config').hasClass('active'), 'Menu becomes active when button clicked');
-            $('#button-config').click();
-            ok(! $('#menu-config').hasClass('active'), 'Menu becomes inactive when button clicked');
+            primaryButtonTest('button-config', 'menu-config');
         });
-        
-        (function() {
-            var buttons = APP.data.stageManager.menuManager.buttons,
-                primaryButtonId = 'button-config',
-                menuId = 'menu-config',
-                buttonId,
-                stageId;
-            $('#' + primaryButtonId).click(); // make the menu active
-            for(var i = 0; i < buttons[menuId].length; i++) {
-                buttonId = buttons[menuId][i].buttonId;
-                stageId = buttons[menuId][i].stageId;
-                test('Config menu buttons test ' + buttonId, function() {
-                    ok(! $('#' + stageId).hasClass('active'), 'Stage is not active when set up');
-                    $('#' + buttonId).click();
-                    ok($('#' + stageId).hasClass('active'), 'Stage becomes active when button clicked');
-                    $('#' + buttonId).click();
-                    ok(! $('#' + stageId).hasClass('active'), 'Stage becomes inactive when button clicked');
-                });
-            }
-            $('#' + primaryButtonId).click(); // make the menu inactive
-        })();
         
     })();
     
-};
+})();

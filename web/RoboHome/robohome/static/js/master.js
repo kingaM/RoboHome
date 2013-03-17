@@ -417,8 +417,9 @@ APP.unpackToPayload = function(json) {
  * @param {any} payload         Data to feed into the data property
  * @param {Function} callback   Callback function
  * @param {Function} error      Function to execute if AJAX request fails
+ * @param {boolean} async       Set to false for synchronous call. This should only be done for testing purposes
  */
-APP.ajax = function(requestType, url, payload, callback, error) {
+APP.ajax = function(requestType, url, payload, callback, error, async) {
     var messageObj,
         internalCallback,
         internalError;
@@ -449,7 +450,8 @@ APP.ajax = function(requestType, url, payload, callback, error) {
         contentType: 'application/json',
         dataType: 'text',
         success: internalCallback,
-        error: internalError
+        error: internalError,
+        async: async || true
     });
 };
 
@@ -955,29 +957,21 @@ APP.Poller.prototype.setPoll = function(frequency, func) {
  * NOTE: setOnShow(), setOnHide(), setTearDown(), onShow(), onHide(), and tearDown() have hardcoded default behavior
  */
 APP.Stage = function(menuId, buttonId, buttonText, stageId) {
-    var __menuId = menuId,
-        __buttonId = buttonId,
-        __buttonText = buttonText,
-        __stageId = stageId,
-        __contextMenu = new APP.ContextMenu(),
-        __poller = new APP.Poller(),
-        __colorClass;
+    this.menuId = menuId;
+    this.buttonId = buttonId;
+    this.buttonText = buttonText;
+    this.stageId = stageId;
+    this.contextMenu = new APP.ContextMenu();
+    this.poller = new APP.Poller();
+    this.colorClass;
     
     if(this.menuId === null) {
-        __colorClass = $('#' + __buttonId).attr('data-color-class');
+        this.colorClass = $('#' + this.buttonId).attr('data-color-class');
     } else {
-        __colorClass = $('#' + __menuId).attr('data-color-class');
+        this.colorClass = $('#' + this.menuId).attr('data-color-class');
     }
     
     this.data = {};
-    this.menuId = __menuId;
-    this.buttonId = __buttonId;
-    this.buttonText = __buttonText;
-    this.stageId = __stageId;
-    this.contextMenu = __contextMenu;
-    this.poller = __poller;
-    this.colorClass = __colorClass;
-    
     this.isReady = false;
     this.constructing = false;
     

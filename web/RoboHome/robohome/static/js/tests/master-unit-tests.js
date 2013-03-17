@@ -24,21 +24,16 @@
         equal(typeof(APP.Map), 'function', 'Constructor type === "function"');
         equal(typeof(APP.Map()), 'undefined', 'Constructor return type === "undefined"');
         equal(APP.Map(), undefined, 'Constructor returns undefined');
-
         equal(typeof(map), 'object', 'Initialized object is of type "object"');
-        equal(map.size, 0, 'Size of map initialized to 0');
-        deepEqual(map.__items, {}, 'Items in map initialized to blank object {}');
     });
         
     test('property size', function() {
         equal(typeof(map.size), 'number', 'Property is initialized to type "number"');
-        
         equal(map.size, 0, 'Property is initialized to 0');
     });
     
     test('property __items', function() {
         equal(typeof(map.__items), 'object', 'Property is initialized to type "object"');
-        
         deepEqual(map.__items, {}, 'Property is initialized to blank object {}');
     });
     
@@ -219,12 +214,15 @@
         equal(typeof(APP.Poller()), 'undefined', 'Constructor return type === "undefined"');
         equal(APP.Poller(), undefined, 'Constructor returns undefined');
         equal(typeof(poller), 'object', 'Initialized object is of type "object"');
-        ok(poller instanceof APP.Poller, 'Initialized object isinstanceof APP.Poller');
+        ok(poller instanceof APP.Poller, 'Initialized object is instanceof APP.Poller');
         
         equal(poller.intervalId, undefined, 'property intervalId initialized to undefined');
         equal(poller.frequency, undefined, 'property frequency initialized to undefined');
-        equal(typeof(poller.poll), 'function', 'property poll initialized to type "function"');
         
+    });
+    
+    test('property poll', function() {
+        equal(typeof(poller.poll), 'function', 'property poll initialized to type "function"');
     });
     
     test('method startPolling', function() {
@@ -267,6 +265,232 @@
         equal(poller.frequency, frequency, 'Set frequency === retrieved frequency');
         deepEqual(poller.poll, func, 'Set poll function === retrieved poll function');
     });
+    
+})();
+
+/* APP.Stage */
+(function() {
+    
+    var stages = [],
+        params = [];
+    
+    module('APP.Stage', {
+        setup: function() {
+            stages = [];
+            params = [];
+            params.push({menuId: null, buttonId: 'button-home', buttonText: '', stageId: 'stage-home'});
+            stages.push(new APP.Stage(params[0].menuId, params[0].buttonId, params[0].buttonText, params[0].stageId));
+            params.push({menuId: 'menu-rules', buttonId: 'button-rules-ECA', buttonText: 'ECA', stageId: 'stage-rules-eca'});
+            stages.push(new APP.Stage(params[1].menuId, params[1].buttonId, params[1].buttonText, params[1].stageId));
+        },
+        teardown: function() {}
+    });
+            
+        test('constructor', function() {
+            for(var i = 0; i < stages.length; i++) {
+                var stage = stages[i];
+                
+                equal(typeof(APP.Stage), 'function', 'Constructor type === "function"');
+                equal(typeof(APP.Stage()), 'undefined', 'Constructor return type === "undefined"');
+                equal(APP.Poller(), undefined, 'Constructor returns undefined');
+                equal(typeof(stage), 'object', 'Initialized object is of type "object"');
+                ok(stage instanceof APP.Stage, 'Initialized object is instanceof APP.Stage');
+            }
+        });
+        
+        test('property menuId', function() {
+            for(var i = 0; i < stages.length; i++) {
+                var stage = stages[i];
+                
+                if(typeof(stage.menuId) === 'object' || typeof(stage.menuId) === 'string') {
+                    ok(true, 'property menuId initialized to type object (null) or string');
+                } else {
+                    ok(false, 'property menuId not initialized to type object (null) or string');
+                }
+                equal(stage.menuId, params[i].menuId, 'property menuId initialized to value passed in');
+            }
+        });
+        
+        test('property buttonId', function() {
+            for(var i = 0; i < stages.length; i++) {
+                var stage = stages[i];
+                
+                if(typeof(stage.menuId) === 'object' || typeof(stage.menuId) === 'string') {
+                    ok(true, 'property buttonId initialized to type object (null) or string');
+                } else {
+                    ok(false, 'property buttonId not initialized to type object (null) or string');
+                }
+                equal(stage.buttonId, params[i].buttonId, 'property buttonId initialized to value passed in');
+            }
+        });
+        
+        test('property buttonText', function() {
+            for(var i = 0; i < stages.length; i++) {
+                var stage = stages[i];
+                
+                equal(typeof(stage.buttonText), 'string', 'property buttonText initialized to type "string"');
+                equal(stage.buttonText, params[i].buttonText, 'property buttonText initialized to value passed in');
+            }
+        });
+        
+        test('property stageId', function() {
+            for(var i = 0; i < stages.length; i++) {
+                var stage = stages[i];
+                
+                equal(typeof(stage.stageId), 'string', 'property stageId initialized to type "string"');
+                equal(stage.stageId, params[i].stageId, 'property stageId initialized to value passed in');
+            }
+        });
+        
+        test('property contextMenu', function() {
+            for(var i = 0; i < stages.length; i++) {
+                var stage = stages[i];
+                
+                equal(typeof(stage.contextMenu), 'object', 'property contextMenu initialized to type "object"');
+                ok(stage.contextMenu instanceof APP.ContextMenu, 'property contextMenu is instanceof APP.ContextMenu');
+            }
+        });
+        
+        test('property poller', function() {
+            for(var i = 0; i < stages.length; i++) {
+                var stage = stages[i];
+                
+                equal(typeof(stage.poller), 'object', 'property poller initialized to type "object"');
+                ok(stage.poller instanceof APP.Poller, 'property poller is instanceof APP.Poller');
+            }
+        });
+        
+        test('property colorClass', function() {
+            for(var i = 0; i < stages.length; i++) {
+                var stage = stages[i];
+                
+                if(stage.menuId === null) {
+                    equal(typeof(stage.colorClass), 'string', 'property colorClass initialized to type "string"');
+                    equal(stage.colorClass, $('#' + stage.buttonId).attr('data-color-class'), 'property colorClass initialized to correct value');
+                } else {
+                    equal(typeof(stage.colorClass), 'string', 'property colorClass initialized to type "string"');
+                    equal(stage.colorClass, $('#' + stage.menuId).attr('data-color-class'), 'property colorClass initialized to correct value');
+                }
+            }
+        });
+        
+        test('property isReady', function() {
+            for(var i = 0; i < stages.length; i++) {
+                var stage = stages[i];
+                
+                equal(typeof(stage.isReady), 'boolean', 'property isReady initialized to type "boolean"');
+                equal(stage.isReady, false, 'property isReady initialized to false');
+            }
+        });
+        
+        test('property constructing', function() {
+            for(var i = 0; i < stages.length; i++) {
+                var stage = stages[i];
+                
+                equal(typeof(stage.constructing), 'boolean', 'property constructing initialized to type "boolean"');
+                equal(stage.constructing, false, 'property isReady initialized to false');
+            }
+        });
+        
+        test('property data', function() {
+            for(var i = 0; i < stages.length; i++) {
+                var stage = stages[i];
+                
+                equal(typeof(stage.data), 'object', 'property data initialized to type "object"');
+                deepEqual(stage.data, {}, 'property data initialized to empty object {}');
+            }
+        });
+        
+        test('method ready', function() {
+            for(var i = 0; i < stages.length; i++) {
+                var stage = stages[i];
+                
+                equal(typeof(stage.ready), 'function', 'property ready initialized to type "function"');
+                stage.ready();
+                equal(stage.isReady, true, 'property isReady set to true');
+                equal(stage.constructing, false, 'property constructing set to false');
+            }
+        });
+        
+        test('method notReady', function() {
+            for(var i = 0; i < stages.length; i++) {
+                var stage = stages[i];
+                
+                equal(typeof(stage.notReady), 'function', 'property notReady initialized to type "function"');
+                stage.notReady();
+                equal(stage.isReady, false, 'property isReady set to false');
+                
+            }
+        });
+        
+        test('method onShow', function() {
+            expect(2 * stages.length);
+            
+            for(var i = 0; i < stages.length; i++) {
+                var stage = stages[i];
+                
+                equal(typeof(stage.onShow), 'function', 'property onShow initialized to type "function"');
+                
+                var _construct = stage.construct;
+                stage.construct = function() {
+                    ok(true, 'method construct run');
+                    _construct.apply(this, arguments);
+                };
+                
+                stage.onShow();
+            }
+        });
+        
+        test('method onHide', function() {
+            for(var i = 0; i < stages.length; i++) {
+                var stage = stages[i];
+                
+                equal(typeof(stage.onHide), 'function', 'property onHide initialized to type "function"');
+                
+                var _tearDown = stage.tearDown;
+                stage.tearDown = function() {
+                    ok(true, 'method tearDown run');
+                    _tearDown.apply(this, arguments);
+                };
+                
+                stage.onHide();
+                
+            }
+        });
+        
+        test('method construct', function() {
+            for(var i = 0; i < stages.length; i++) {
+                var stage = stages[i];
+                
+                // todo 
+                expect(0);
+            }
+        });
+        
+        test('method tearDown', function() {
+            for(var i = 0; i < stages.length; i++) {
+                var stage = stages[i];
+                
+                // todo
+                expect(0);
+            }
+        });
+        
+        test('method update', function() {
+            for(var i = 0; i < stages.length; i++) {
+                var stage = stages[i];
+                
+                equal(typeof(stage.update), 'function', 'property update initialized to type "function"');
+            }
+        });
+        
+        this('method updateError', function() {
+            for(var i = 0; i < stages.length; i++) {
+                var stage = stages[i];
+                
+                equal(typeof(stage.updateError), 'function', 'property updateError initialized to type "function"');
+            }
+        });
     
 })();
 
