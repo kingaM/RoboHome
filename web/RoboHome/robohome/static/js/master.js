@@ -459,7 +459,7 @@ APP.ajax = {
             error: internalError,
             async: async || true
         });
-    }
+    },
     
     /**
      * @for APP.ajax
@@ -507,7 +507,7 @@ APP.ajax = {
      * @param {Function} error      Function to execute if AJAX request fails
      * Adds a new room
      */
-    post_rooms = function(roomName, callback, error) {
+    post_rooms: function(roomName, callback, error) {
         
         var args = {};
         args[APP.API.ROOMS.NAME] = roomName;
@@ -526,7 +526,7 @@ APP.ajax = {
      * @param {Function} error      Function to execute if AJAX request fails
      * Deletes a room
      */
-    delete_rooms_roomId = function(roomId, callback, error) {
+    delete_rooms_roomId: function(roomId, callback, error) {
         APP.ajax._ajax('DELETE', APP.URL.ROOMS_ROOMID(roomId), '',
             callback,
             error
@@ -545,7 +545,7 @@ APP.ajax = {
      * @param {Function} error      Function to execute if AJAX request fails
      * Add new item to room
      */
-    post_rooms_roomId_items = function(roomId, itemBrand, itemIP, itemName, itemType, callback, error) {
+    post_rooms_roomId_items: function(roomId, itemBrand, itemIP, itemName, itemType, callback, error) {
         
         var args = {};
         args[APP.API.ITEMS.BRAND] = itemBrand;
@@ -568,7 +568,7 @@ APP.ajax = {
      * @param {Function} error      Function to execute if AJAX request fails
      * Deletes specified item in room
      */
-    delete_rooms_roomId_items_itemId = function(roomId, itemId, callback, error) {
+    delete_rooms_roomId_items_itemId: function(roomId, itemId, callback, error) {
         APP.ajax._ajax('DELETE', APP.URL.ROOMS_ROOMID_ITEMS_ITEMID(roomId, itemId), '',
             callback,
             error
@@ -585,7 +585,7 @@ APP.ajax = {
      * @param {Function} error      Function to execute if AJAX request fails
      * Updates the specified item in the room with the new state
      */
-    put_rooms_roomId_items_itemId_cmd = function(roomId, itemId, cmd, callback, error) {
+    put_rooms_roomId_items_itemId_cmd: function(roomId, itemId, cmd, callback, error) {
         APP.ajax._ajax('PUT', APP.URL.ROOMS_ROOMID_ITEMS_ITEMID_CMD(roomId, itemId, cmd), '',
             callback,
             error
@@ -599,7 +599,7 @@ APP.ajax = {
      * @param {Function} error      Function to execute if AJAX request fails
      * Gets list of events
      */
-    get_events = function(callback, error) {
+    get_events: function(callback, error) {
         APP.ajax._ajax('GET', APP.URL.EVENTS, '',
             function(json) {
                 var obj = APP.unpackToPayload(json);
@@ -626,7 +626,7 @@ APP.ajax = {
      * @param {Function} error      Function to execute if AJAX request fails
      * Adds a new event, with no conditions or actions
      */
-    post_events = function(ruleName, enabled, id, itemType, scope, equivalence, value, callback, error) {
+    post_events: function(ruleName, enabled, id, itemType, scope, equivalence, value, callback, error) {
         
         var args = {};    
         args[APP.API.EVENTS.RULE.RULE_NAME] = ruleName;
@@ -658,7 +658,7 @@ APP.ajax = {
      * @param {Function} error      Function to execute if AJAX request fails
      * Updates a given event. This leaves its events and actions unchanged
      */
-    put_events_eventId = function(eventId, ruleName, enabled, id, itemType, scope, equivalence, value, callback, error) {
+    put_events_eventId: function(eventId, ruleName, enabled, id, itemType, scope, equivalence, value, callback, error) {
 
         var args = {};    
         args[APP.API.EVENTS.RULE.RULE_NAME] = ruleName;
@@ -683,7 +683,7 @@ APP.ajax = {
      * @param {Function} error      Function to execute if AJAX request fails
      * Deletes the given event
      */
-    delete_events_eventId = function(eventId, callback, error) {
+    delete_events_eventId: function(eventId, callback, error) {
         APP.ajax._ajax('DELETE', APP.URL.EVENTS_EVENTID(eventId), '',
             callback,
             error
@@ -701,7 +701,7 @@ APP.ajax = {
      * @param {Function} error      Function to execute if AJAX request fails
      * Adds a new condition to a given event
      */
-    post_events_eventId_conditions = function(eventId, itemId, equivalence, value, callback, error) {
+    post_events_eventId_conditions: function(eventId, itemId, equivalence, value, callback, error) {
         
         var args = {};
         args[APP.API.EVENTS.RULE.CONDITION.ITEM_ID] = itemId;
@@ -726,7 +726,7 @@ APP.ajax = {
      * @param {Function} error      Function to execute if AJAX request fails
      * Updates a condition in the given event
      */
-    put_events_eventId_conditions_conditionId = function(eventId, conditionId, itemId, equivalence, value, callback, error) {
+    put_events_eventId_conditions_conditionId: function(eventId, conditionId, itemId, equivalence, value, callback, error) {
         
         var args = {};
         args[APP.API.EVENTS.RULE.CONDITION.ITEM_ID] = itemId;
@@ -748,7 +748,7 @@ APP.ajax = {
      * @param {Function} error      Function to execute if AJAX request fails
      * Deletes a condition in the given event
      */
-    delete_events_eventId_conditions_conditionId = function(eventId, conditionId, callback, error) {
+    delete_events_eventId_conditions_conditionId: function(eventId, conditionId, callback, error) {
         APP.ajax._ajax('DELETE', APP.URL.EVENTS_EVENTID_CONDITIONS_CONDITIONID(eventId, conditionId), '',
             callback,
             error
@@ -767,7 +767,7 @@ APP.ajax = {
      * @param {Function} error      Function to execute if AJAX request fails
      * Adds a condition to a given event
      */
-    post_events_eventId_actions = function(eventId, id, scope, itemType, method, callback, error) {
+    post_events_eventId_actions: function(eventId, id, scope, itemType, method, callback, error) {
         
         var args = {};
         args[APP.API.EVENTS.RULE.ACTION.ID] = id;
@@ -794,7 +794,7 @@ APP.ajax = {
      * @param {Function} error      Function to execute if AJAX request fails
      * Updates an action in a given event
      */
-    events_eventId_actions_actionId = function(eventId, actionId, id, scope, itemType, method, callback, error) {
+    events_eventId_actions_actionId: function(eventId, actionId, id, scope, itemType, method, callback, error) {
 
         var args = {};
         args[APP.API.EVENTS.RULE.ACTION.ID] = id;
@@ -817,7 +817,7 @@ APP.ajax = {
      * @param {Function} error      Function to execute if AJAX request fails
      * Deletes an action in a given event
      */
-    delete_events_eventId_actions_actionId = function(eventId, actionId, callback, error) {
+    delete_events_eventId_actions_actionId: function(eventId, actionId, callback, error) {
         APP.ajax._ajax('DELETE', APP.URL.EVENTS_EVENTID_ACTIONS_ACTIONID(eventId, actionId), '',
             callback,
             error
@@ -831,7 +831,7 @@ APP.ajax = {
      * @param {Function} error    Function to execute if AJAX request fails
      * Fetches the list of whitelisted email addresses
      */
-    get_whitelist = function(callback, error) {
+    get_whitelist: function(callback, error) {
         APP.ajax._ajax('GET', APP.URL.WHITELIST, '',
             callback,
             error
@@ -846,7 +846,7 @@ APP.ajax = {
      * @param {Function} error      Function to execute if AJAX request fails
      * Adds an email address to the whitelist
      */
-    post_whitelist = function(email, callback, error) {
+    post_whitelist: function(email, callback, error) {
 
         var args = {};
         args[APP.API.WHITELIST.EMAIL] = email;
@@ -865,7 +865,7 @@ APP.ajax = {
      * @param {Function} error      Function to execute if AJAX request fails
      * Deletes an email address from the whitelist
      */
-    delete_whitelist = function(email, callback, error) {
+    delete_whitelist: function(email, callback, error) {
         
         var args = {};
         args[APP.API.WHITELIST.EMAIL] = email;
@@ -1579,7 +1579,7 @@ APP.ECARuleManager = function(stage) {
     
     this.addECARuleDisplays = function(ruleObjArray) {
         var ruleDisplay;
-        
+        console.log('foo');
         for(var i = 0; i < ruleObjArray.length; i++) {
             ruleDisplay = new APP.ECARuleDisplay(ruleObjArray[i], self);
             self.ruleDisplays.push(ruleDisplay);

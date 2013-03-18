@@ -1,5 +1,5 @@
 APP.test_DocumentReady = function() {
-    APP.ajax_get_version(function() {
+    APP.ajax.get_version(function() {
             // Instantiate manager objects
             APP.data.stageManager = new APP.StageManager();
             
