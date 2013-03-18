@@ -413,52 +413,58 @@ APP.unpackToPayload = function(json) {
 /**
  *
  */
+APP.AjaxObj = function(obj) {
+    this.method = obj.method;
+    this.url = obj.url;
+    this.args = obj.args;
+    this.callback = obj.callback;
+    this.error = obj.error;
+};
+
+/**
+ *
+ */
 APP.ajax = {
 
     /**
      * @for APP.ajax
      * @method _ajax
-     * @param {String} requestType  HTTP request type e.g. 'GET', 'POST', etc.
-     * @param {String} url          URL string to send request to
-     * @param {any} payload         Data to feed into the data property
-     * @param {Function} callback   Callback function
-     * @param {Function} error      Function to execute if AJAX request fails
-     * @param {boolean} async       Set to false for synchronous call. This should only be done for testing purposes
+     * @param obj
      */
-    _ajax: function(requestType, url, payload, callback, error, async) {
+    _ajax: function(ajaxObj) {
         var messageObj,
             internalCallback,
-            internalError;
+            internalError,
+            url = ajaxObj.url + APP.url_args(ajaxObj.args);
         
         internalCallback = function(args) {
             APP.data.connection.lastSuccess = new Date();
             APP.data.connection.lastSuccess.setTime(APP.data.connection.lastAttempt);
-            console.log('AJAX callback called ' + requestType + ' ' + url + ' ' + APP.clock.getTimestamp(APP.data.connection.lastSuccess));
-            if(callback) {
-                callback(args);
+            console.log('AJAX callback called ' + ajaxObj.method + ' ' + url + ' ' + APP.clock.getTimestamp(APP.data.connection.lastSuccess));
+            if(ajaxObj.callback) {
+                ajaxObj.callback(args);
             }
         };
         internalError = function(args) {
             APP.data.connection.lastNoSuccess = new Date();
             APP.data.connection.lastNoSuccess.setTime(APP.data.connection.lastAttempt);
             console.log('AJAX error ' + url + ' ' + APP.clock.getTimestamp(APP.data.connection.lastNoSuccess));
-            if(error) {
-                error(args);
+            if(ajaxObj.error) {
+                ajaxObj.error(args);
             }
         };
         APP.data.connection.lastAttempt = APP.clock.getCurrentDate();
         $.ajax({
-            type: requestType,
+            type: ajaxObj.method,
             url: url,
-            data: payload,
             processData: false,
             cache: false,
             contentType: 'application/json',
             dataType: 'text',
             success: internalCallback,
-            error: internalError,
-            async: async || true
+            error: internalError
         });
+        return ajaxObj;
     },
     
     /**
@@ -468,16 +474,23 @@ APP.ajax = {
      * @param {Function} error      Function to execute if AJAX request fails
      * Retrieves the latest house structure from the server
      */
-    get_state: function(callback, error) {
-        APP.ajax._ajax('GET', APP.URL.STATE, '',
-            function(json) {
+    get_state: function(callback, error, test) {
+        var args = {};
+        if(test) { args['test'] = 1 };
+        this.ajaxObj = new APP.AjaxObj({
+            method: 'GET',
+            url: APP.URL.STATE,
+            args: args,
+            callback: function(json) {
                 var obj = APP.unpackToPayload(json);
                 APP.data.houseStructure = obj;
                 APP.data.retrieved.houseStructure = new Date(APP.data.connection.lastSuccess);
-                callback();
+                callback(json);
             },
-            error
-        );
+            error: error
+        });
+        
+        return APP.ajax._ajax(this.ajaxObj);
     },
     
     /**
@@ -487,16 +500,24 @@ APP.ajax = {
      * @param {Function} error      Function to execute if AJAX request fails
      * Retrieves version information and all information that's supposed to be cached
      */
-    get_version: function(callback, error) {
-        APP.ajax._ajax('GET', APP.URL.VERSION, '',
-            function(json) {
+    get_version: function(callback, error, test) {
+        var args = {};
+        if(test) { args['test'] = 1 };
+        
+        this.ajaxObj = new APP.AjaxObj({
+            method: 'GET',
+            url: APP.URL.VERSION,
+            args: args,
+            callback: function(json) {
                 var obj = APP.unpackToPayload(json);
                 APP.data.cache = obj;
                 APP.data.retrieved.version = new Date(APP.data.connection.lastSuccess);
-                callback();
+                callback(json);
             },
-            error
-        );
+            error: error
+        });
+        
+        return APP.ajax._ajax(this.ajaxObj);
     },
     
     /**
@@ -507,15 +528,20 @@ APP.ajax = {
      * @param {Function} error      Function to execute if AJAX request fails
      * Adds a new room
      */
-    post_rooms: function(roomName, callback, error) {
-        
+    post_rooms: function(roomName, callback, error, test) {
         var args = {};
         args[APP.API.ROOMS.NAME] = roomName;
+        if(test) { args['test'] = 1 };
         
-        APP.ajax._ajax('POST', APP.URL.ROOMS + APP.url_args(args), '',
-            callback,
-            error
-        );
+        this.ajaxObj = new APP.AjaxObj({
+            method: 'POST',
+            url: APP.URL.ROOMS,
+            args: args,
+            callback: callback,
+            error: error
+        });
+        
+        return APP.ajax._ajax(this.ajaxObj);
     },
     
     /**
@@ -526,11 +552,19 @@ APP.ajax = {
      * @param {Function} error      Function to execute if AJAX request fails
      * Deletes a room
      */
-    delete_rooms_roomId: function(roomId, callback, error) {
-        APP.ajax._ajax('DELETE', APP.URL.ROOMS_ROOMID(roomId), '',
-            callback,
-            error
-        );
+    delete_rooms_roomId: function(roomId, callback, error, test) {
+        var args = {};
+        if(test) { args['test'] = 1 };
+        
+        this.ajaxObj = new APP.AjaxObj({
+            method: 'DELETE',
+            url: APP.URL.ROOMS_ROOMID(roomId),
+            args: args,
+            callback: callback,
+            error: error
+        });
+        
+        return APP.ajax._ajax(this.ajaxObj);
     },
     
     /**
@@ -545,18 +579,23 @@ APP.ajax = {
      * @param {Function} error      Function to execute if AJAX request fails
      * Add new item to room
      */
-    post_rooms_roomId_items: function(roomId, itemBrand, itemIP, itemName, itemType, callback, error) {
-        
+    post_rooms_roomId_items: function(roomId, itemBrand, itemIP, itemName, itemType, callback, error, test) {
         var args = {};
         args[APP.API.ITEMS.BRAND] = itemBrand;
         args[APP.API.ITEMS.IP] = itemIP;
         args[APP.API.ITEMS.NAME] = itemName;
         args[APP.API.ITEMS.ITEM_TYPE] = itemType;
-            
-        APP.ajax._ajax('POST', APP.URL.ROOMS_ROOMID_ITEMS(roomId) + APP.url_args(args), '',
-            callback,
-            error
-        );
+        if(test) { args['test'] = 1 };
+        console.log(args);
+        this.ajaxObj = new APP.AjaxObj({
+            method: 'POST',
+            url: APP.URL.ROOMS_ROOMID_ITEMS(roomId),
+            args: args,
+            callback: callback,
+            error: error
+        });
+        
+        return APP.ajax._ajax(this.ajaxObj);
     },
     
     /**
@@ -568,11 +607,19 @@ APP.ajax = {
      * @param {Function} error      Function to execute if AJAX request fails
      * Deletes specified item in room
      */
-    delete_rooms_roomId_items_itemId: function(roomId, itemId, callback, error) {
-        APP.ajax._ajax('DELETE', APP.URL.ROOMS_ROOMID_ITEMS_ITEMID(roomId, itemId), '',
-            callback,
-            error
-        );
+    delete_rooms_roomId_items_itemId: function(roomId, itemId, callback, error, test) {
+        var args = {};
+        if(test) { args['test'] = 1 };
+        
+        this.ajaxObj = new APP.AjaxObj({
+            method: 'DELETE',
+            url: APP.URL.ROOMS_ROOMID_ITEMS_ITEMID(roomId, itemId),
+            args: args,
+            callback: callback,
+            error: error
+        });
+        
+        return APP.ajax._ajax(this.ajaxObj);
     },
     
     /**
@@ -585,11 +632,19 @@ APP.ajax = {
      * @param {Function} error      Function to execute if AJAX request fails
      * Updates the specified item in the room with the new state
      */
-    put_rooms_roomId_items_itemId_cmd: function(roomId, itemId, cmd, callback, error) {
-        APP.ajax._ajax('PUT', APP.URL.ROOMS_ROOMID_ITEMS_ITEMID_CMD(roomId, itemId, cmd), '',
-            callback,
-            error
-        );
+    put_rooms_roomId_items_itemId_cmd: function(roomId, itemId, cmd, callback, error, test) {
+        var args = {};
+        if(test) { args['test'] = 1 };
+        
+        this.ajaxObj = new APP.AjaxObj({
+            method: 'PUT',
+            url: APP.URL.ROOMS_ROOMID_ITEMS_ITEMID_CMD(roomId, itemId, cmd),
+            args: args,
+            callback: callback,
+            error: error
+        });
+        
+        return APP.ajax._ajax(this.ajaxObj);
     },
     
     /**
@@ -599,17 +654,25 @@ APP.ajax = {
      * @param {Function} error      Function to execute if AJAX request fails
      * Gets list of events
      */
-    get_events: function(callback, error) {
-        APP.ajax._ajax('GET', APP.URL.EVENTS, '',
-            function(json) {
+    get_events: function(callback, error, test) {
+        var args = {};
+        if(test) { args['test'] = 1 };
+        
+        this.ajaxObj = new APP.AjaxObj({
+            method: 'GET',
+            url: APP.URL.EVENTS,
+            args: args,
+            callback: function(json) {
                 var obj = APP.unpackToPayload(json);
-                APP.data.events = obj[APP.API.EVENTS.RULES];
+                APP.data.events = obj === undefined ? undefined : obj[APP.API.EVENTS.RULES];
                 APP.data.retrieved.events = new Date(APP.data.connection.lastSuccess);
                 console.log(APP.data.retrieved.events);
-                callback();
+                callback(json);
             },
-            error
-        );
+            error: error
+        });
+        
+        return APP.ajax._ajax(this.ajaxObj);
     },
     
     /**
@@ -626,7 +689,7 @@ APP.ajax = {
      * @param {Function} error      Function to execute if AJAX request fails
      * Adds a new event, with no conditions or actions
      */
-    post_events: function(ruleName, enabled, id, itemType, scope, equivalence, value, callback, error) {
+    post_events: function(ruleName, enabled, id, itemType, scope, equivalence, value, callback, error, test) {
         
         var args = {};    
         args[APP.API.EVENTS.RULE.RULE_NAME] = ruleName;
@@ -636,11 +699,17 @@ APP.ajax = {
         args[APP.API.EVENTS.RULE.EVENT.SCOPE] = scope;
         args[APP.API.EVENTS.RULE.EVENT.EQUIVALENCE] = equivalence;
         args[APP.API.EVENTS.RULE.EVENT.VALUE] = value;
+        if(test) { args['test'] = 1 };
         
-        APP.ajax._ajax('POST', APP.URL.EVENTS + APP.url_args(args), '',
-            callback,
-            error
-        );
+        this.ajaxObj = new APP.AjaxObj({
+            method: 'POST',
+            url: APP.URL.EVENTS,
+            args: args,
+            callback: callback,
+            error: error
+        });
+        
+        return APP.ajax._ajax(this.ajaxObj);
     },
     
     /**
@@ -658,9 +727,9 @@ APP.ajax = {
      * @param {Function} error      Function to execute if AJAX request fails
      * Updates a given event. This leaves its events and actions unchanged
      */
-    put_events_eventId: function(eventId, ruleName, enabled, id, itemType, scope, equivalence, value, callback, error) {
+    put_events_eventId: function(eventId, ruleName, enabled, id, itemType, scope, equivalence, value, callback, error, test) {
 
-        var args = {};    
+        var args = {};
         args[APP.API.EVENTS.RULE.RULE_NAME] = ruleName;
         args[APP.API.EVENTS.RULE.ENABLED] = enabled;
         args[APP.API.EVENTS.RULE.EVENT.ID] = id;
@@ -668,11 +737,17 @@ APP.ajax = {
         args[APP.API.EVENTS.RULE.EVENT.SCOPE] = scope;
         args[APP.API.EVENTS.RULE.EVENT.EQUIVALENCE] = equivalence;
         args[APP.API.EVENTS.RULE.EVENT.VALUE] = value;
-
-        APP.ajax._ajax('PUT', APP.URL.EVENTS_EVENTID(eventId) + APP.url_args(args), '',
-            callback,
-            error
-        );
+        if(test) { args['test'] = 1 };
+        
+        this.ajaxObj = new APP.AjaxObj({
+            method: 'PUT',
+            url: APP.URL.EVENTS_EVENTID(eventId),
+            args: args,
+            callback: callback,
+            error: error
+        });
+        
+        return APP.ajax._ajax(this.ajaxObj);
     },
     
     /**
@@ -683,11 +758,19 @@ APP.ajax = {
      * @param {Function} error      Function to execute if AJAX request fails
      * Deletes the given event
      */
-    delete_events_eventId: function(eventId, callback, error) {
-        APP.ajax._ajax('DELETE', APP.URL.EVENTS_EVENTID(eventId), '',
-            callback,
-            error
-        );
+    delete_events_eventId: function(eventId, callback, error, test) {
+        var args = {};
+        if(test) { args['test'] = 1 };
+        
+        this.ajaxObj = new APP.AjaxObj({
+            method: 'DELETE',
+            url: APP.URL.EVENTS_EVENTID(eventId),
+            args: args,
+            callback: callback,
+            error: error
+        });
+        
+        return APP.ajax._ajax(this.ajaxObj);
     },
     
     /**
@@ -701,17 +784,23 @@ APP.ajax = {
      * @param {Function} error      Function to execute if AJAX request fails
      * Adds a new condition to a given event
      */
-    post_events_eventId_conditions: function(eventId, itemId, equivalence, value, callback, error) {
+    post_events_eventId_conditions: function(eventId, itemId, equivalence, value, callback, error, test) {
         
         var args = {};
         args[APP.API.EVENTS.RULE.CONDITION.ITEM_ID] = itemId;
         args[APP.API.EVENTS.RULE.CONDITION.EQUIVALENCE] = equivalence;
         args[APP.API.EVENTS.RULE.CONDITION.VALUE] = value;
-
-        APP.ajax._ajax('POST', APP.URL.EVENTS_EVENTID_CONDITIONS(eventId) + APP.url_args(args), '',
-            callback,
-            error
-        );
+        if(test) { args['test'] = 1 };
+        
+        this.ajaxObj = new APP.AjaxObj({
+            method: 'POST',
+            url: APP.URL.EVENTS_EVENTID_CONDITIONS(eventId),
+            args: args,
+            callback: callback,
+            error: error
+        });
+        
+        return APP.ajax._ajax(this.ajaxObj);
     },
     
     /**
@@ -726,17 +815,23 @@ APP.ajax = {
      * @param {Function} error      Function to execute if AJAX request fails
      * Updates a condition in the given event
      */
-    put_events_eventId_conditions_conditionId: function(eventId, conditionId, itemId, equivalence, value, callback, error) {
+    put_events_eventId_conditions_conditionId: function(eventId, conditionId, itemId, equivalence, value, callback, error, test) {
         
         var args = {};
         args[APP.API.EVENTS.RULE.CONDITION.ITEM_ID] = itemId;
         args[APP.API.EVENTS.RULE.CONDITION.EQUIVALENCE] = equivalence;
         args[APP.API.EVENTS.RULE.CONDITION.VALUE] = value;
-            
-        APP.ajax._ajax('PUT', APP.URL.EVENTS_EVENTID_CONDITIONS_CONDITIONID(eventId, conditionId) + APP.url_args(args), '',
-            callback,
-            error
-        );
+        if(test) { args['test'] = 1 };
+        
+        this.ajaxObj = new APP.AjaxObj({
+            method: 'PUT',
+            url: APP.URL.EVENTS_EVENTID_CONDITIONS_CONDITIONID(eventId, conditionId),
+            args: args,
+            callback: callback,
+            error: error
+        });
+        
+        return APP.ajax._ajax(this.ajaxObj);
     },
     
     /**
@@ -748,11 +843,19 @@ APP.ajax = {
      * @param {Function} error      Function to execute if AJAX request fails
      * Deletes a condition in the given event
      */
-    delete_events_eventId_conditions_conditionId: function(eventId, conditionId, callback, error) {
-        APP.ajax._ajax('DELETE', APP.URL.EVENTS_EVENTID_CONDITIONS_CONDITIONID(eventId, conditionId), '',
-            callback,
-            error
-        );
+    delete_events_eventId_conditions_conditionId: function(eventId, conditionId, callback, error, test) {
+        var args = {};
+        if(test) { args['test'] = 1 };
+        
+        this.ajaxObj = new APP.AjaxObj({
+            method: 'DELETE',
+            url: APP.URL.EVENTS_EVENTID_CONDITIONS_CONDITIONID(eventId, conditionId),
+            args: args,
+            callback: callback,
+            error: error
+        });
+        
+        return APP.ajax._ajax(this.ajaxObj);
     },
     
     /**
@@ -767,18 +870,24 @@ APP.ajax = {
      * @param {Function} error      Function to execute if AJAX request fails
      * Adds a condition to a given event
      */
-    post_events_eventId_actions: function(eventId, id, scope, itemType, method, callback, error) {
+    post_events_eventId_actions: function(eventId, id, scope, itemType, method, callback, error, test) {
         
         var args = {};
         args[APP.API.EVENTS.RULE.ACTION.ID] = id;
         args[APP.API.EVENTS.RULE.ACTION.SCOPE] = scope;
         args[APP.API.EVENTS.RULE.ACTION.ITEM_TYPE] = itemType;
         args[APP.API.EVENTS.RULE.ACTION.METHOD] = method;
-
-        APP.ajax._ajax('POST', APP.URL.EVENTS_EVENTID_ACTIONS(eventId) + APP.url_args(args), '',
-            callback,
-            error
-        );
+        if(test) { args['test'] = 1 };
+        
+        this.ajaxObj = new APP.AjaxObj({
+            method: 'POST',
+            url: APP.URL.EVENTS_EVENTID_ACTIONS(eventId),
+            args: args,
+            callback: callback,
+            error: error
+        });
+        
+        return APP.ajax._ajax(this.ajaxObj);
     },
     
     /**
@@ -794,18 +903,24 @@ APP.ajax = {
      * @param {Function} error      Function to execute if AJAX request fails
      * Updates an action in a given event
      */
-    events_eventId_actions_actionId: function(eventId, actionId, id, scope, itemType, method, callback, error) {
+    put_events_eventId_actions_actionId: function(eventId, actionId, id, scope, itemType, method, callback, error, test) {
 
         var args = {};
         args[APP.API.EVENTS.RULE.ACTION.ID] = id;
         args[APP.API.EVENTS.RULE.ACTION.SCOPE] = scope;
         args[APP.API.EVENTS.RULE.ACTION.ITEM_TYPE] = itemType;
         args[APP.API.EVENTS.RULE.ACTION.METHOD] = method;
-
-        APP.ajax._ajax('PUT', APP.URL.EVENTS_EVENTID_ACTIONS_ACTIONID(eventId, actionId) + APP.url_args(args), '',
-            callback,
-            error
-        );
+        if(test) { args['test'] = 1 };
+        
+        this.ajaxObj = new APP.AjaxObj({
+            method: 'PUT',
+            url: APP.URL.EVENTS_EVENTID_ACTIONS_ACTIONID(eventId, actionId),
+            args: args,
+            callback: callback,
+            error: error
+        });
+        
+        return APP.ajax._ajax(this.ajaxObj);
     },
     
     /**
@@ -817,11 +932,19 @@ APP.ajax = {
      * @param {Function} error      Function to execute if AJAX request fails
      * Deletes an action in a given event
      */
-    delete_events_eventId_actions_actionId: function(eventId, actionId, callback, error) {
-        APP.ajax._ajax('DELETE', APP.URL.EVENTS_EVENTID_ACTIONS_ACTIONID(eventId, actionId), '',
-            callback,
-            error
-        );
+    delete_events_eventId_actions_actionId: function(eventId, actionId, callback, error, test) {
+        var args = {};
+        if(test) { args['test'] = 1 };
+        
+        this.ajaxObj = new APP.AjaxObj({
+            method: 'DELETE',
+            url: APP.URL.EVENTS_EVENTID_ACTIONS_ACTIONID(eventId, actionId),
+            args: args,
+            callback: callback,
+            error: error
+        });
+        
+        return APP.ajax._ajax(this.ajaxObj);
     },
     
     /**
@@ -831,11 +954,19 @@ APP.ajax = {
      * @param {Function} error    Function to execute if AJAX request fails
      * Fetches the list of whitelisted email addresses
      */
-    get_whitelist: function(callback, error) {
-        APP.ajax._ajax('GET', APP.URL.WHITELIST, '',
-            callback,
-            error
-        );
+    get_whitelist: function(callback, error, test) {
+        var args = {};
+        if(test) { args['test'] = 1 };
+        
+        this.ajaxObj = new APP.AjaxObj({
+            method: 'GET',
+            url: APP.URL.WHITELIST,
+            args: args,
+            callback: callback,
+            error: error
+        });
+        
+        return APP.ajax._ajax(this.ajaxObj);
     },
     
     /**
@@ -846,15 +977,21 @@ APP.ajax = {
      * @param {Function} error      Function to execute if AJAX request fails
      * Adds an email address to the whitelist
      */
-    post_whitelist: function(email, callback, error) {
+    post_whitelist: function(email, callback, error, test) {
 
         var args = {};
         args[APP.API.WHITELIST.EMAIL] = email;
-
-        APP.ajax._ajax('POST', APP.URL.WHITELIST + APP.url_args(args), '',
-            callback,
-            error
-        );
+        if(test) { args['test'] = 1 };
+        
+        this.ajaxObj = new APP.AjaxObj({
+            method: 'POST',
+            url: APP.URL.WHITELIST,
+            args: args,
+            callback: callback,
+            error: error
+        });
+        
+        return APP.ajax._ajax(this.ajaxObj);
     },
     
     /**
@@ -865,15 +1002,21 @@ APP.ajax = {
      * @param {Function} error      Function to execute if AJAX request fails
      * Deletes an email address from the whitelist
      */
-    delete_whitelist: function(email, callback, error) {
+    delete_whitelist: function(email, callback, error, test) {
         
         var args = {};
         args[APP.API.WHITELIST.EMAIL] = email;
-
-        APP.ajax._ajax('DELETE', APP.URL.WHITELIST + APP.url_args(args), '',
-            callback,
-            error
-        );
+        if(test) { args['test'] = 1 };
+        
+        this.ajaxObj = new APP.AjaxObj({
+            method: 'DELETE',
+            url: APP.URL.WHITELIST,
+            args: args,
+            callback: callback,
+            error: error
+        });
+        
+        return APP.ajax._ajax(this.ajaxObj);
     }
 };
 
