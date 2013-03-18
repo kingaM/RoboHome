@@ -354,18 +354,30 @@ def create_or_login(resp):
 @app.route('/test/', methods=['GET'])
 def test():
     if request.method == 'GET':
-        return render_template('html/tests/home-test.html');
+        return render_template('html/tests/test-list.html')
 
+@app.route('/test/unit', methods=['GET'])
+def test_unit():
+    if request.method == 'GET':
+        return render_template('html/tests/test-unit.html')
 
+@app.route('/test/integration', methods=['GET'])
+def test_integration():
+    if request.method == 'GET':
+        return render_template('html/tests/test-integration.html')
+
+@app.route('/test/api', methods=['GET'])
+def test_api():
+    if request.method == 'GET':
+        return render_template('html/tests/test-api.html')
+        
 @app.route('/test/parrot/', methods=['GET', 'POST', 'PUT', 'DELETE'])
 def test_parrot():
-        
     dict = {
         'method': request.method,
         'payload': request.data,
         'args': request.args.to_dict()
     }
-    
     return jsonify(dict)
 
 # Run ---------------------------------------------------------------------

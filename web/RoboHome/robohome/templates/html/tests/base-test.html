@@ -1,4 +1,4 @@
-{% extends "html/home.html" %}
+{% extends "html/base.html" %}
 
 {% block head %}    
     <link type="text/css" rel="stylesheet" href="../../../static/css/master.css" />
@@ -7,25 +7,13 @@
 
     <!-- qunit -->
     <link type="text/css" rel="stylesheet" href="../../../static/css/tests/qunit-1.11.0.css" />
-    <style>
-        body {
-            overflow: auto;
-        }
-        #debug {
-            height: 1000px; overflow: auto;
-        }
-        #wrapper-screen {
-            overflow-y: auto !important;
-        }
-        </style>
     <script type="text/javascript" src="../../../static/js/tests/qunit-1.11.0.js"></script>
-    <script type="text/javascript" src="../../../static/js/tests/master-unit-tests.js"></script>
-    <script type="text/javascript" src="../../../static/js/tests/home-test.js"></script>
-    <!-- <script type="text/javascript" src="../../../static/js/tests/master-functionality-tests.js"></script> -->
+    {% block test %}
+    {% endblock %}
     <!-- home-test.js -->
 {% endblock %}
 
-{% block debug %}
+{% block body %}
     <div id="qunit"></div>
     <div id="qunit-fixture"></div>
 {% endblock %}
