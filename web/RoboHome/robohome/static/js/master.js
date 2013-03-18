@@ -1579,14 +1579,15 @@ APP.ECARuleManager = function(stage) {
     
     this.addECARuleDisplays = function(ruleObjArray) {
         var ruleDisplay;
-        console.log('foo');
         for(var i = 0; i < ruleObjArray.length; i++) {
             ruleDisplay = new APP.ECARuleDisplay(ruleObjArray[i], self);
             self.ruleDisplays.push(ruleDisplay);
             self.stage.getContext().append(ruleDisplay.construct());
         }
         // move the newRuleDisplay to the bottom
-        self.stage.getContext().append(self.newRuleDisplay.boundingBox);
+        if(ruleObjArray.length !== 0) {
+            self.stage.getContext().append(self.newRuleDisplay.boundingBox);
+        }
         
     };
     
@@ -2529,7 +2530,9 @@ APP.ECAConditionManager = function(ruleId, conditionArray, ruleManager) {
             self.context.append(conditionDisplay.construct());
         }
         // move the newConditionDisplay to the bottom
-        self.context.append(self.newConditionDisplay.context);
+        if(conditionArray.length !== 0) {
+            self.context.append(self.newConditionDisplay.context);
+        }
     };
     
     this.removeECAConditionDisplay = function(conditionId) {
@@ -3015,7 +3018,9 @@ APP.ECAActionManager = function(ruleId, actionArray, ruleManager) {
             self.context.append(actionDisplay.construct());
         }
         // move the newConditionDisplay to the bottom
-        self.context.append(self.newActionDisplay.context);
+        if(actionArray.length !== 0) {
+            self.context.append(self.newActionDisplay.context);
+        }
     };
     
     this.removeECAActionDisplay = function(actionId) {
@@ -4373,7 +4378,6 @@ APP.StageManager = function() {
                             parent.addClass(APP.DOM_HOOK.UPDATING);
                             APP.ajax.delete_whitelist(email,
                                 function() {
-                                    console.log('foo');
                                     parent.remove();
                                 },
                                 function() {
