@@ -4085,7 +4085,7 @@ APP.StageManager = function() {
                     optgroup,
                     container;
                     
-                itemsPanel.append($('<h2></h2>').html('Items'));
+                itemsPanel.append($('<h2></h2>').html('Item manager'));
                 
                 // add
                 addPanel = $('<fieldset></fieldset>');

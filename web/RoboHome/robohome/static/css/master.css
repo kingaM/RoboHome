@@ -116,20 +116,6 @@ body {
 #bar-left .pretty-border.horizontal > .middle { width: 80%; }
 #bar-left .pretty-border.horizontal > .right { width: 10%; }
 
-/*
-#left-panel {
-            margin: 0 1.5em 0 0;
-            overflow: auto;
-    -webkit-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
-       -moz-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
-        -ms-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
-         -o-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
-            box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
-            background-color: rgba(0,200,200,0.1);
-            background-image: url('../img/grid.png');
-}
-*/
-
 #time, #day, #date, #time, #am-pm, #day, #date {
     font-family: 'serene';
 }
@@ -219,26 +205,25 @@ body {
 }
 
 #context-menu h1 {
-    font-size: 0.9em;
+    font-size: 1.2em;
+    font-weight: normal;
+    font-family: 'serene';
     margin-top: 0;
     margin-bottom: 0.5em;
 }
 
 #context-menu h2 {
-    font-size: 0.9em;
+    font-size: 1.2em;
+    font-weight: normal;
+    font-family: 'serene';
     margin-top: 0.5em;
     margin-bottom: 0.5em;
 }
 
 #context-menu fieldset {
-            margin: 0.5em 0;
-            padding: 0.5em;
-            border: 1px solid #666666;
-    -webkit-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
-       -moz-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
-        -ms-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
-         -o-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
-            box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+    margin: 0.5em 0 1em 0;
+    padding: 0.5em;
+    border: 1px solid #666666;
 }
 
 #context-menu fieldset > div {
@@ -249,62 +234,50 @@ body {
 #context-menu legend {
     font-weight: bold;
     font-size: 0.8em;
+    color: rgba(0,134,191,1);
 }
 
 #context-menu input {
-            display: inline-block;
-            min-width: 60%;
-            padding: 0.2em 0.4em;
-            margin: 0.2em 0;
-            text-decoration: none;
-            font-size: 0.8em;
-            color: #FFFFFF;
-            border: 1px solid #666666;
-            background: rgba(0,200,200,0.2);
-    -webkit-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
-       -moz-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
-        -ms-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
-         -o-box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
-            box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+    display: inline-block;
+    min-width: 60%;
+    padding: 0.2em 0.4em;
+    margin: 0.2em 0;
+    text-decoration: none;
+    font-size: 0.9em;
+    line-height: 1.2em;
+    color: #FFFFFF;
+    border: 1px solid #666666;
+    background: rgba(0,200,200,0.2);
 }
-#context-menu input::-webkit-input-placeholder { color: rgba(50,184,191,1); }
-#context-menu input::-moz-placeholder { #color: rgba(50,184,191,1); }
-#context-menu input:-moz-placeholder { #color: rgba(50,184,191,1); }
-#context-menu input:ms-input-placeholder { #color: rgba(50,184,191,1); }
+#context-menu input::-webkit-input-placeholder { font-size: 0.8em; color: rgba(50,184,191,1); }
+#context-menu input::-moz-placeholder { font-size: 0.8em; #color: rgba(50,184,191,1); }
+#context-menu input:-moz-placeholder { font-size: 0.8em; #color: rgba(50,184,191,1); }
+#context-menu input:ms-input-placeholder { font-size: 0.8em; #color: rgba(50,184,191,1); }
 
 #context-menu .button {
-            display: inline-block;
-            text-decoration: none;
-            font-size: 0.8em;
-            border: 1px solid #666666;
-            background: rgba(0,200,200,0.3);
-            padding: 0.2em;
-            margin: 0.2em 0 0.2em 0.5em;
-            min-width: 6em;
-            text-align: center;
-            font-family: 'serene';
-    -webkit-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
-       -moz-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
-        -ms-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
-         -o-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
-            box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+    display: inline-block;
+    text-decoration: none;
+    font-size: 0.9em;
+    line-height: 1.2em;
+    border: 1px solid #666666;
+    background-color: rgba(0,200,200,0.3);
+    padding: 0.2em;
+    margin: 0.2em 0 0.2em 0.2em;
+    min-width: 5.5em;
+    text-align: center;
+    font-family: 'serene';
 }
 
 #context-menu input:hover,
 #context-menu .button:hover {
     border: 1px solid rgb(229,151,0);
-    background: rgba(0,200,200,0.4);
+    background-color: rgba(0,200,200,0.4);
 }
 
 #context-menu .select-wrapper {
-            margin: 2px;
-            display: inline-block;
-            background: rgba(0,200,200,0.2);
-    -webkit-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
-       -moz-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
-        -ms-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
-         -o-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
-            box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+    margin: 2px;
+    display: inline-block;
+    background: rgba(0,200,200,0.2);
 }
 
 #context-menu select {
@@ -374,23 +347,18 @@ div.stage {
 }
 
 .stage-content .entity-display {
-            padding: 0.5em 1em;
-            margin: 0.5em 0;
-            border: 1px solid #666666;
-            overflow: auto;
-    -webkit-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
-       -moz-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
-        -ms-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
-         -o-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
-            box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
-            background-color: transparent;
+    padding: 0.5em 1em;
+    margin: 0.5em 0;
+    border: 1px solid #666666;
+    overflow: auto;
+    background-color: transparent;
 }
 
 .stage-content > .entity-display.item-type {
-    width: 29%;
-    float: left;
-    margin: 0 0.5em 1em 0.5em;
-    background-color: rgba(0,200,200,0.1);
+            width: 29%;
+            float: left;
+            margin: 0 0.5em 1em 0.5em;
+            background-color: rgba(0,200,200,0.1);
             transition-timing-function: ease-out;
     -webkit-transition-property: width;
        -moz-transition-property: width;
@@ -404,6 +372,7 @@ div.stage {
 }
 
 .stage-content .entity-display .item {
+    padding: 0;
     cursor: pointer;
     background-color: rgba(0,200,200,0.1);
 }
@@ -422,12 +391,8 @@ div.stage {
     float: left;
 }
 
-.stage-content .entity-display.item {
-    padding: 0;
-}
-
 .stage-content .entity-display.item .info-bar {
-    margin: 1em;
+    margin: 1em 0.5em 1em 1em;
     width: auto;
     display: inline-block;
 }
@@ -436,6 +401,10 @@ div.stage {
     display: inline-block;
     font-size: 0.9em;
     margin: 0;
+}
+
+.stage-content .entity-display.item-type > .info-bar > h1 {
+    color: rgba(0,134,191,1);
 }
 
 .stage-content .entity-display.item h1 {
@@ -497,7 +466,7 @@ div.stage {
 }
 
 .stage-content .entity-display.item .status {
-    margin: 1em;
+    margin: 1em 1em 1em 0.5em;
 }
 
 .stage-content .entity-display.item.connection-error .status {
@@ -515,6 +484,45 @@ div.stage {
     margin: 0 0.5em;
     text-align: center;
 }
+
+/* Embellishments */
+.stage-content .entity-display .item {
+    background-image:        -webkit-gradient(linear, left top, left bottom, color-stop(0%, rgba(255,255,255,0)), color-stop(10%, rgba(255,255,255,0.07)), color-stop(25%, rgba(255,255,255,0)), color-stop(50%, rgba(255,255,255,0)), color-stop(50%, transparent), color-stop(80%, rgba(0,0,0,0.2)));
+    background-image: -webkit-linear-gradient(top, rgba(255,255,255,0) 0%, rgba(255,255,255,0.07) 10%, rgba(255,255,255,0) 25%, rgba(255,255,255,0) 50%, transparent 50%, rgba(0,0,0,0.2) 80%);
+    background-image:    -moz-linear-gradient(top, rgba(255,255,255,0) 0%, rgba(255,255,255,0.07) 10%, rgba(255,255,255,0) 25%, rgba(255,255,255,0) 50%, transparent 50%, rgba(0,0,0,0.2) 80%);
+    background-image:     -ms-linear-gradient(top, rgba(255,255,255,0) 0%, rgba(255,255,255,0.07) 10%, rgba(255,255,255,0) 25%, rgba(255,255,255,0) 50%, transparent 50%, rgba(0,0,0,0.2) 80%);
+    background-image:      -o-linear-gradient(top, rgba(255,255,255,0) 0%, rgba(255,255,255,0.07) 10%, rgba(255,255,255,0) 25%, rgba(255,255,255,0) 50%, transparent 50%, rgba(0,0,0,0.2) 80%);
+    background-image:   linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.07) 10%, rgba(255,255,255,0) 25%, rgba(255,255,255,0) 50%, transparent 50%, rgba(0,0,0,0.2) 80%);
+}
+
+.stage-content .entity-display .item,
+#context-menu .button {
+    border-top: 1px solid #AAAAAA;
+}
+
+#context-menu input {
+    border-bottom: 1px solid #AAAAAA;
+}
+
+.stage-content > .entity-display.item-type,
+.context-menu-content,
+#context-menu fieldset {
+    border-top: 1px solid #888888;
+}
+
+.stage-content .entity-display,
+#context-menu fieldset,
+#context-menu input,
+#context-menu .button,
+#context-menu .select-wrapper  {
+    -webkit-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+       -moz-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+        -ms-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+         -o-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+            box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+}
+
+/* ------------------------------------------------ */
 
 .stage-content .no-room {
     border: 1px solid #666666;
@@ -1183,6 +1191,21 @@ a.yellow.selected,
 }
 
 @media only screen and (max-width: 1200px) {
+    #context-menu input {
+        display: block;
+        font-size: 1.4em;
+        margin: 0.2em;
+    }
+    #context-menu .button {
+        display: block;
+        font-size: 1.4em;
+        margin: 0.2em;
+    }
+    #context-menu select {
+        display: block;
+        font-size: 1.4em;
+        margin: 0.2em;
+    }
     .stage-content > .entity-display.item-type {
         width: 41.5%;
         font-size: 180%;
@@ -1193,10 +1216,28 @@ a.yellow.selected,
     }
 }
 
+@media only screen and (max-width: 1100px) {
+    #wrapper-primary {
+        font-size: 1.5em;
+    }
+    #wrapper-secondary {
+        font-size: 1.5em;
+    }
+}
+
+@media only screen and (max-width: 950px) {
+    #wrapper-primary {
+        font-size: 1.8em;
+    }
+    #wrapper-secondary {
+        font-size: 1.8em;
+    }
+}
+
 @media only screen and (max-width: 800px) {
     .stage-content > .entity-display.item-type {
-        width: 88%;
-        font-size: 300%;
+        width: 42%;
+        font-size: 220%;
     }
     #wrapper-left {
         display: none;
@@ -1222,6 +1263,10 @@ a.yellow.selected,
 }
 
 @media only screen and (max-width: 500px) {
+    .stage-content > .entity-display.item-type {
+        width: 88%;
+        font-size: 200%;
+    }
     #wrapper-primary {
         font-size: 3em;
     }
