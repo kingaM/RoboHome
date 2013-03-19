@@ -24,7 +24,7 @@ body {
     background-color: #000000;
     font-size: 62.5%;
     font-family: sans-serif;
-    overflow: hidden; /* prevent scrollbar bumping the screen when screen height is being reduced */
+    /*overflow: hidden;  prevent scrollbar bumping the screen when screen height is being reduced */
 }
 
 .float-left { float: left; }
@@ -573,6 +573,10 @@ div.stage {
         -ms-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
          -o-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
             box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+}
+
+.stage-content .eca-new-rule {
+    margin-bottom: 30em; /* gurantee drop-down box to show */
 }
 
 .stage-content .eca-rule div {
@@ -1299,14 +1303,44 @@ a.yellow.selected,
         font-size: 4em;
     }
     .stage-content .eca-rule .eca-form-box {
-        margin-left: 0.5em;
-        min-width: 16.5em;
+        display: inline-block;
+        margin-left: 0;
+        width: 100%
+    }
+    .stage-content .eca-rule .eca-form-box input {
+        width: 20%;
     }
     .stage-content .eca-form-box div {
-        min-width: 60%;
+        min-width: 64%;
+    }
+    .stage-content button.eca-enable-disable {
+        display: block;
+        width: 88%;
     }
     .stage-content .eca-delete {
-        display: inline-block;
         float: none;
+    }
+    .stage-content .eca-rule-title .eca-delete {
+        display: block;
+        width: 93%;
+        margin-top: 0.5em;
+    }
+    .stage-content .eca-delete input {
+        width: 67%;
+    }
+    .stage-content .eca-event fieldset,
+    .stage-content .eca-condition fieldset,
+    .stage-content .eca-action fieldset {
+        margin: 0.5em 0 !important;
+        width: 100%;
+    }
+    .stage-content .select-wrapper {
+        width: 100%;
+    }
+    .stage-content select {
+        width: 100%;
+    }
+    .stage-content .eca-rule fieldset {
+        margin: 0.5em 0 0 0;
     }
 }

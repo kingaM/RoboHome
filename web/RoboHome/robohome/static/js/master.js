@@ -1838,6 +1838,7 @@ APP.ECARuleDisplay = function(ruleObj, ruleManager) {
     this.editButton;
     this.cancelButton;
     this.saveButton;
+    this.floatBox;
     this.deleteInput;
     this.deleteButton;
     
@@ -1917,8 +1918,9 @@ APP.ECARuleDisplay = function(ruleObj, ruleManager) {
         self.actionsBox = $('<div></div>'),
         self.showHide = $('<button></button>').addClass(APP.DOM_HOOK.ECA.SHOW_HIDE + ' ' + APP.DOM_HOOK.COLLAPSED),
         self.enableDisable = $('<button></button>').addClass(APP.DOM_HOOK.ECA.ENABLE_DISABLE),
-        self.deleteInput = $('<input></input>').attr({class: APP.DOM_HOOK.ECA.DELETE, placeholder: 'Confirm event name'}),
-        self.deleteButton = $('<button>Delete</button>').addClass(APP.DOM_HOOK.ECA.DELETE);
+        self.floatBox = $('<div></div>').addClass(APP.DOM_HOOK.ECA.DELETE)
+        self.deleteInput = $('<input></input>').attr({placeholder: 'Confirm event name'}),
+        self.deleteButton = $('<button>Delete</button>');
         
         self.showHide.click(function() {
             self.contentBox.toggle(100);
@@ -1979,8 +1981,9 @@ APP.ECARuleDisplay = function(ruleObj, ruleManager) {
         self.titleBox.append(self.showHide);
         self.titleBox.append(self.setToDisplayMode());
         self.titleBox.append(self.enableDisable);
-        self.titleBox.append(self.deleteButton);
-        self.titleBox.append(self.deleteInput);
+        self.floatBox.append(self.deleteInput);
+        self.floatBox.append(self.deleteButton);
+        self.titleBox.append(self.floatBox);
         self.boundingBox.append(self.titleBox);
         
         // event box
@@ -2767,6 +2770,7 @@ APP.ECAConditionDisplay = function(ruleId, conditionObj, ruleManager) {
     this.stateWrapper;
     this.statefield;
     this.editButton;
+    this.floatBox;
     this.deleteButton;
     this.saveButton;
     this.cancelButton;
@@ -2807,7 +2811,8 @@ APP.ECAConditionDisplay = function(ruleId, conditionObj, ruleManager) {
         self.equivalenceField = $('<div></div>').addClass(APP.DOM_HOOK.ECA.FIELD_DIV);
         self.stateField = $('<div></div>').addClass(APP.DOM_HOOK.ECA.FIELD_DIV);
         self.editButton = $('<button>Edit</button>');
-        self.deleteButton = $('<button>Delete</button>').addClass(APP.DOM_HOOK.ECA.DELETE);
+        self.floatBox = $('<div></div>').addClass(APP.DOM_HOOK.ECA.DELETE);
+        self.deleteButton = $('<button>Delete</button>');
         getEquivalence();
         getStateDisplay();
         getItemNameDisplay();
@@ -2839,7 +2844,8 @@ APP.ECAConditionDisplay = function(ruleId, conditionObj, ruleManager) {
         self.context.append(self.equivalenceField.append(equivalence));
         self.context.append(self.stateField.append(state));
         self.context.append(self.editButton);
-        self.context.append(self.deleteButton);
+        self.floatBox.append(self.deleteButton);
+        self.context.append(self.floatBox);
         
     };
     
@@ -3252,6 +3258,7 @@ APP.ECAActionDisplay = function(ruleId, actionObj, ruleManager) {
     this.scopeWrapper;
     this.scopeField;
     this.editButton;
+    this.floatBox;
     this.deleteButton;
     this.addButton;
     this.cancelButton;
@@ -3302,7 +3309,8 @@ APP.ECAActionDisplay = function(ruleId, actionObj, ruleManager) {
         self.bridge2 = $('<div>s&nbsp;&nbsp;in</div>');
         self.scopeField = $('<div></div>').addClass(APP.DOM_HOOK.ECA.FIELD_DIV);
         self.editButton = $('<button>Edit</button>');
-        self.deleteButton = $('<button>Delete</button>').addClass(APP.DOM_HOOK.ECA.DELETE);
+        self.floatBox = $('<div></div>').addClass(APP.DOM_HOOK.ECA.DELETE);
+        self.deleteButton = $('<button>Delete</button>');
         
         self.context.html('');
         
@@ -3336,7 +3344,8 @@ APP.ECAActionDisplay = function(ruleId, actionObj, ruleManager) {
         self.context.append(self.bridge2);
         self.context.append(self.scopeField);
         self.context.append(self.editButton);
-        self.context.append(self.deleteButton);
+        self.floatBox.append(self.deleteButton);
+        self.context.append(self.floatBox);
     };
     
     this.setToFormMode = function() {
