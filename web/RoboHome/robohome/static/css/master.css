@@ -485,43 +485,6 @@ div.stage {
     text-align: center;
 }
 
-/* Embellishments */
-.stage-content .entity-display .item {
-    background-image:        -webkit-gradient(linear, left top, left bottom, color-stop(0%, rgba(255,255,255,0)), color-stop(10%, rgba(255,255,255,0.07)), color-stop(25%, rgba(255,255,255,0)), color-stop(50%, rgba(255,255,255,0)), color-stop(50%, transparent), color-stop(80%, rgba(0,0,0,0.2)));
-    background-image: -webkit-linear-gradient(top, rgba(255,255,255,0) 0%, rgba(255,255,255,0.07) 10%, rgba(255,255,255,0) 25%, rgba(255,255,255,0) 50%, transparent 50%, rgba(0,0,0,0.2) 80%);
-    background-image:    -moz-linear-gradient(top, rgba(255,255,255,0) 0%, rgba(255,255,255,0.07) 10%, rgba(255,255,255,0) 25%, rgba(255,255,255,0) 50%, transparent 50%, rgba(0,0,0,0.2) 80%);
-    background-image:     -ms-linear-gradient(top, rgba(255,255,255,0) 0%, rgba(255,255,255,0.07) 10%, rgba(255,255,255,0) 25%, rgba(255,255,255,0) 50%, transparent 50%, rgba(0,0,0,0.2) 80%);
-    background-image:      -o-linear-gradient(top, rgba(255,255,255,0) 0%, rgba(255,255,255,0.07) 10%, rgba(255,255,255,0) 25%, rgba(255,255,255,0) 50%, transparent 50%, rgba(0,0,0,0.2) 80%);
-    background-image:   linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.07) 10%, rgba(255,255,255,0) 25%, rgba(255,255,255,0) 50%, transparent 50%, rgba(0,0,0,0.2) 80%);
-}
-
-.stage-content .entity-display .item,
-#context-menu .button {
-    border-top: 1px solid #AAAAAA;
-}
-
-#context-menu input {
-    border-bottom: 1px solid #AAAAAA;
-}
-
-.stage-content > .entity-display.item-type,
-.context-menu-content,
-#context-menu fieldset {
-    border-top: 1px solid #888888;
-}
-
-.stage-content .entity-display,
-#context-menu fieldset,
-#context-menu input,
-#context-menu .button,
-#context-menu .select-wrapper  {
-    -webkit-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
-       -moz-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
-        -ms-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
-         -o-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
-            box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
-}
-
 /* ------------------------------------------------ */
 
 .stage-content .no-room {
@@ -1189,6 +1152,62 @@ a.yellow.selected,
     border: 1px solid rgba(255,233,21,1);
     background-color: rgba(255,233,21,0.5);
 }
+
+/* Embellishments */
+.stage-content .entity-display .item,
+.stage-content .eca-rule button {
+    background-image:        -webkit-gradient(linear, left top, left bottom, color-stop(0%, rgba(255,255,255,0)), color-stop(10%, rgba(255,255,255,0.07)), color-stop(25%, rgba(255,255,255,0)), color-stop(50%, rgba(255,255,255,0)), color-stop(50%, transparent), color-stop(80%, rgba(0,0,0,0.2)));
+    background-image: -webkit-linear-gradient(top, rgba(255,255,255,0) 0%, rgba(255,255,255,0.07) 10%, rgba(255,255,255,0) 25%, rgba(255,255,255,0) 50%, transparent 50%, rgba(0,0,0,0.2) 80%);
+    background-image:    -moz-linear-gradient(top, rgba(255,255,255,0) 0%, rgba(255,255,255,0.07) 10%, rgba(255,255,255,0) 25%, rgba(255,255,255,0) 50%, transparent 50%, rgba(0,0,0,0.2) 80%);
+    background-image:     -ms-linear-gradient(top, rgba(255,255,255,0) 0%, rgba(255,255,255,0.07) 10%, rgba(255,255,255,0) 25%, rgba(255,255,255,0) 50%, transparent 50%, rgba(0,0,0,0.2) 80%);
+    background-image:      -o-linear-gradient(top, rgba(255,255,255,0) 0%, rgba(255,255,255,0.07) 10%, rgba(255,255,255,0) 25%, rgba(255,255,255,0) 50%, transparent 50%, rgba(0,0,0,0.2) 80%);
+    background-image:   linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.07) 10%, rgba(255,255,255,0) 25%, rgba(255,255,255,0) 50%, transparent 50%, rgba(0,0,0,0.2) 80%);
+}
+
+.stage-content .entity-display .item,
+#context-menu .button,
+.stage-content .eca-rule button {
+    border-top: 1px solid #AAAAAA;
+}
+
+#context-menu input,
+.stage-content .eca-rule input {
+    border-bottom: 1px solid #AAAAAA;
+}
+
+.stage-content > .entity-display.item-type,
+.context-menu-content,
+#context-menu fieldset,
+.stage-content .eca-rule {
+    border-top: 1px solid #888888;
+}
+
+.stage-content .entity-display,
+#context-menu fieldset,
+#context-menu input,
+#context-menu .button,
+#context-menu .select-wrapper  {
+    -webkit-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+       -moz-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+        -ms-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+         -o-box-shadow: 0 0 0.5em 0.2em rgba(0,0,0,0.5) inset;
+            box-shadow: 0 0 0.2em 0.2em rgba(0,0,0,0.5) inset;
+}
+
+.stage-content .eca-form-box div,
+.eca-event .eca-field-div {
+    border-top: 1px solid rgba(132,169,14,0.8)
+}
+
+.eca-condition-display .eca-field-div {
+    border-top: 1px solid rgba(0,134,191,0.8);
+}
+
+.eca-action-display .eca-field-div {
+    border-top: 1px solid rgba(196,30,30,0.8);
+}
+
+/* @media queries */
 
 @media only screen and (max-width: 1200px) {
     #context-menu input {

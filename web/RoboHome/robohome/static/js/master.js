@@ -4147,7 +4147,9 @@ APP.StageManager = function() {
                     // perform IP check
                     targetIP = $('#' + addInputIPSelector).val();
                     // regex from http://stackoverflow.com/questions/10006459/regular-expression-for-ip-address-validation
+                    /*
                     if(/^(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))$/.test(targetIP) === true) {
+                    */
                         for(var j = 0; j < APP.data.houseStructure[APP.API.STATE.ROOMS].length; j++) {
                             for(var k = 0; k < APP.data.houseStructure[APP.API.STATE.ROOMS][j][APP.API.STATE.ROOM.ITEMS].length; k++) {
                                 if(targetIP === APP.data.houseStructure[APP.API.STATE.ROOMS][j][APP.API.STATE.ROOM.ITEMS][k][APP.API.STATE.ROOM.ITEM.IP]) {
@@ -4198,9 +4200,11 @@ APP.StageManager = function() {
                         } else {
                             addWarningIP.html('IP specified is already in use by existing item (' + rooms[roomIndex][APP.API.STATE.ROOM.ITEMS][itemIndex][APP.API.STATE.ROOM.ITEM.NAME] + ') in the room ' + rooms[roomIndex][APP.API.STATE.ROOM.NAME] + '.');
                         }
+                    /*
                     } else {
                         addWarningIP.html('Invalid IPv4 address.');
                     }
+                    */
 
                 });
                 container.append(addButton);
