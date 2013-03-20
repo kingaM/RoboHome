@@ -1466,6 +1466,13 @@ APP.ItemTypeDisplay.prototype.construct = function() {
 };
 
 /**
+ *
+ */
+APP.ItemTypeDisplay.prototype.remove = function() {
+    this.panel.remove();
+}
+
+/**
  * @for APP.ItemTypeDisplay
  * @method update
  * Updates the representation of this object on the stage
@@ -3783,7 +3790,13 @@ APP.StageManager = function() {
      *
      */
     this.removeStage = function(stage) {
-        this.toggleStage(null);
+        console.log(activeStageId);
+        console.log(stage.stageId);
+        if(activeStageId === stage.stageId) {
+            this.toggleStage(null);
+        } else {
+            
+        }
         stages.remove(stage.stageId);
         $('#' + stage.stageId).remove();
         this.menuManager.removeButton(stage);
@@ -3959,6 +3972,59 @@ APP.StageManager = function() {
             }
         }
         
+        function updateItemTypes() {
+            var items = getRoom(roomId)[APP.API.STATE.ROOM.ITEMS],
+                item,
+                itemTypes = stage.data.itemTypes,
+                itemTypesCopy = {},
+                itemType;
+            
+            for(var prop in itemTypes) {
+                if(itemTypes.hasOwnProperty(prop)) {
+                    itemTypesCopy[prop] = itemTypes[prop];
+                }
+            }
+            
+            for(var j = 0; j < items.length; j++) {
+                item = items[j];
+                itemType = item[APP.API.STATE.ROOM.ITEM.ITEM_TYPE];
+                if(itemTypes[itemType] === undefined) {
+                    itemTypes[itemType] = [];
+                } else {
+                    delete itemTypesCopy[itemType];
+                }
+                itemTypes[itemType].push(item);
+            }
+            
+            for(var prop in itemTypesCopy[prop]) {
+                if(itemTypesCopy.hasOwnProperty(prop)) {
+                    delete itemTypes[prop];
+                }
+            }
+            console.log(itemTypes);
+        }
+        
+        function constructItemTypeDisplays(itemTypes) {
+            for(var type in itemTypes) {
+                if(itemTypes.hasOwnProperty(type)) {
+                    stage.data.itemTypeDisplays[type] = new APP.ItemTypeDisplay(stage, type, getRoom(roomId));
+                    stage.data.itemTypeDisplays[type].construct();
+                }
+            }
+        }
+        
+        function updateItemTypeDisplays() {
+            for(var display in stage.data.itemTypeDisplays) {
+                if(stage.data.itemTypeDisplays.hasOwnProperty(display)) {
+                    if(stage.data.itemTypes[display] !== undefined) {
+                        stage.data.itemTypeDisplays[display].update();
+                    } else {
+                        stage.data.itemTypeDisplays[display].remove();
+                    }
+                }
+            }
+        }
+        
         stage.setOnShow(function() {
             // default
         });
@@ -4050,7 +4116,7 @@ APP.StageManager = function() {
                                             self.setStage_NoRoom();
                                         }
                                         dis.parent().removeClass(APP.DOM_HOOK.UPDATING);
-                                        self.removeStage(stage);
+                                        stage.update();
                                     },
                                     function() {
                                         // do nothing
@@ -4193,9 +4259,8 @@ APP.StageManager = function() {
                                     // AJAX call
                                     APP.ajax.get_state(
                                         function() {
-                                            self.parent().removeClass(APP.DOM_HOOK.UPDATING);                                                        
-                                            stage.tearDown();
-                                            stage.construct();
+                                            self.parent().removeClass(APP.DOM_HOOK.UPDATING);
+                                            stage.update();
                                         },
                                         function() {
                                             // do nothing
@@ -4271,8 +4336,7 @@ APP.StageManager = function() {
                                 // AJAX call
                                 APP.ajax.get_state(
                                     function() {
-                                        stage.tearDown();
-                                        stage.construct();
+                                        stage.update();
                                     },
                                     function() {
                                         // do nothing
@@ -4300,30 +4364,13 @@ APP.StageManager = function() {
             stage.contextMenu.getContext().append(wrapper);
         });
         stage.setConstruct(function() {
-            var itemTypes,
-                items = getRoom(roomId)[APP.API.STATE.ROOM.ITEMS],
-                item,
-                itemType;
             stage.getContext().append($('<div></div>').attr({id: 'context-bar'}));
 
             stage.data.itemTypes = {};
-            itemTypes = stage.data.itemTypes;
-            for(var j = 0; j < items.length; j++) {
-                item = items[j];
-                itemType = item[APP.API.STATE.ROOM.ITEM.ITEM_TYPE];
-                if(itemTypes[itemType] === undefined) {
-                    itemTypes[itemType] = [];
-                }
-                itemTypes[itemType].push(item);
-            }
+            updateItemTypes();
             stage.data.itemTypeDisplays = {};
-            
-            for(var type in itemTypes) {
-                if(itemTypes.hasOwnProperty(type)) {
-                    stage.data.itemTypeDisplays[type] = new APP.ItemTypeDisplay(stage, type, getRoom(roomId));
-                    stage.data.itemTypeDisplays[type].construct();
-                }
-            }
+            constructItemTypeDisplays(stage.data.itemTypes);
+
             stage.poller.startPolling();
             stage.ready();
         });
@@ -4367,16 +4414,13 @@ APP.StageManager = function() {
                 }
                 
             }
-        
+            
             updateMenu();
+            updateItemTypes();
             
             $('#context-bar').html('');
             $('#context-menu div.' + APP.DOM_HOOK.UPDATING).removeClass(APP.DOM_HOOK.UPDATING);
-            for(var display in stage.data.itemTypeDisplays) {
-                if(stage.data.itemTypeDisplays.hasOwnProperty(display)) {
-                    stage.data.itemTypeDisplays[display].update();
-                }
-            }
+            updateItemTypeDisplays();
         });
         stage.setUpdateError(function() {
             $('#context-bar').html('Caution: Connection to server lost. Displaying last available state info retrieved at ' + APP.data.retrieved.houseStructure);
