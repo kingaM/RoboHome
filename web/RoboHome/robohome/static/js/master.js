@@ -1425,10 +1425,11 @@ APP.ItemTypeDisplay.prototype.addItemDisplay = function(itemObj) {
  *
  */
 APP.ItemTypeDisplay.prototype.removeItemDisplay = function(itemId) {
+    console.log('removing' + itemId);
     for(var i = 0; i < this.itemDisplays.length; i++) {
-        if(this.itemDisplays.itemObj[APP.API.STATE.ROOM.ITEM.ID] === itemId) {
+        if(this.itemDisplays[i].itemObj[APP.API.STATE.ROOM.ITEM.ID] === itemId) {
             this.itemDisplays[i].panel.remove();
-            this.itemDisplays = this.itemDisplays.splice(i, 1);
+            this.itemDisplays.splice(i, 1);
         }
     }
 };
@@ -1480,10 +1481,7 @@ APP.ItemTypeDisplay.prototype.remove = function() {
 APP.ItemTypeDisplay.prototype.update = function() {
     var self = this,
         roomId = this.roomObj[APP.API.STATE.ROOM.ID],
-        stateList = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][this.itemType][APP.API.VERSION.SUPPORTED_TYPE.STATES],
-        itemObjs,
-        itemPanel,
-        statePanel;
+        stateList = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][this.itemType][APP.API.VERSION.SUPPORTED_TYPE.STATES];
     
     function updateRoomObj() {
         for(var i = 0; i < APP.data.houseStructure[APP.API.STATE.ROOMS].length; i++) {
@@ -1515,7 +1513,6 @@ APP.ItemTypeDisplay.prototype.update = function() {
                     break inner;
                 }
             }
-
         }
         
         // If there are any unmatched itemDisplays, it means they need to be removed
@@ -1606,6 +1603,7 @@ APP.ItemDisplay = function(roomId, itemObj) {
     this.itemObj = itemObj;
     
     this.panel;
+    this.innerPanel;
     this.infoBar;
     this.attachmentsSelf;
     this.statusPane;
@@ -1660,15 +1658,19 @@ APP.ItemDisplay.prototype.construct = function() {
         );
     });
     
+    this.innerPanel = $('<div></div>');
+    
     this.infoBar = $('<div></div>').addClass('info-bar');
     this.infoBar.append($('<h1>' + this.itemObj[APP.API.STATE.ROOM.ITEM.NAME] + '</h1>').addClass('entity-name'));
     this.infoBar.append($('<span>' + this.itemObj[APP.API.STATE.ROOM.ITEM.IP] + '</span>').addClass('entity-ip'));
-    this.panel.append(this.infoBar);
+    this.innerPanel.append(this.infoBar);
     
     this.attachmentsSelf = $('<div></div>').addClass('attachments self');
     this.statusPane = $('<div><img src="../static/img/ajax-loader.gif"></img></div>').addClass('status');
     this.attachmentsSelf.append(this.statusPane);
-    this.panel.append(this.attachmentsSelf);
+    this.innerPanel.append(this.attachmentsSelf);
+    
+    this.panel.append(this.innerPanel);
     
     return this.panel;
 };
@@ -3975,7 +3977,7 @@ APP.StageManager = function() {
         function updateItemTypes() {
             var items = getRoom(roomId)[APP.API.STATE.ROOM.ITEMS],
                 item,
-                itemTypes = stage.data.itemTypes,
+                itemTypes = {},
                 itemTypesCopy = {},
                 itemType;
             
@@ -4001,7 +4003,7 @@ APP.StageManager = function() {
                     delete itemTypes[prop];
                 }
             }
-            console.log(itemTypes);
+            stage.data.itemTypes = itemTypes;
         }
         
         function constructItemTypeDisplays(itemTypes) {
@@ -4014,13 +4016,48 @@ APP.StageManager = function() {
         }
         
         function updateItemTypeDisplays() {
-            for(var display in stage.data.itemTypeDisplays) {
-                if(stage.data.itemTypeDisplays.hasOwnProperty(display)) {
-                    if(stage.data.itemTypes[display] !== undefined) {
-                        stage.data.itemTypeDisplays[display].update();
-                    } else {
-                        stage.data.itemTypeDisplays[display].remove();
+            var itemTypes = {},
+                displays = {};
+            
+            for(var prop in stage.data.itemTypes) {
+                if(stage.data.itemTypes.hasOwnProperty(prop)) {
+                    itemTypes[prop] = stage.data.itemTypes[prop];
+                }
+            }
+            
+            for(var prop in stage.data.itemTypeDisplays) {
+                if(stage.data.itemTypeDisplays.hasOwnProperty(prop)) {
+                    displays[prop] = stage.data.itemTypeDisplays[prop];
+                }
+            }
+            
+            for(var prop in stage.data.itemTypes) {
+                if(stage.data.itemTypes.hasOwnProperty(prop)) {
+                    if(stage.data.itemTypeDisplays[prop] !== undefined) {
+                        stage.data.itemTypeDisplays[prop].update();
+                        delete displays[prop];
                     }
+                }
+            }
+            // what's left in displays need to be removed
+            
+            for(var prop in stage.data.itemTypeDisplays) {
+                if(stage.data.itemTypeDisplays.hasOwnProperty(prop)) {
+                    delete itemTypes[prop];
+                }
+            }
+            // what's left in itemTypes need to be constructed
+            
+            for(var prop in displays) {
+                if(displays.hasOwnProperty(prop)) {
+                    stage.data.itemTypeDisplays[prop].remove();
+                }
+            }
+            
+            for(var prop in itemTypes) {
+                if(itemTypes.hasOwnProperty(prop)) {
+                    stage.data.itemTypeDisplays[prop] = new APP.ItemTypeDisplay(stage, prop, getRoom(roomId));
+                    stage.data.itemTypeDisplays[prop].construct();
                 }
             }
         }
@@ -4322,10 +4359,7 @@ APP.StageManager = function() {
                     var self = $(this),
                         targetItemId = parseInt($('#' + removeSelectSelector).val()),
                         targetOption = $('#' + removeSelectSelector).find('option[value="' + targetItemId + '"]'),
-                        targetType = targetOption.attr('data-type'),
-                        targetName = targetOption.attr('data-name'),
-                        types = stage.data.itemTypes,
-                        displays = stage.data.itemTypeDisplays;
+                        targetName = targetOption.attr('data-name');
                     
                     if($('#' + removeInputSelector).val() === targetName) {
                         removeWarning.html('');
@@ -4366,11 +4400,11 @@ APP.StageManager = function() {
         stage.setConstruct(function() {
             stage.getContext().append($('<div></div>').attr({id: 'context-bar'}));
 
-            stage.data.itemTypes = {};
             updateItemTypes();
             stage.data.itemTypeDisplays = {};
+            console.log(stage.data.itemTypes);
             constructItemTypeDisplays(stage.data.itemTypes);
-
+            
             stage.poller.startPolling();
             stage.ready();
         });
