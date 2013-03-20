@@ -1050,7 +1050,7 @@ APP.ContextMenu = function() {
      * This method is automatically called by the associated Stage's construct() method
      */
     this.construct = function() {};
-    
+        
     /**
      * @for APP.ContextMenu
      * @method setConstruct
@@ -1058,6 +1058,18 @@ APP.ContextMenu = function() {
      */
     this.setConstruct = function(func) {
         this.construct = func;
+    }
+    
+    /**
+     *
+     */
+    this.update = function() {};
+    
+    /**
+     *
+     */
+    this.setUpdate = function(func){
+        this.update = func;
     }
     
     /**
@@ -1380,6 +1392,13 @@ APP.Stage.prototype.setUpdateError = function(func) {
  */
 APP.Stage.prototype.setMenuConstruct = function(func) {
     this.contextMenu.setConstruct(func);
+}
+
+/**
+ *
+ */
+APP.Stage.prototype.setMenuUpdate = function(func) {
+    this.contextMenu.setUpdate(func);
 }
 
 /**
@@ -3979,7 +3998,22 @@ APP.StageManager = function() {
                 item,
                 itemTypes = {},
                 itemTypesCopy = {},
-                itemType;
+                itemType,
+                oldItems = stage.data.items;
+            
+            stage.data.items = items;
+            if(oldItems !== undefined) {
+                var isEqual = true;
+                if(stage.data.items.length !== oldItems.length) {
+                    isEqual = false;
+                } else {
+                    for(var i = 0; i < oldItems.length; i++) {
+                        if(stage.data.items[i][APP.API.STATE.ROOM.ITEM.ID] !== oldItems[i][APP.API.STATE.ROOM.ITEM.ID]) {
+                            isEqual = false;
+                        }
+                    }
+                }
+            }
             
             for(var prop in itemTypes) {
                 if(itemTypes.hasOwnProperty(prop)) {
@@ -4004,6 +4038,7 @@ APP.StageManager = function() {
                 }
             }
             stage.data.itemTypes = itemTypes;
+            return isEqual;
         }
         
         function constructItemTypeDisplays(itemTypes) {
@@ -4397,6 +4432,10 @@ APP.StageManager = function() {
             content.append(constructItemsPanel(getRoom(roomId)[APP.API.STATE.ROOM.ITEMS]));
             stage.contextMenu.getContext().append(wrapper);
         });
+        stage.setMenuUpdate(function() {
+            stage.contextMenu.tearDown();
+            stage.contextMenu.construct();
+        });
         stage.setConstruct(function() {
             stage.getContext().append($('<div></div>').attr({id: 'context-bar'}));
 
@@ -4412,7 +4451,9 @@ APP.StageManager = function() {
             // default
         });
         stage.setUpdate(function() {
-        
+            
+            var unchanged;
+            
             function updateMenu() {
                 var rooms = APP.data.houseStructure[APP.API.STATE.ROOMS],
                     roomsCopy = rooms.slice(0),
@@ -4450,7 +4491,10 @@ APP.StageManager = function() {
             }
             
             updateMenu();
-            updateItemTypes();
+            unchanged = updateItemTypes();
+            if(unchanged !== true) {
+                stage.contextMenu.update();
+            }
             
             $('#context-bar').html('');
             $('#context-menu div.' + APP.DOM_HOOK.UPDATING).removeClass(APP.DOM_HOOK.UPDATING);
