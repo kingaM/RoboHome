@@ -1905,7 +1905,7 @@ APP.ECARuleDisplay = function(ruleObj, ruleManager) {
                 itemType    = self.ruleObj[APP.API.EVENTS.RULE.EVENT.EVENT][APP.API.EVENTS.RULE.EVENT.ITEM_TYPE],
                 scope       = self.ruleObj[APP.API.EVENTS.RULE.EVENT.EVENT][APP.API.EVENTS.RULE.EVENT.SCOPE],
                 equivalence = '=', // TODO change to self.ruleObj[APP.API.EVENTS.RULE.EVENT.EVENT][APP.API.EVENTS.RULE.EVENT.SCOPE]
-                value       = self.ruleObj[APP.API.EVENTS.RULE.EVENT.EVENT][APP.API.EVENTS.RULE.EVENT.VALUE];        
+                value       = self.ruleObj[APP.API.EVENTS.RULE.EVENT.EVENT][APP.API.EVENTS.RULE.EVENT.VALUE];
             
             if(ruleName === '' || /^[\s\t\n\u00A0;]+$/.test(ruleName) === true || /[^]*[;][^]*/.test(ruleName) === true) {
                 self.errorMessage.html('Name cannot be empty, all whitespace, start with whitespace, or contain the semicolon (;).');
@@ -3815,8 +3815,6 @@ APP.StageManager = function() {
         console.log(stage.stageId);
         if(activeStageId === stage.stageId) {
             this.toggleStage(null);
-        } else {
-            
         }
         stages.remove(stage.stageId);
         $('#' + stage.stageId).remove();
@@ -3999,17 +3997,18 @@ APP.StageManager = function() {
                 itemTypes = {},
                 itemTypesCopy = {},
                 itemType,
-                oldItems = stage.data.items;
+                oldItems = stage.data.items,
+                isEqual = true;
             
             stage.data.items = items;
             if(oldItems !== undefined) {
-                var isEqual = true;
                 if(stage.data.items.length !== oldItems.length) {
                     isEqual = false;
                 } else {
                     for(var i = 0; i < oldItems.length; i++) {
                         if(stage.data.items[i][APP.API.STATE.ROOM.ITEM.ID] !== oldItems[i][APP.API.STATE.ROOM.ITEM.ID]) {
                             isEqual = false;
+                            break;
                         }
                     }
                 }

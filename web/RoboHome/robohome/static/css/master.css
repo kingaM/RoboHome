@@ -343,6 +343,7 @@ div.stage {
 }
 
 .stage-content {
+    overflow: auto;
     padding: 1em;
 }
 
