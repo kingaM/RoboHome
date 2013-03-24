@@ -48,7 +48,7 @@ def pack(content={}, statusCode=200):
 app = Flask(__name__)
 app.config.update(
     SECRET_KEY = 'development key',
-    DEBUG = True
+    DEBUG = False
 )
 
 app.register_blueprint(middleLayers.gadgeteerBlueprint)

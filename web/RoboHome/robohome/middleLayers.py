@@ -50,7 +50,6 @@ class MiddleLayer(object):
             time.sleep(2)
 
     def getState(self):
-        print self.state
         return self.state
 
 
@@ -114,12 +113,7 @@ class WemoLayer():
 class LightwaveRFLayer(MiddleLayer):
     def __init__(self, ip, item):
         self.ready = False
-        #super(LightwaveRFLayer, self).__init__(ip, item)
-
-        self.state = 1    # Remove when constructor is back
-        self.mockState = 1    # Remove when constructor is back
-        self.item = item    # Remove when constructor is back
-        self.ip = ip    # Remove when constructor is back
+        super(LightwaveRFLayer, self).__init__(ip, item)
 
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -133,15 +127,13 @@ class LightwaveRFLayer(MiddleLayer):
             self.device = ip.split("D")[1]
         else:
             self.sock.bind(("0.0.0.0", 9761))
-            #t1 = threading.Thread(target=self.pollEnergy)
-            #t1.daemon = True
-            #t1.start()
+            t1 = threading.Thread(target=self.pollEnergy)
+            t1.daemon = True
+            t1.start()
 
             t2 = threading.Thread(target=self.listenForEnergy)
             t2.daemon = True
             t2.start()
-
-            self.sock.sendto(",@?\0", (self.ip, 9760))
 
         self.ready = True
 
@@ -170,9 +162,11 @@ class LightwaveRFLayer(MiddleLayer):
             data, addr = self.sock.recvfrom(1024)
             if(len(data) > 8):
                 s = data.split("=")[1]
-                self.state = int(s.split(",")[0])
-                print self.state
-                return
+                s = int(s.split(",")[0])
+                if s > 300:
+                    self.state = 1
+                else:
+                    self.state = 0
 
     def on(self):
         if self.item._type != "energyMonitor":
