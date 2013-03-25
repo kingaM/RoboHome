@@ -688,8 +688,8 @@ div.eca-field-div {
 .stage-content .eca-delete {
     float: right;
 }
-.stage-content button.eca-delete {
-    margin-left: 1em;
+.stage-content .eca-delete button {
+    margin-left: 0.5em;
 }
 
 .stage-content .eca-rule fieldset {

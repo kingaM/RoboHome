@@ -3778,6 +3778,12 @@ APP.StageManager = function() {
                 class: 'green',
                 buttons: {}
             },
+            'button-plugins': {
+                menuId: null,
+                buttonText: 'Plugins',
+                class: 'orange',
+                buttons: {}
+            },
             'button-config': {
                 menuId: 'menu-config',
                 buttonText: 'Config',
@@ -4740,7 +4746,7 @@ APP.StageManager = function() {
      *
      */
     this.setStage_Plugins = function() {
-        var stageId = this.addStage(new APP.Stage('menu-config', 'button-plugins', 'Plugins', 'stage-plugins')),
+        var stageId = this.addStage(new APP.Stage(null, 'button-plugins', '', 'stage-plugins')),
             stage = stages.get(stageId);
         
         stage.setOnShow(function() {
@@ -4876,16 +4882,17 @@ APP.StageManager = function() {
             function link() {
                 var primaryButtons = primaryMenu.children().children(),
                     menus = secondaryMenuWrapper.children();
+                
                 primaryButtons.each(function() {
                     $(this).click(function() {
                         target = $(this);
-                        if(primaryMenuMap[$(this).attr('id')].menuId !== null) {
+                        if(primaryMenuMap[target.attr('id')].menuId !== null) {
                             target.toggleClass('selected');
                         }
                         primaryButtons.not(target).each(function() {
                             $(this).removeClass('selected');
                         });
-                        primaryMenuMapping = primaryMenuMap[$(this).attr('id')].menuId;
+                        primaryMenuMapping = primaryMenuMap[target.attr('id')].menuId;
                         $('#' + primaryMenuMapping).toggleClass('active');
                         menus.not('#' + primaryMenuMapping).removeClass('active');
                         menus.children().removeClass('selected');
@@ -4910,8 +4917,17 @@ APP.StageManager = function() {
             link();            
         })();
         
+        // no-menu button stages (Behavior not encouraged. MenuManager hack)
+        // ---------------
+        
         // home stage
         this.setStage_Home();
+        
+        // plugins stage
+        this.setStage_Plugins();
+        
+        // normal stages
+        // -------------
         
         // control stages
         APP.ajax.get_state(function() {
@@ -4946,9 +4962,6 @@ APP.StageManager = function() {
         
         // whitelist stage
         this.setStage_Whitelist();
-        
-        // plugins stage
-        this.setStage_Plugins();
         
         // logs stage
         this.setStage_Logs();
