@@ -420,6 +420,18 @@ div.stage {
     border: 1px solid #FFFFFF;
 }
 
+.stage-content .entity-display.item.passive {
+    cursor: default !important;
+}
+.stage-content .entity-display.item.passive > div {
+    background-image: none !important;
+}
+.stage-content .entity-display.item.passive:hover {
+    border: 1px solid #666666 !important;
+    border-top: 1px solid #AAAAAA !important;
+    background-color: rgba(0,200,200,0.1) !important;
+}
+
 @-webkit-keyframes updating {
     from { background-position: 0 50%; }
     to   { background-position: 2em 50%; }
