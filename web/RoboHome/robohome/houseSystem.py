@@ -4,6 +4,7 @@ from priorityQueue import MyPriorityQueue
 from threading import Thread
 import staticData as data
 from listeners import ListenerManager
+from pluginManager import PluginManager
 
 class House(object):
     """
@@ -20,6 +21,8 @@ class House(object):
         self.methodThread = Thread(name="Method Thread", target=self.executeFromQueue)
         self.methodThread.daemon = True
         self.methodThread.start()
+        self.plugins = PluginManager(self.rooms, self.events, self.queue)
+        exit()
 
     def initFromDatabase(self):
         """Initialises the house from the database"""
