@@ -38,6 +38,7 @@ APP.DOM_HOOK.ENTITY.ITEM_TYPE = 'item-type';
 APP.DOM_HOOK.ENTITY.ROOM = 'room';
 APP.DOM_HOOK.ENTITY.ITEM = 'item';
 APP.DOM_HOOK.NO_ROOM = 'no-room';
+APP.DOM_HOOK.PASSIVE = 'passive';
 APP.DOM_HOOK.ECA = {};
 APP.DOM_HOOK.ECA.RULE = 'eca-rule';
 APP.DOM_HOOK.ECA.NEW_RULE = 'eca-new-rule';
@@ -72,6 +73,7 @@ APP.API.VERSION = {};
 APP.API.VERSION.SUPPORTED_TYPES = 'supportedTypes';
 APP.API.VERSION.SUPPORTED_TYPE = {};
 APP.API.VERSION.SUPPORTED_TYPE.NAME = 'name';
+APP.API.VERSION.SUPPORTED_TYPE.IS_PASSIVE = 'isPassive';
 APP.API.VERSION.SUPPORTED_TYPE.SUPPORTED_BRANDS = 'supportedBrands';
 APP.API.VERSION.SUPPORTED_TYPE.METHODS = 'methods';
 APP.API.VERSION.SUPPORTED_TYPE.STATES = 'states';
@@ -1435,7 +1437,7 @@ APP.ItemTypeDisplay = function(stage, itemType, roomObj) {
  *
  */
 APP.ItemTypeDisplay.prototype.addItemDisplay = function(itemObj) {
-    var itemDisplay = new APP.ItemDisplay(this.roomObj[APP.API.STATE.ROOM.ID], itemObj);
+    var itemDisplay = new APP.ItemDisplay(this.stage, this.itemType, this.roomObj[APP.API.STATE.ROOM.ID], itemObj);
     this.itemDisplays.push(itemDisplay);
     this.panel.append(itemDisplay.construct());
 };
@@ -1617,9 +1619,12 @@ APP.ItemTypeDisplay.prototype.updateError = function() {
 /**
  *
  */
-APP.ItemDisplay = function(roomId, itemObj) {
+APP.ItemDisplay = function(stage, itemType, roomId, itemObj) {
+    this.stage = stage;
+    this.itemType = itemType;
     this.roomId = roomId;
     this.itemObj = itemObj;
+    this.isPassive = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][this.itemType][APP.API.VERSION.SUPPORTED_TYPE.IS_PASSIVE];
     
     this.panel;
     this.innerPanel;
@@ -1643,39 +1648,42 @@ APP.ItemDisplay.prototype.construct = function() {
         'data-itemtype': this.itemObj[APP.API.STATE.ROOM.ITEM.ITEM_TYPE] // currently used
     });
     
-    this.panel.click(function() {
-        var dis = $(this),
-            itemId,
-            itemType,
-            nextState,
-            method,
-            state,
-            states;
-        
-        itemId = self.itemObj[APP.API.STATE.ROOM.ITEM.ID];
-        itemType = self.itemObj[APP.API.ITEMS.ITEM_TYPE];
-        state = self.itemObj[APP.API.STATE.STATE];
-        states = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][itemType][APP.API.VERSION.SUPPORTED_TYPE.STATES];
-        
-        for(var i = 0; i < states.length; i++) {
-            if(state === states[i][APP.API.VERSION.SUPPORTED_TYPE.STATE.ID]) {
-                nextState = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][itemType][APP.API.VERSION.SUPPORTED_TYPE.STATES][(i + 1) % states.length];
-                method = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][itemType][APP.API.VERSION.SUPPORTED_TYPE.STATES][(i + 1) % states.length][APP.API.VERSION.SUPPORTED_TYPE.STATE.METHOD];
-                break;
+    if(this.isPassive === false) {
+        this.panel.click(function() {
+            var dis = $(this),
+                itemId,
+                itemType,
+                nextState,
+                method,
+                state,
+                states;
+            
+            itemId = self.itemObj[APP.API.STATE.ROOM.ITEM.ID];
+            itemType = self.itemObj[APP.API.ITEMS.ITEM_TYPE];
+            state = self.itemObj[APP.API.STATE.STATE];
+            states = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][itemType][APP.API.VERSION.SUPPORTED_TYPE.STATES];
+            
+            for(var i = 0; i < states.length; i++) {
+                if(state === states[i][APP.API.VERSION.SUPPORTED_TYPE.STATE.ID]) {
+                    nextState = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][itemType][APP.API.VERSION.SUPPORTED_TYPE.STATES][(i + 1) % states.length];
+                    method = APP.data.cache[APP.API.VERSION.SUPPORTED_TYPES][itemType][APP.API.VERSION.SUPPORTED_TYPE.STATES][(i + 1) % states.length][APP.API.VERSION.SUPPORTED_TYPE.STATE.METHOD];
+                    break;
+                }
             }
-        }
-        
-        dis.addClass(APP.DOM_HOOK.UPDATING);
-        APP.ajax.put_rooms_roomId_items_itemId_cmd(self.roomId, itemId, method,
-            function() {
-                self.itemObj[APP.API.STATE.STATE] = nextState;
-                self.update(self.itemObj);
-            },
-            function() {
-                // do nothing
-            }
-        );
-    });
+            
+            dis.addClass(APP.DOM_HOOK.UPDATING);
+            APP.ajax.put_rooms_roomId_items_itemId_cmd(self.roomId, itemId, method,
+                function() {
+                    self.stage.update();
+                },
+                function() {
+                    // do nothing
+                }
+            );
+        });
+    } else {
+        this.panel.addClass(APP.DOM_HOOK.PASSIVE);
+    }
     
     this.innerPanel = $('<div></div>');
     
@@ -4731,6 +4739,39 @@ APP.StageManager = function() {
     /**
      *
      */
+    this.setStage_Plugins = function() {
+        var stageId = this.addStage(new APP.Stage('menu-config', 'button-plugins', 'Plugins', 'stage-plugins')),
+            stage = stages.get(stageId);
+        
+        stage.setOnShow(function() {
+            // default
+        });
+        stage.setOnHide(function() {
+            // default
+        });
+        stage.setMenuConstruct(function() {
+            // default
+        });
+        stage.setConstruct(function() {
+            stage.ready();
+        });
+        stage.setTearDown(function() {
+            // default
+        });
+        stage.setUpdate(function() {
+            // default
+        });
+        stage.setUpdateError(function() {
+            // default
+        });
+        stage.setPollFunction(undefined, function() {
+            
+        });
+    };
+    
+    /**
+     *
+     */
     this.setStage_Logs = function() {
         var stageId = this.addStage(new APP.Stage('menu-config', 'button-logs', 'Logs', 'stage-logs')),
             stage = stages.get(stageId);
@@ -4905,6 +4946,9 @@ APP.StageManager = function() {
         
         // whitelist stage
         this.setStage_Whitelist();
+        
+        // plugins stage
+        this.setStage_Plugins();
         
         // logs stage
         this.setStage_Logs();
