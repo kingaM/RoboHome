@@ -21,6 +21,7 @@ from IPy import IP
 import updateManager
 import threading
 import middleLayers
+import pluginManager
 
 SETTINGS = {
     'LANGUAGE': 'en',
@@ -60,6 +61,7 @@ app.config.update(
 )
 
 app.register_blueprint(middleLayers.gadgeteerBlueprint)
+app.register_blueprint(pluginManager.pluginBlueprint)
 
 db = Database()
 house = House(db)

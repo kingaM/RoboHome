@@ -1,4 +1,29 @@
 import os
+from flask import Blueprint
+from flask import *
+
+pluginBlueprint = Blueprint('pluginManager', __name__, url_prefix='/plugins')
+
+
+@pluginBlueprint.route('/<string:pluginName>/<path:path>/', methods=['GET'])
+def pluginPage(pluginName, path):
+    if request.method == 'GET':
+        if pluginName not in plugins:
+            abort(404)
+        else:
+            return (plugins[pluginName].getPage(path))
+
+
+@pluginBlueprint.route('/<string:pluginName>/', methods=['GET'])
+def pluginHome(pluginName):
+    if request.method == 'GET':
+        if pluginName not in plugins:
+            abort(404)
+        else:
+            return (plugins[pluginName].getPage(None))
+
+plugins = {}
+
 
 class PluginManager():
 
@@ -6,7 +31,17 @@ class PluginManager():
         self.rooms = rooms
         self.events = events
         self.queue = queue
-        self.plugins = self.find_subclasses("./plugins/", Plugin)
+        subclasses = self.find_subclasses("./plugins/", Plugin)
+        for s in subclasses:
+            try:
+                s = s()
+                name = s.getName()
+                s.setup(rooms, events, queue)
+                if(name in plugins):
+                    raise Exception("Plugin name '" + name + "'' already in use")
+                plugins[name] = s
+            except Exception, e:
+                print "Error loading plugin: " + str(e)
 
     def find_subclasses(self, path, cls):
         """
@@ -26,7 +61,7 @@ class PluginManager():
         plugins = []
 
         def look_for_subclass(modulename):
-            print ("Searching %s" % (modulename))
+            #print ("Searching %s" % (modulename))
             module = __import__(modulename)
 
             #walk the dictionaries to get to the last one
@@ -43,7 +78,7 @@ class PluginManager():
 
                 try:
                     if issubclass(entry, cls):
-                        print ("Found subclass: " + key)
+                        #print ("Found subclass: " + key)
                         plugins.append(entry)
                 except TypeError:
                     continue
@@ -52,25 +87,37 @@ class PluginManager():
             for name in files:
                 if name.endswith(".py") and not name.startswith("__"):
                     path = os.path.join(root, name)
-                    modulename = path.replace("./", "").rsplit('.', 1)[0].replace('/', '.')
+                    modulename = path.replace("./", "").rsplit('.', 1)[0].replace('/', '.').replace('\\', '.')
                     look_for_subclass(modulename)
 
         return plugins
 
+
 class Plugin(object):
-    def setup(self):
-        """Called before the plugin is asked to do anything"""
-        raise NotImplementedError
+    def setup(self, rooms, events, queue):
+        """
+        Called before the plugin is asked to do anything
+
+        Arguments:
+        rooms -- rooms in the house
+        events -- events in the house
+        queue -- the queue to add commands to
+        """
+        raise NotImplementedError("setup method missing")
 
     def teardown(self):
         """Called to allow the plugin to free anything"""
-        raise NotImplementedError
+        raise NotImplementedError("teardown method missing")
 
-    def getPage(self, url):
+    def getPage(self, path):
         """
         Gets a web page to display from the plugin
 
         Arguments:
-        url -- the url of the page to display
+        path -- the path of the page to display
         """
-        raise NotImplementedError
+        raise NotImplementedError("getPage method missing")
+
+    def getName(self):
+        """Returns the unique name of the plugin to claim a url prefix"""
+        raise NotImplementedError("getName method missing")
