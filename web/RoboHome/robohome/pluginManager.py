@@ -2,6 +2,7 @@ import os
 from flask import Blueprint
 from flask import *
 
+
 pluginBlueprint = Blueprint('pluginManager', __name__, url_prefix='/plugins')
 
 
@@ -21,6 +22,16 @@ def pluginHome(pluginName):
             abort(404)
         else:
             return (plugins[pluginName].getPage(None))
+
+
+@pluginBlueprint.route('/', methods=['GET'])
+def getPlugins():
+    if request.method == 'GET':
+        pluginNames = []
+        for p in plugins:
+            pluginNames.append(p)
+        return jsonify({"statusCode": 200, "content": {"plugins": pluginNames}})
+
 
 plugins = {}
 
