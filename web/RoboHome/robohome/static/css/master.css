@@ -776,16 +776,19 @@ div.eca-field-div {
 .eca-event .eca-field-div {
     background-color: rgba(0,100,0,0.2);
     border: 1px solid rgba(132,169,14,0.5);
+    color: rgba(132,169,14,1);
 }
 
 .eca-condition-display .eca-field-div {
     background-color: rgba(0,0,200,0.1);
     border: 1px solid rgba(0,134,191,0.5);
+    color: rgba(0,134,191,1);
 }
 
 .eca-action-display .eca-field-div {
     background-color: rgba(255,0,0,0.1);
     border: 1px solid rgba(196,30,30,0.5);
+    color: rgba(255,125,125,1);
 }
 
 .stage-content .eca-event > div,
