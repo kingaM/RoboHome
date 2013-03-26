@@ -4,15 +4,16 @@ os.sys.path.insert(0, parentdir)
 from pluginManager import Plugin
 
 
-class myTest(Plugin):
+class Weather(Plugin):
     def setup(self, rooms, events, queue):
         pass
 
     def getName(self):
-        return "testPlugin"
+        return "weather"
 
     def getPage(self, path):
-        return("This is a test")
+        with open('./plugins/weather/page.html', 'r') as content_file:
+            return content_file.read()
 
     def teardown(self):
         pass
