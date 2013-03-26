@@ -2,12 +2,23 @@ import os
 from flask import Blueprint
 from flask import *
 
+# Temporary until I can fix the imports
+def parrot(request):
+    dict = {
+        'method': request.method,
+        'payload': request.data,
+        'args': request.args.to_dict()
+    }
+    return jsonify(dict)
 
 pluginBlueprint = Blueprint('pluginManager', __name__, url_prefix='/plugins')
 
 
 @pluginBlueprint.route('/<string:pluginName>/<path:path>/', methods=['GET'])
 def pluginPage(pluginName, path):
+    args = request.args.to_dict()
+    if('test' in args):
+        return parrot(request)
     if request.method == 'GET':
         if pluginName not in plugins:
             abort(404)
@@ -17,6 +28,9 @@ def pluginPage(pluginName, path):
 
 @pluginBlueprint.route('/<string:pluginName>/', methods=['GET'])
 def pluginHome(pluginName):
+    args = request.args.to_dict()
+    if('test' in args):
+        return parrot(request)
     if request.method == 'GET':
         if pluginName not in plugins:
             abort(404)
@@ -26,6 +40,9 @@ def pluginHome(pluginName):
 
 @pluginBlueprint.route('/', methods=['GET'])
 def getPlugins():
+    args = request.args.to_dict()
+    if('test' in args):
+        return parrot(request)
     if request.method == 'GET':
         pluginNames = []
         for p in plugins:
