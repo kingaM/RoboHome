@@ -13,3 +13,4 @@ class ListenerManager:
     def notify(self, ip, event):
         for listener in self.listeners:
             listener(ip, event)
+

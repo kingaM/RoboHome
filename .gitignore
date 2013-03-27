@@ -8,6 +8,12 @@ venv
 *.py[cod]
 *.egg-info
 
+#Android
+bin/
+gen/
+*.properties
+
+
 #Visual Studio
 *.[Oo]bj
 *.user
