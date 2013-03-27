@@ -8,6 +8,7 @@ from wemo import WemoHelper
 import urllib2
 from flask import Blueprint
 from flask import *
+from databaseTables import Database
 
 items = {}
 
@@ -171,6 +172,8 @@ class LightwaveRFLayer(MiddleLayer):
             self.room = self.room.split(":")[0]
             self.device = ip.split("D")[1]
         else:
+            self.contState = 0
+            self.db = Database()
             self.sock.bind(("0.0.0.0", 9761))
             t1 = threading.Thread(target=self.pollEnergy)
             t1.daemon = True
@@ -179,6 +182,10 @@ class LightwaveRFLayer(MiddleLayer):
             t2 = threading.Thread(target=self.listenForEnergy)
             t2.daemon = True
             t2.start()
+
+            t3 = threading.Thread(target=self.storeEnergy)
+            t3.daemon = True
+            t3.start()
 
         self.ready = True
 
@@ -208,10 +215,16 @@ class LightwaveRFLayer(MiddleLayer):
             if(len(data) > 8):
                 s = data.split("=")[1]
                 s = int(s.split(",")[0])
+                self.contState = s
                 if s > 300:
                     self.state = 1
                 else:
                     self.state = 0
+
+    def storeEnergy(self):
+        while True:
+            self.db.energy.addEntry(self.contState)
+            time.sleep(30)
 
     def on(self):
         if self.item._type != "energyMonitor":

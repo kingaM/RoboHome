@@ -227,6 +227,19 @@ class WhitelistTable(DatabaseHelper):
     def deleteEmail(self, email):
         super(WhitelistTable, self).removeEntry(self.tablename, "email='" + email + "'")
 
+
+class EnergyTable(DatabaseHelper):
+
+    def __init__(self):
+        self.tablename = "energy"
+        super(EnergyTable, self).__init__()
+
+    def addEntry(self, watts):
+        return super(EnergyTable, self).addEntry(self.tablename, "watts", "'" + str(watts) + "'")
+
+    def getEnergyBetDates(self, startDate, endDate):
+        return super(EnergyTable, self).retriveData("SELECT * FROM " + self.tablename + " WHERE time BETWEEN FROM_UNIXTIME(" + str(startDate) + ") AND FROM_UNIXTIME(" + str(endDate) + ")") 
+
 class Database(DatabaseHelper):
 
     def __init__(self):
@@ -239,6 +252,7 @@ class Database(DatabaseHelper):
         self.actions = ActionsTable()
         self.users = UsersTable()
         self.whitelist = WhitelistTable()
+        self.energy = EnergyTable()
         super(Database, self).__init__()
 
     def addTables(self):
