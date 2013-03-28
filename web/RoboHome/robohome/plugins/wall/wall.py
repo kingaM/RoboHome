@@ -16,10 +16,13 @@ class Weather(Plugin):
             with open('./plugins/wall/page.html', 'r') as content_file:
                 return content_file.read()
         else:
+            """
             html = "<html><body><iframe width=\"100%\" height=\"100%\"  frameBorder=\"0\" src=\"http://www.twiddla.com/" + path + "\"></iframe></body></html>"
             with open('./plugins/wall/page.html', 'w') as content_file:
                 content_file.write(html)
             return "Wall Saved"
+            """
+            return ''
 
     def teardown(self):
         pass
