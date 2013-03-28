@@ -966,12 +966,15 @@ div.eca-field-div {
 
 #stage-plugins .stage-content {
     padding: 0;
+    height:100%;
+    overflow: hidden;
 }
 
 #stage-plugins .stage-content iframe {
     border: none;
     width: 100%;
-    height: 99%;
+    height: 100%;
+    overflow: hidden;
 }
 .context-menu-inner-wrapper.plugins li {
     line-height: 2em;
