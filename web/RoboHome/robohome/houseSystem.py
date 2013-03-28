@@ -29,7 +29,7 @@ class House(object):
         rooms = self.database.room.retrieveAllData()
         for room in rooms:
             self.rooms[room.id] = room
-            items = self.database.items.retrieveForRoomId(room.id)
+            items = self.database.items.retrieveForRoomId(room)
             if len(items) > 0:
                 for item in items:
                     self.rooms[room.id].items[item._id] = item
@@ -57,9 +57,11 @@ class House(object):
         Arguments:
         name -- the name of the room
         """
-
-        id = self.database.room.addEntry(name)
-        self.rooms[id] = Room(id, name)
+        room = Room(None, name)
+        id = self.database.room.addEntry(room)
+        if id ==-1:
+            raise Exception("Database error while adding a room")
+        self.rooms[id] = room
 
         return id
 
@@ -72,8 +74,8 @@ class House(object):
         name -- new name for the given room
         """
         if roomId in self.rooms:
-            self.database.room.updateEntry(roomId, name)
-            self.rooms[roomId] = Room(roomId, name)
+            self.rooms[roomId].name = name
+            self.database.room.updateEntry(self.rooms[roomId])
         else:
             raise KeyError("Invalid roomId")
 
@@ -85,7 +87,7 @@ class House(object):
         roomId -- the id of the room to delete
         """
         if roomId in self.rooms:
-            self.database.room.deleteEntryByID(roomId)
+            self.database.room.removeEntry(self.rooms[roomId])
             del self.rooms[roomId]
         else:
             raise KeyError("Invalid roomId")
@@ -103,9 +105,8 @@ class House(object):
         ip -- the ip of the item
         """
         if roomId in self.rooms:
-            typeId = self.database.types.getIdForName(type)
-            itemId = self.database.items.addEntry(name, brand, ip, roomId, typeId)
-            item = data.types[type](itemId, name, brand, type, ip, self.listenerManager)
+            item = data.types[type](None, name, brand, type, ip, self.listenerManager)
+            itemId = self.database.items.addEntry(item, roomId)
             self.rooms[roomId].addItem(itemId, item)
         else:
             raise KeyError("Invalid roomId")
@@ -124,16 +125,14 @@ class House(object):
         ip -- tnew/current if unchangedhe ip of the item
         """
         if roomId in self.rooms and itemId in self.rooms[roomId].items:
-            typeId = self.database.types.getIdForName(type)
             self.rooms[roomId].items[itemId].name = name
             self.rooms[roomId].items[itemId].brand = brand
             self.rooms[roomId].items[itemId].ip = ip
             self.rooms[roomId].items[itemId]._type = type
             self.rooms[roomId].items[itemId].roomId = roomId
-            self.database.items.updateEntry(itemId, name, brand, ip, roomId, typeId)
+            self.database.items.updateEntry(self.rooms[roomId].items[itemId], roomId)
         else:
             raise KeyError("Invalid roomId or itemId")
-
         return itemId
 
     def deleteItem(self, roomId, itemId):
@@ -145,7 +144,7 @@ class House(object):
         itemid -- the id of the item to be deleted
         """
         if roomId in self.rooms and itemId in self.rooms[roomId].items:
-            self.database.items.deleteEntry(itemId)
+            self.database.items.removeEntry(self.rooms[roomId].items[itemId])
             del self.rooms[roomId].items[itemId]
         else:
             raise KeyError("Invalid roomId or itemId")

@@ -78,18 +78,21 @@ class MockEvent:
 class MockCondition:
     def __init__(self, result):
         self.result = result
+        self.item = MockItem(1, "mockName1", "mockBrand1", "mockType1", "mockIP1")
 
     def check(self):
         return self.result
 
 
 class MockAction:
-    def __init__(self, allItemsInHouse=False, _type="", itemsActedOn=(None, None, "mockType"), isConflict=False):
+    def __init__(self, allItemsInHouse=False, _type="", itemsActedOn=(None, None, "mockType"), isConflict=False, room = MockRoom(1, "room1"), item=MockItem(1, "mockName1", "mockBrand1", "mockType1", "mockIP1")):
         self.allItemsInHouse = allItemsInHouse
         self.itemsForType = []
         self._type = _type
         self.itemsActedOn = itemsActedOn
         self.isConflict = isConflict
+        self.room = room 
+        self.item = item
 
     def isAllItemsInHouse(self):
         return self.allItemsInHouse
@@ -111,23 +114,20 @@ class MockRoomTable:
         self.i = -1
         pass
 
-    def addEntry(self, name):
+    def addEntry(self, room):
         self.i += 1
-        self.entries.append(MockRoom(self.i, name))
+        self.entries.append(MockRoom(self.i, room.name))
+        room.id = self.i
         return self.i
 
-    def deleteEntryByID(self, id):
+    def removeEntry(self, id):
         pass
 
-    def retrieveAllData(self):
-        return ((1, "lounge"),)
+    def retrieveAllData(self): 
+        return [Room(1, 'lounge')]
 
-    def updateEntry(self, id, name):
+    def updateEntry(self, room):
         pass
-
-    def deleteRoom(self, id):
-        pass
-
 
 class MockTypesTable:
 
@@ -152,35 +152,36 @@ class MockItemsTable:
         self.deleteEntryCalled = False
         pass
 
-    def addEntry(self, name, brand, ip, roomId, typeId):
+    def addEntry(self, item, roomId):
         MockItemsTable.i += 1
-        self.entries.append(MockItem(MockItemsTable.i, name, brand, typeId, ip))
+        self.entries.append(MockItem(MockItemsTable.i, item.name, item.brand, 1, item.ip))
+        item._id = MockItemsTable.i
         return MockItemsTable.i
 
-    def retrieveForRoomId(self, id):
-        return ((1, "sensor", "mock", "0.0.0.0", id, 1),)
+    def retrieveForRoomId(self, room):
+        return [MockItem(1, "sensor", "mock", "motionSensor", "0.0.0.0")]
 
-    def updateEntry(self, id, name, brand, ip, roomId, typeId):
+    def updateEntry(self, item, roomId):
         self.updateEntryCalled = True
-        pass
 
-    def deleteEntry(self, itemId):
+    def removeEntry(self, itemId):
         self.deleteEntryCalled = True
 
 
 class MockEventsTable:
+
     def getEvents(self):
-        return ((1, "mockName", "mockType", 1, 1, "mockTrigger", 1),)
+        return [MockEvent(1, "mockName", "mockType", 1, 1, "mockTrigger", 1)]
 
 
 class MockConditionsTable:
     def getConditionsForEvent(self, event):
-        return ((1, 1, "mockSignature", "mockNiceMethodName", "=", 1),)
+        return [MockCondition(1)]
 
 
 class MockActionsTable:
     def getActionsForEvent(self, event):
-        return ((1, 1, None, "mockSignature", "mockNiceMethodName", "mockType"),)
+        return [MockAction(room=1, item=1)]
 
 
 class MockDatabase:

@@ -10,14 +10,13 @@ class RoomsTable(DatabaseHelper):
         self.tablename = "rooms"
         DatabaseHelper.__init__(self)
 
-    def addEntry(self, name):
-        return super(RoomsTable, self).addEntry(self.tablename, "name", "'" + name + "'")
+    def addEntry(self, room):
+        id = super(RoomsTable, self).addEntry(self.tablename, "name", "'" + room.name + "'")
+        room.id = id
+        return id
 
-    def deleteEntryByName(self, name):
-        super(RoomsTable, self).removeEntry(self.tablename, "name='" + name +"'")
-
-    def deleteEntryByID(self, id):
-        super(RoomsTable, self).removeEntry(self.tablename, "id='" + str(id) +"'")
+    def removeEntry(self, room):
+        super(RoomsTable, self).removeEntry(self.tablename, "id='" + str(room.id) +"'")
 
     def retrieveAllData(self):
         roomList = []
@@ -26,8 +25,8 @@ class RoomsTable(DatabaseHelper):
             roomList.append(Room(room[0], room[1]))
         return roomList
 
-    def updateEntry(self, id, name):
-        return super(RoomsTable, self).updateEntry(self.tablename, "id = '" + str(id) + "'", "name = '" + name + "'")
+    def updateEntry(self, room):
+        return super(RoomsTable, self).updateEntry(self.tablename, "id = '" + str(room.id) + "'", "name = '" + room.name + "'")
 
 class TypesTable(DatabaseHelper):
 
@@ -50,11 +49,11 @@ class ItemsTable(DatabaseHelper):
         self.types = types
         super(ItemsTable, self).__init__()
 
-    def addEntry(self, name, brand, ip, roomId, typeId):
-        return super(ItemsTable, self).addEntry(self.tablename, "name, brand, ip, roomId, typeId", "'" + name + "'," + "'" + brand + "'," +"'" + ip + "'," + str(roomId) + "," + str(typeId))
-
-    def retrieveAllData(self):
-        return super(ItemsTable, self).retriveData("SELECT * FROM " + self.tablename)
+    def addEntry(self, item, roomId):
+        typeId = self.types.getIdForName(item._type)
+        id =  super(ItemsTable, self).addEntry(self.tablename, "name, brand, ip, roomId, typeId", "'" + item.name + "'," + "'" + item.brand + "'," +"'" + item.ip + "'," + str(roomId) + "," + str(typeId))
+        item._id = id
+        return id
 
     def retrieveForRoomId(self, roomId):
         itemsList = []
@@ -64,11 +63,14 @@ class ItemsTable(DatabaseHelper):
             itemsList.append(data.types[type](item[0], item[1], item[2],  type, item[3], None))
         return itemsList
 
-    def deleteEntry(self, id):
-        super(ItemsTable, self).removeEntry(self.tablename, "id=" + str(id))
+    def removeEntry(self, item):
+        super(ItemsTable, self).removeEntry(self.tablename, "id=" + str(item._id))
 
-    def updateEntry(self, id, name, brand, ip, roomId, typeId):
-        return super(RoomsTable, self).updateEntry(self.tablename, "id = '" + str(id) + "'", "name = '" + name + "', brand = '" + brand +"', ip = '" + ip +"', roomId = " + str(roomId) + ", typeId = " + str(typeId))
+    def updateEntry(self, item, roomId):
+        typeId = self.types.getIdForName(item._type)
+        id = super(ItemsTable, self).updateEntry(self.tablename, "id = '" + str(item._id) + "'", "name = '" + item.name + "', brand = '" + item.brand +"', ip = '" + item.ip +"', roomId = " + str(roomId) + ", typeId = " + str(typeId))
+        item._id = id
+        return id
 
 class MethodsTable(DatabaseHelper):
 
@@ -269,6 +271,9 @@ class Database(DatabaseHelper):
         self.methods.addTable()
         self.events.addTable()
         self.conditions.addTable()
+
+    def addEntry(self, object, *args):
+        self.tables[object.__class__.__name__].addEntry(object, *args)
 
     def getMethodsWithTypes(self):
         query = "SELECT " + "`" + self.types.tablename + "`" + ".`name`, `" + self.methods.tablename + "`" + ".`name` FROM " + "robohome" + ".`" + self.methods.tablename + "`," + "robohome" + ".`" + self.types.tablename + "` WHERE `" + self.types.tablename + "`.id = `" + self.methods.tablename + "`.typeId"
