@@ -4,7 +4,7 @@ os.sys.path.insert(0, parentdir)
 from pluginManager import Plugin
 
 
-class Weather(Plugin):
+class Wall(Plugin):
     def setup(self, rooms, events, queue):
         pass
 
