@@ -122,15 +122,14 @@ class EventsTable(DatabaseHelper):
         eventsTuple =  super(EventsTable, self).retriveData("SELECT events.id, events.name, types.name, itemId, roomId, `trigger`, enabled FROM events, types WHERE events.typeId = types.id")
         for event in eventsTuple:
             #TODO fix that:
-            eventsList.append(Event(e[0], e[1], e[2], e[3], e[4], e[5], e[6]))
+            eventsList.append(Event(event[0], event[1], event[2], event[3], event[4], event[5], event[6]))
         return eventsList
 
 
 class ConditionsTable(DatabaseHelper):
 
-    def __init__(self, types, methods):
+    def __init__(self, methods):
         self.tablename = "conditions"
-        self.types = types
         self.methods = methods
         DatabaseHelper.__init__(self)
 
@@ -189,7 +188,7 @@ class ActionsTable(DatabaseHelper):
 
     def getActionsForEvent(self, event):
         actionsList = []
-        actionsTuple = super("SELECT actions.id, itemId, roomId, signature, methods.name, types.name FROM actions, methods, types WHERE actions.methodId = methods.id AND methods.typeId = types.Id AND eventId=" + str(event.id))
+        actionsTuple = super(ActionsTable, self).retriveData("SELECT actions.id, itemId, roomId, signature, methods.name, types.name FROM actions, methods, types WHERE actions.methodId = methods.id AND methods.typeId = types.Id AND eventId=" + str(event.id))
         for action in actionsTuple:
             actionsList.append(Action(action[0], action[1], action[2], action[3], action[4], action[5]))
         return actionsList
@@ -255,9 +254,9 @@ class Database(DatabaseHelper):
         self.types = TypesTable()
         self.items = ItemsTable(self.types)
         self.methods = MethodsTable()
-        self.events = EventsTable()
-        self.conditions = ConditionsTable()
-        self.actions = ActionsTable()
+        self.events = EventsTable(self.types)
+        self.conditions = ConditionsTable(self.methods)
+        self.actions = ActionsTable(self.methods)
         self.users = UsersTable()
         self.whitelist = WhitelistTable()
         self.energy = EnergyTable()
