@@ -50,6 +50,16 @@ def getPlugins():
         return jsonify({"statusCode": 200, "content": {"plugins": pluginNames}})
 
 
+@pluginBlueprint.route('/plugin.css/', methods=['GET'])
+def getCSS():
+    args = request.args.to_dict()
+    if('test' in args):
+        return parrot(request)
+    if request.method == 'GET':
+        with open('./plugins/plugin.css', 'r') as content_file:
+            return content_file.read()
+
+
 plugins = {}
 
 
