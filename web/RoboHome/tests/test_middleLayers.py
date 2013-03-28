@@ -39,8 +39,8 @@ class TestMiddleLayer(unittest.TestCase):
 
         item.close()
 
-        # Sleep for 2 seconds to give the thread a chance to call checkForStateChange()
-        time.sleep(2)
+        # Sleep for 3 seconds to give the thread a chance to call checkForStateChange()
+        time.sleep(3)
 
         self.assertTrue(item.stateChanged.was_called)
 
@@ -56,8 +56,8 @@ class TestMiddleLayer(unittest.TestCase):
 
         item.close()
 
-        # Sleep for 2 seconds to give the thread a chance to call checkForStateChange()
-        time.sleep(2)
+        # Sleep for 3 seconds to give the thread a chance to call checkForStateChange()
+        time.sleep(3)
 
         self.assertTrue(house.reactToEvent.was_called)
 

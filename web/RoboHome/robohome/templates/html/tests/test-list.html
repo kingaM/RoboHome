@@ -1,0 +1,36 @@
+{% extends "html/base.html" %}
+
+{% block head %}
+    <style>
+        body { font-family: arial; }
+        table { width: 100%; }
+        td { padding: 0.5em 1em; }
+        tr:nth-child(2n+1) { background-color: #EEEEEE; }
+        </style>
+{% endblock %}
+
+{% block body %}
+    <table>
+        <tbody>
+            <tr>
+                <td colspan="2">These pages are meant for development purposes only.</td>
+                </tr>
+            <tr>
+                <td><a href="/">Go back</a></td>
+                <td>Go back to main page</td>
+                </tr>
+            <tr>
+                <td><a href="/test/unit">Unit tests</a></td>
+                <td>Tests individual units of the program. Currently only core data handler components without dependencies on asycnchronous parts are unit tested</td>
+                </tr>
+            <tr>
+                <td><a href="/test/integration">Integration tests</a></td>
+                <td>Tests functional compatibility with other parts of the program</td>
+                </tr>
+            <tr>
+                <td><a href="/test/api">API tests</a></td>
+                <td>A subset of integration testing, but with real server data. This tests only GET requests though, to not cause any server side-effects until we implement a server test mode</td>
+                </tr>
+            </tbody>
+        </table>
+{% endblock %}

@@ -1,6 +1,5 @@
 /**
  * Data / DOM-independent QUnit tests for master.js
- * These tests can be run independently of the server by opening qunit.html offline, locally
  *
  * JavaScript for Robohome
  * Author: Li Quan Khoo
@@ -24,21 +23,16 @@
         equal(typeof(APP.Map), 'function', 'Constructor type === "function"');
         equal(typeof(APP.Map()), 'undefined', 'Constructor return type === "undefined"');
         equal(APP.Map(), undefined, 'Constructor returns undefined');
-
         equal(typeof(map), 'object', 'Initialized object is of type "object"');
-        equal(map.size, 0, 'Size of map initialized to 0');
-        deepEqual(map.__items, {}, 'Items in map initialized to blank object {}');
     });
         
     test('property size', function() {
         equal(typeof(map.size), 'number', 'Property is initialized to type "number"');
-        
         equal(map.size, 0, 'Property is initialized to 0');
     });
     
     test('property __items', function() {
         equal(typeof(map.__items), 'object', 'Property is initialized to type "object"');
-        
         deepEqual(map.__items, {}, 'Property is initialized to blank object {}');
     });
     
@@ -219,12 +213,15 @@
         equal(typeof(APP.Poller()), 'undefined', 'Constructor return type === "undefined"');
         equal(APP.Poller(), undefined, 'Constructor returns undefined');
         equal(typeof(poller), 'object', 'Initialized object is of type "object"');
-        ok(poller instanceof APP.Poller, 'Initialized object isinstanceof APP.Poller');
+        ok(poller instanceof APP.Poller, 'Initialized object is instanceof APP.Poller');
         
         equal(poller.intervalId, undefined, 'property intervalId initialized to undefined');
         equal(poller.frequency, undefined, 'property frequency initialized to undefined');
-        equal(typeof(poller.poll), 'function', 'property poll initialized to type "function"');
         
+    });
+    
+    test('property poll', function() {
+        equal(typeof(poller.poll), 'function', 'property poll initialized to type "function"');
     });
     
     test('method startPolling', function() {
