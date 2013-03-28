@@ -2,6 +2,7 @@ from databaseHelper import DatabaseHelper
 from houseSystem import Room
 from item import *
 import staticData as data
+from eca import Event, Condition, Action
 
 class RoomsTable(DatabaseHelper):
 
@@ -84,8 +85,9 @@ class MethodsTable(DatabaseHelper):
 
 class EventsTable(DatabaseHelper):
 
-    def __init__(self):
+    def __init__(self, types):
         self.tablename = "events"
+        self.types = types
         super(EventsTable, self).__init__()
 
     def addEntry(self, event):
@@ -116,41 +118,50 @@ class EventsTable(DatabaseHelper):
         super(EventsTable, self).updateEntry(self.tablename, "id='" + str(event.id) + "'", "name='%s', typeId='%s', itemId=%s, roomId=%s, `trigger`='%s', enabled='%s'" % (event.name, typeId, itemId, roomId, event.trigger, event.enabled))
 
     def getEvents(self):
-        return super(EventsTable, self).retriveData("SELECT events.id, events.name, types.name, itemId, roomId, `trigger`, enabled FROM events, types WHERE events.typeId = types.id")
+        eventsList = []
+        eventsTuple =  super(EventsTable, self).retriveData("SELECT events.id, events.name, types.name, itemId, roomId, `trigger`, enabled FROM events, types WHERE events.typeId = types.id")
+        for event in eventsTuple:
+            #TODO fix that:
+            eventsList.append(Event(e[0], e[1], e[2], e[3], e[4], e[5], e[6]))
+        return eventsList
 
 
 class ConditionsTable(DatabaseHelper):
 
-    def __init__(self):
+    def __init__(self, types, methods):
         self.tablename = "conditions"
+        self.types = types
+        self.methods = methods
         DatabaseHelper.__init__(self)
 
     def addEntry(self, condition, eventId):
-        typeId = self.retriveData("SELECT id FROM types WHERE name=\'" + str(condition.item._type) + "';")[0][0]
-        methodId = self.retriveData("SELECT id FROM methods WHERE signature=\'" + str(condition.method) + "' AND typeId =" + str(typeId))[0][0]
+        methodId = self.methods.getSignature(condition.methods, condition.item._type)
         condition.id = super(ConditionsTable, self).addEntry(self.tablename, "itemId, methodId, equivalence, value, eventId", "'%s', '%s', '%s', '%s', '%s'" % (condition.item._id, methodId, condition.equivalence, condition.value, eventId))
 
     def removeEntry(self, condition):
         self.executeQuery("DELETE FROM conditions WHERE id=" + str(condition.id) + ";")
 
     def updateEntry(self, condition, eventId):
-        typeId = self.retriveData("SELECT id FROM types WHERE name=\'" + str(condition.item._type) + "';")[0][0]
-        methodId = self.retriveData("SELECT id FROM methods WHERE signature=\'" + str(condition.method) + "' AND typeId =" + str(typeId))[0][0]
+        methodId = self.methods.getSignature(condition.methods, condition.item._type)
         super(ConditionsTable, self).updateEntry(self.tablename, "id='" + str(condition.id) + "'", "itemId=%s, methodId=%s, equivalence='%s', value='%s', eventId=%s" % (condition.item._id, methodId, condition.equivalence, condition.value, eventId))
 
     def getConditionsForEvent(self, event):
-        return super(ConditionsTable, self).retriveData("SELECT conditions.id, itemId, signature, methods.name, equivalence, value FROM conditions, methods WHERE conditions.methodId = methods.Id AND eventId=" + str(event.id))
+        conditionsList = []
+        conditionsTuple = super(ConditionsTable, self).retriveData("SELECT conditions.id, itemId, signature, methods.name, equivalence, value FROM conditions, methods WHERE conditions.methodId = methods.Id AND eventId=" + str(event.id))
+        for condition in conditionsTuple:
+            conditionsList.append(Condition(condition[0], condition[1], condition[2], condition[3], condition[4], condition[5]))
+        return conditionsList
 
 
 class ActionsTable(DatabaseHelper):
 
-    def __init__(self):
+    def __init__(self, methods):
         self.tablename = "actions"
+        self.methods = methods
         super(ActionsTable, self).__init__()
 
     def addEntry(self, action, eventId):
-        typeId = self.retriveData("SELECT id FROM types WHERE name=\'" + str(action.type) + "';")[0][0]
-        methodId = self.retriveData("SELECT id FROM methods WHERE signature=\'" + str(action.method) + "' AND typeId =" + str(typeId))[0][0]
+        methodId = self.methods.getSignature(condition.methods, condition.item._type)[0][0]
         if action.item is None:
             itemId = "null"
         else:
@@ -165,8 +176,7 @@ class ActionsTable(DatabaseHelper):
         self.executeQuery("DELETE FROM actions WHERE id=" + str(action.id) + ";")
 
     def updateEntry(self, action, eventId):
-        typeId = self.retriveData("SELECT id FROM types WHERE name=\'" + str(action.type) + "';")[0][0]
-        methodId = self.retriveData("SELECT id FROM methods WHERE signature=\'" + str(action.method) + "' AND typeId =" + str(typeId))[0][0]
+        methodId = self.methods.getSignature(condition.methods, condition.item._type)[0][0]
         if action.item is None:
             itemId = "null"
         else:
@@ -178,8 +188,11 @@ class ActionsTable(DatabaseHelper):
         super(ActionsTable, self).updateEntry(self.tablename, "id='" + str(action.id) + "'", "itemId=%s, roomId=%s, methodId=%s, eventId=%s" % (itemId, roomId, methodId, eventId))
 
     def getActionsForEvent(self, event):
-        return super(ActionsTable, self).retriveData("SELECT actions.id, itemId, roomId, signature, methods.name, types.name FROM actions, methods, types WHERE actions.methodId = methods.id AND methods.typeId = types.Id AND eventId=" + str(event.id))
-
+        actionsList = []
+        actionsTuple = super("SELECT actions.id, itemId, roomId, signature, methods.name, types.name FROM actions, methods, types WHERE actions.methodId = methods.id AND methods.typeId = types.Id AND eventId=" + str(event.id))
+        for action in actionsTuple:
+            actionsList.append(Action(action[0], action[1], action[2], action[3], action[4], action[5]))
+        return actionsList
 
 class UsersTable(DatabaseHelper):
 

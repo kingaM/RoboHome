@@ -35,27 +35,20 @@ class House(object):
                     self.rooms[room.id].items[item._id] = item
                     item.listener = self.listenerManager
 
+        #a bit of a hack...
         events = self.database.events.getEvents()
-
-        for e in events:
-            if e[4] is not None:
-                tempRoom = self.rooms[e[4]]
-            else:
-                tempRoom = None
-            self.events.append(eca.Event(e[0], e[1], e[2], self.getItemById(e[3]), tempRoom, e[5], e[6]))
-
-        for e in self.events:
-            conditions = self.database.conditions.getConditionsForEvent(e)
-            for c in conditions:
-                e.conditions.append(eca.Condition(c[0], self.getItemById(c[1]), c[2], c[3], c[4], c[5]))
-
-            actions = self.database.actions.getActionsForEvent(e)
-            for a in actions:
-                if a[2] is not None:
-                    tempRoom = self.rooms[a[2]]
-                else:
-                    tempRoom = None
-                e.actions.append(eca.Action(a[0], self.getItemById(a[1]), tempRoom, a[3], a[4], a[5]))
+        for event in events:
+            if event.room is not None:
+                event.room = self.rooms[event.room]
+            event.item = self.getItemById(event.item)
+            conditions = self.database.conditions.getConditionsForEvent(event)
+            for condition in conditions:
+                condition.item = self.getItemById(condition.item)
+            actions = self.database.actions.getActionsForEvent(event)
+            for action in actions:
+                if action.room is not None:
+                    action.room = self.rooms[action.room]
+                action.item = self.getItemById(action.item)
 
     def addRoom(self, name):
         """
