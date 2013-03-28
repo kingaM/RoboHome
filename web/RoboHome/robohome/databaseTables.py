@@ -6,9 +6,6 @@ class RoomsTable(DatabaseHelper):
         self.tablename = "rooms"
         DatabaseHelper.__init__(self)
 
-    def addTable(self):
-        super(RoomsTable, self).addTable(self.tablename, "id INT PRIMARY KEY AUTO_INCREMENT NOT NULL, name VARCHAR(45) NOT NULL")
-
     def addEntry(self, name):
         return super(RoomsTable, self).addEntry(self.tablename, "name", "'" + name + "'")
 
@@ -30,9 +27,6 @@ class TypesTable(DatabaseHelper):
         self.tablename = "types"
         super(TypesTable, self).__init__()
 
-    def addTable(self):
-        super(TypesTable, self).addTable(self.tablename, "id INT PRIMARY KEY AUTO_INCREMENT NOT NULL, name VARCHAR(45) NOT NULL")
-
     def addEntry(self, name):
         return super(TypesTable, self).addEntry(self.tablename, "name", "'" + name + "'")
 
@@ -49,9 +43,6 @@ class ItemsTable(DatabaseHelper):
     def __init__(self):
         self.tablename = "items"
         super(ItemsTable, self).__init__()
-
-    def addTable(self):
-        super(ItemsTable, self).addTable(self.tablename, "id INT PRIMARY KEY AUTO_INCREMENT NOT NULL, name VARCHAR(45) NOT NULL, brand VARCHAR(45) NOT NULL, ip VARCHAR(45) NOT NULL, roomId INT NOT NULL, typeId INT NOT NULL, FOREIGN KEY (typeId) REFERENCES types(id) ON DELETE CASCADE ON UPDATE CASCADE, FOREIGN KEY (roomId) REFERENCES rooms(id) ON DELETE CASCADE ON UPDATE CASCADE")
 
     def addEntry(self, name, brand, ip, roomId, typeId):
         return super(ItemsTable, self).addEntry(self.tablename, "name, brand, ip, roomId, typeId", "'" + name + "'," + "'" + brand + "'," +"'" + ip + "'," + str(roomId) + "," + str(typeId))
@@ -73,9 +64,6 @@ class MethodsTable(DatabaseHelper):
     def __init__(self):
         self.tablename = "methods"
         super(MethodsTable, self).__init__()
-
-    def addTable(self):
-        super(MethodsTable, self).addTable(self.tablename, "id INT PRIMARY KEY AUTO_INCREMENT NOT NULL, name VARCHAR(45) NOT NULL, signiture VARCHAR(45) NOT NULL, type VARCHAR(45) NOT NULL, typeId INT, FOREIGN KEY (typeId) REFERENCES types(id) ON DELETE CASCADE ON UPDATE CASCADE")
 
     def addEntry(self, name, signiture, type, typeId):
         return  super(ItemsTable, self).addEntry(self.tablename, "name, signiture, type, typeId", "'" + name + "'," + "'" + signiture + "'," +"'" + type + "'," +"'" + str(typeId) + "'")
