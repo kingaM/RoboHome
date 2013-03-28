@@ -146,6 +146,9 @@ APP.API.EVENTS.RULE.ACTION.ITEM_TYPE = 'itemType';
 APP.API.EVENTS.RULE.ACTION.ACTION_ID = 'actionId';
 APP.API.EVENTS.RULE.ACTION.METHOD = 'method';
 
+// /plugins
+APP.API.PLUGINS = 'plugins';
+
 // /whitelist
 APP.API.WHITELIST = {};
 APP.API.WHITELIST.EMAIL = 'email';
@@ -185,6 +188,10 @@ APP.URL.EVENTS_EVENTID_ACTIONS = function(eventId) {
 };
 APP.URL.EVENTS_EVENTID_ACTIONS_ACTIONID = function(eventId, actionId) {
     return '/version/' + APP.CONSTANTS.VERSION + '/events/' + eventId + '/actions/' + actionId + '/';
+};
+APP.URL.PLUGINS = '/plugins/';
+APP.URL.PLUGINS_PLUGIN_NAME = function(pluginName) {
+    return '/plugins/' + pluginName + '/';
 };
 APP.URL.WHITELIST = '/version/' + APP.CONSTANTS.VERSION + '/whitelist/';
 
@@ -941,6 +948,42 @@ APP.ajax = {
         this.ajaxObj = new APP.AjaxObj({
             method: 'DELETE',
             url: APP.URL.EVENTS_EVENTID_ACTIONS_ACTIONID(eventId, actionId),
+            args: args,
+            callback: callback,
+            error: error
+        });
+        
+        return APP.ajax._ajax(this.ajaxObj);
+    },
+    
+    /**
+     *
+     */
+    get_plugins: function(callback, error, test) {
+        var args = {};
+        if(test) { args['test'] = 1 };
+        
+        this.ajaxObj = new APP.AjaxObj({
+            method: 'GET',
+            url: APP.URL.PLUGINS,
+            args: args,
+            callback: callback,
+            error: error
+        });
+        
+        return APP.ajax._ajax(this.ajaxObj);
+    },
+    
+    /**
+     *
+     */
+    delete_plugins: function(pluginName, callback, error, test) {
+        var args = {};
+        if(test) { args['test'] = 1 };
+        
+        this.ajaxObj = new APP.AjaxObj({
+            method: 'DELETE',
+            url: APP.URL.PLUGINS_PLUGIN_NAME(pluginName),
             args: args,
             callback: callback,
             error: error
@@ -3781,7 +3824,7 @@ APP.StageManager = function() {
             'button-plugins': {
                 menuId: null,
                 buttonText: 'Plugins',
-                class: 'orange',
+                class: 'blue',
                 buttons: {}
             },
             'button-config': {
@@ -3894,6 +3937,9 @@ APP.StageManager = function() {
         stage.setMenuConstruct(function() {
             // default
         });
+        stage.setMenuUpdate(function() {
+            // default
+        });
         stage.setConstruct(function() {
             stage.ready();
         });
@@ -3925,6 +3971,9 @@ APP.StageManager = function() {
             // default
         });
         stage.setMenuConstruct(function() {
+            // default
+        });
+        stage.setMenuUpdate(function() {
             // default
         });
         stage.setConstruct(function() {
@@ -4543,6 +4592,9 @@ APP.StageManager = function() {
         stage.setMenuConstruct(function() {
             // default
         });
+        stage.setMenuUpdate(function() {
+            // default
+        });
         stage.setConstruct(function() {
             var stageMessage = $('<div></div>').addClass('stage-message');
             
@@ -4618,6 +4670,9 @@ APP.StageManager = function() {
         stage.setMenuConstruct(function() {
             // default
         });
+        stage.setMenuUpdate(function() {
+            // default
+        });
         stage.setConstruct(function() {
             stage.ready();
         });
@@ -4649,6 +4704,9 @@ APP.StageManager = function() {
             // default
         });
         stage.setMenuConstruct(function() {
+            // default
+        });
+        stage.setMenuUpdate(function() {
             // default
         });
         stage.setConstruct(function() {
@@ -4756,6 +4814,128 @@ APP.StageManager = function() {
             // default
         });
         stage.setMenuConstruct(function() {
+            APP.ajax.get_plugins(
+                function(json) {
+                    var obj = APP.unpackToPayload(json),
+                        contextMenu = $('#context-menu'),
+                        contextMenuInnerWrapper = $('<div></div>').addClass('context-menu-inner-wrapper plugins'),
+                        contextMenuContent = $('<div></div>').addClass('context-menu-content'),
+                        h1 = $('<h1>Plugin manager</h1>');
+                    
+                    function constructDisplay() {
+                        var fieldset = $('<fieldset></fieldset>').append('<legend>Active plugins</legend>'),
+                            fieldsetContent = $('<div></div>'),
+                            ul = $('<ul></ul>'),
+                            anchor;
+                        
+                        $('#context-menu').append(ul);
+                        stage.data.plugins = obj[APP.API.PLUGINS].slice(0);
+                        for(var i = 0; i < obj[APP.API.PLUGINS].length; i++) {
+                            anchor = $('<a href="#">' + obj[APP.API.PLUGINS][i] + '</a>').addClass('button');
+                            anchor.click(function() {
+                                var src = '../plugins/' + $(this).html();
+                                stage.getContext().html('');
+                                stage.iframe = $('<iframe></iframe>').attr({src: src});
+                                stage.getContext().append(stage.iframe);
+                            });
+                            ul.append($('<li></li>').append(anchor));
+                        }
+                        
+                        fieldsetContent.append(ul);
+                        fieldset.append(fieldsetContent);
+                        contextMenuContent.append(fieldset);
+                    }
+                    
+                    function constructAddForm() {
+                        var fieldset = $('<fieldset></fieldset>').append('<legend>Add new plugin</legend>'),
+                            fieldsetContent = $('<div></div>'),
+                            messageDisplay = $('<div></div>'),
+                            iframe = $('<iframe></iframe>').attr({id: 'upload-frame'}),
+                            form = $('<form></form>').attr({
+                                enctype: 'multipart/form-data',
+                                action: '../plugins/',
+                                method: 'POST',
+                                target: 'upload-frame'
+                            }),
+                            fileSize = $('<input></input>').attr({
+                                type: 'hidden',
+                                name: 'MAX_FILE_SIZE',
+                                value: '1000000'
+                            }),
+                            fileInput = $('<input></input>').attr({
+                                name: '',
+                                type: 'file'
+                            }),
+                            input = $('<input></input').attr({
+                                type: 'submit',
+                                value: 'OK'
+                            });
+                        
+                        iframe.load(function() {
+                            var response = iframe.contents().find('body');
+                            messageDisplay.html('');
+                            messageDisplay.append(response);
+                        });
+                        
+                        fieldsetContent.append(messageDisplay);
+                        fieldsetContent.append(iframe);
+                        form.append(fileSize);
+                        form.append(fileInput);
+                        form.append(input);
+                        fieldsetContent.append(form);
+                        fieldset.append(fieldsetContent);
+                        contextMenuContent.append(fieldset);
+                    }
+                    
+                    function constructRemoveForm() {
+                        var fieldset = $('<fieldset></fieldset>').append('<legend>Remove plugin</legend>'),
+                            fieldsetContent = $('<div></div>'),
+                            errorMessageDisplay = $('<div></div>').addClass(APP.DOM_HOOK.ERROR_MESSAGE_DISPLAY),
+                            input = $('<input></input>').attr({type: 'text', placeholder: 'Plugin name'}),
+                            button = $('<a href="#">Remove</a>').addClass('button');
+                        
+                        button.click(function() {
+                            for(var i = 0; i < stage.data.plugins.length; i++) {
+                                if(input.val() === stage.data.plugins[i]) {
+                                    fieldsetContent.addClass(APP.DOM_HOOK.UPDATING);
+                                    APP.ajax.delete_plugins(
+                                        stage.data.plugins[i],
+                                        function() {
+                                            stage.tearDown();
+                                            stage.construct();
+                                        },
+                                        function() {
+                                            // do nothing
+                                        }
+                                    );
+                                    return;
+                                }
+                            }
+                            errorMessageDisplay.html('No such plugin found');
+                        });
+                        
+                        fieldsetContent.append(errorMessageDisplay);
+                        fieldsetContent.append(input);
+                        fieldsetContent.append(button);
+                        fieldset.append(fieldsetContent);
+                        contextMenuContent.append(fieldset);
+                    }
+                    
+                    contextMenuContent.append(h1);
+                    constructDisplay();
+                    constructAddForm();
+                    constructRemoveForm();
+                    
+                    contextMenuInnerWrapper.append(contextMenuContent);
+                    contextMenu.append(contextMenuInnerWrapper);
+                    
+                },
+                function() {
+                    // TODO
+                }
+            );
+        });
+        stage.setMenuUpdate(function() {
             // default
         });
         stage.setConstruct(function() {
