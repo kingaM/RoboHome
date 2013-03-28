@@ -57,7 +57,10 @@ def getCSS():
         return parrot(request)
     if request.method == 'GET':
         with open('./plugins/plugin.css', 'r') as content_file:
-            return content_file.read()
+            css = content_file.read()
+        response = make_response(css)
+        response.headers['Content-Type'] = 'text/css'
+        return response
 
 
 plugins = {}
