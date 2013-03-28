@@ -6,7 +6,7 @@
 
 //Wifi Server
 WiFiServer server(80);
-MyServer myServer("comp2007group7", "michaelb");
+MyServer myServer("name", "pass");
 
 AF_DCMotor motor(3, MOTOR12_64KHZ); // create motor #2, 64KHz pwm
 
