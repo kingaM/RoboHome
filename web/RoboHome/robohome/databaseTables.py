@@ -1,4 +1,7 @@
 from databaseHelper import DatabaseHelper
+from houseSystem import Room
+from item import *
+import staticData as data
 
 class RoomsTable(DatabaseHelper):
 
@@ -16,7 +19,11 @@ class RoomsTable(DatabaseHelper):
         super(RoomsTable, self).removeEntry(self.tablename, "id='" + str(id) +"'")
 
     def retrieveAllData(self):
-        return super(RoomsTable, self).retriveData("SELECT * FROM " + self.tablename)
+        roomList = []
+        roomTuple = super(RoomsTable, self).retriveData("SELECT * FROM " + self.tablename)
+        for room in roomTuple:
+            roomList.append(Room(room[0], room[1]))
+        return roomList
 
     def updateEntry(self, id, name):
         return super(RoomsTable, self).updateEntry(self.tablename, "id = '" + str(id) + "'", "name = '" + name + "'")
@@ -26,9 +33,6 @@ class TypesTable(DatabaseHelper):
     def __init__(self):
         self.tablename = "types"
         super(TypesTable, self).__init__()
-
-    def addEntry(self, name):
-        return super(TypesTable, self).addEntry(self.tablename, "name", "'" + name + "'")
 
     def getIdForName(self, name):
         query = "SELECT * FROM " + self.database + ".`" + self.tablename + "` WHERE name='" + name + "'"
@@ -40,8 +44,9 @@ class TypesTable(DatabaseHelper):
 
 class ItemsTable(DatabaseHelper):
 
-    def __init__(self):
+    def __init__(self, types):
         self.tablename = "items"
+        self.types = types
         super(ItemsTable, self).__init__()
 
     def addEntry(self, name, brand, ip, roomId, typeId):
@@ -51,7 +56,12 @@ class ItemsTable(DatabaseHelper):
         return super(ItemsTable, self).retriveData("SELECT * FROM " + self.tablename)
 
     def retrieveForRoomId(self, roomId):
-        return super(ItemsTable, self).retriveData("SELECT * FROM " + self.tablename + " WHERE roomId=" + str(roomId))
+        itemsList = []
+        itemsTuple =  super(ItemsTable, self).retriveData("SELECT * FROM " + self.tablename + " WHERE roomId=" + str(roomId))
+        for item in itemsTuple:
+            type = self.types.getNameForId(item[5])
+            itemsList.append(data.types[type](item[0], item[1], item[2],  type, item[3], None))
+        return itemsList
 
     def deleteEntry(self, id):
         super(ItemsTable, self).removeEntry(self.tablename, "id=" + str(id))
@@ -64,9 +74,6 @@ class MethodsTable(DatabaseHelper):
     def __init__(self):
         self.tablename = "methods"
         super(MethodsTable, self).__init__()
-
-    def addEntry(self, name, signiture, type, typeId):
-        return  super(ItemsTable, self).addEntry(self.tablename, "name, signiture, type, typeId", "'" + name + "'," + "'" + signiture + "'," +"'" + type + "'," +"'" + str(typeId) + "'")
 
     def getNiceStateName(self, itemId):
         return self.retriveData("SELECT methods.name FROM methods, `types`, items WHERE `types`.id=methods.typeId AND `types`.id=items.typeId AND items.id=" + str(itemId) + " AND methods.signature='getState'")[0][0]
@@ -233,7 +240,7 @@ class Database(DatabaseHelper):
     def __init__(self):
         self.room = RoomsTable()
         self.types = TypesTable()
-        self.items = ItemsTable()
+        self.items = ItemsTable(self.types)
         self.methods = MethodsTable()
         self.events = EventsTable()
         self.conditions = ConditionsTable()

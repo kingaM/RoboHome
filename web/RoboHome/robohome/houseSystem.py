@@ -28,12 +28,12 @@ class House(object):
 
         rooms = self.database.room.retrieveAllData()
         for room in rooms:
-            self.rooms[room[0]] = Room(room[0], room[1])
-            items = self.database.items.retrieveForRoomId(room[0])
+            self.rooms[room.id] = room
+            items = self.database.items.retrieveForRoomId(room.id)
             if len(items) > 0:
                 for item in items:
-                    type = self.database.types.getNameForId(item[5])
-                    self.rooms[room[0]].items[item[0]] = (data.types[type](item[0], item[1], item[2],  type, item[3], self.listenerManager))
+                    self.rooms[room.id].items[item._id] = item
+                    item.listener = self.listenerManager
 
         events = self.database.events.getEvents()
 

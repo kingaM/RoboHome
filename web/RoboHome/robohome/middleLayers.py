@@ -8,7 +8,7 @@ from wemo import WemoHelper
 import urllib2
 from flask import Blueprint
 from flask import *
-from databaseTables import Database
+#from databaseTables import Database
 
 items = {}
 
