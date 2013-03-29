@@ -579,7 +579,5 @@ class TestRoom(unittest.TestCase):
         r.addItem(1, item)
         self.assertEqual(r.getState(),  [{'id': 1, 'state': 1}])
 
-
-
 if __name__ == '__main__':
     unittest.main()

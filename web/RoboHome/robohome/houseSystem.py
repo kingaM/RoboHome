@@ -1,4 +1,3 @@
-from item import *
 import eca
 from priorityQueue import MyPriorityQueue
 from threading import Thread
@@ -36,16 +35,16 @@ class House(object):
                     item.listener = self.listenerManager
 
         #a bit of a hack...
-        events = self.database.events.getEvents()
-        for event in events:
+        self.events = self.database.events.getEvents()
+        for event in self.events:
             if event.room is not None:
                 event.room = self.rooms[event.room]
             event.item = self.getItemById(event.item)
-            conditions = self.database.conditions.getConditionsForEvent(event)
-            for condition in conditions:
+            event.conditions = self.database.conditions.getConditionsForEvent(event)
+            for condition in event.conditions:
                 condition.item = self.getItemById(condition.item)
-            actions = self.database.actions.getActionsForEvent(event)
-            for action in actions:
+            event.actions = self.database.actions.getActionsForEvent(event)
+            for action in event.actions:
                 if action.room is not None:
                     action.room = self.rooms[action.room]
                 action.item = self.getItemById(action.item)

@@ -1,4 +1,4 @@
-from item import *
+import item
 """
 A file with all data that does not change within version
 
@@ -7,7 +7,7 @@ This file has to be updated with a version update
 
 version = 0.1
 
-types = {'motionSensor' : Item , 'lightSensor' : Item, 'temperatureSensor' : Item , 'energyMonitor' : Item , 'button' : Item , 'door' : Openable, 'window' : Openable, 'curtain' : Openable, 'plug' : OnOff, 'light' : Lights, 'radiator' : RadiatorValve}
+types = {'motionSensor' : item.Item , 'lightSensor' : item.Item, 'temperatureSensor' : item.Item , 'energyMonitor' : item.Item , 'button' : item.Item , 'door' : item.Openable, 'window' : item.Openable, 'curtain' : item.Openable, 'plug' : item.OnOff, 'light' : item.Lights, 'radiator' : item.RadiatorValve}
 
 typesNice = {'motionSensor' : 'Motion Sensor' , 'lightSensor' : 'Light Sensor', 'temperatureSensor' : 'Temperature Sensor' , 'energyMonitor' : 'Energy Monitor' , 'button' : 'Button' , 'door' : 'Door', 'window' : 'Window', 'curtain' : 'Curtain', 'plug' : 'Plug', 'light' : 'Light', 'radiator' : 'Radiator Valve'}
 
@@ -15,4 +15,4 @@ states = {'motionSensor' : [{'id' : 1, 'name' : 'motion detected'}, {'id' : 0, '
 
 supportedBrands = {'motionSensor' : ['mock', 'arduino'] , 'lightSensor' : ['mock', 'gadgeteer'], 'temperatureSensor' : ['mock', 'arduino'] , 'energyMonitor' : ['mock', 'arduino'] , 'button' : ['mock', 'arduino', 'gadgeteer'] , 'door' : ['mock', 'arduino'], 'window' : ['mock', 'arduino'], 'curtain' : ['mock', 'arduino'], 'plug' : ['mock', 'wemo'], 'light' : ['mock', 'lightwaveRF'], 'radiator' : ['mock']}
 
-passive = {Item : True, Openable : False, OnOff : False, Lights : False, RadiatorValve : False}
+passive = {item.Item : True, item.Openable : False, item.OnOff : False, item.Lights : False, item.RadiatorValve : False}
