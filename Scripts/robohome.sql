@@ -86,3 +86,6 @@ INSERT INTO `robohome`.`conditions` (`itemId`, `methodId`, `equivalence`, `value
 
 INSERT INTO `robohome`.`actions` (`itemId`, `roomId`, `eventId`, `methodId`) VALUES (NULL, 4, 1, 22);
 INSERT INTO `robohome`.`actions` (`itemId`, `roomId`, `eventId`, `methodId`) VALUES (2, NULL, 1, 16);
+
+INSERT INTO robohome.`energy` (time, watts) VALUES ('2013-01-01 12:00:00', 1000);
+INSERT INTO robohome.`energy` (time, watts) VALUES ('2013-03-01 15:00:00', 500);

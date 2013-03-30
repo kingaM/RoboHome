@@ -689,21 +689,26 @@ class House(object):
         Gets list of watts between the given dates 
 
         Arguments:
-        startDate -- the start date as a Unix timestamp
-        endDate -- the end date as a Unix timestamp
+        startDate - date string in format %Y-%m-%d %H:%M:%S
+        endDate - date string in format %Y-%m-%d %H:%M:%S
         """
-        dbResults = self.database.energy.getEnergyByDates(int(startDate), int(endDate))
+        dbResults = self.database.energy.getEnergyByDates(startDate, endDate)
+        print dbResults
         energyList = []
         for e in dbResults:
-            energyList.append({'timestamp': e[0].strftime('%s'), 'watts': e[1]})
+            energyList.append({'time': e[0].strftime('%Y-%m-%d %H:%M:%S'), 'watts': e[1]})
         return {'energies': energyList}
     
     def getLatestEnergy(self):
         """
         Gets latest energy reading
         """
-        dbResult = self.database.energy.getLatestEnergy()
-        return {'energies': {'timestamp': dbResult[0].strftime('%s'), 'watts': dbResult[1]}}
+        dbResults = self.database.energy.getLatestEnergy()
+        energyList = []
+        for e in dbResults:
+            energyList.append({'time': e[0].strftime('%Y-%m-%d %H:%M:%S'), 'watts': e[1]})
+        print energyList
+        return {'energies': energyList}
     
 class Room:
     """
