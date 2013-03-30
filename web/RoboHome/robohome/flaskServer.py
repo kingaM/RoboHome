@@ -122,6 +122,20 @@ def structure(version):
         # Return structure of house. This is used for passing hierarchial info
         return jsonify(pack(house.getStructure()))
 
+@app.route('/version/<string:version>/energy/', methods=['GET'])
+def getEnergy(version):
+    if g.user is None and not isIpOnLocalNetwork():
+       return redirect(url_for('login'))
+       
+    args = request.args.to_dict()
+    if('test' in args):
+        return parrot(request)
+        
+    if request.method == 'GET':
+        if('latest' in args):
+            return jsonify(pack(house.getLatestEnergy()))
+        else:
+            return jsonify(pack(house.getEnergyByDates(args["startDate"], args["endDate"])))
 
 @app.route('/version/<string:version>/rooms/', methods=['POST'])
 def rooms(version):

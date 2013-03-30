@@ -684,6 +684,27 @@ class House(object):
         """
         return getattr(self.rooms[roomId].items[itemId], method)(*args)
 
+    def getEnergyByDates(self, startDate, endDate):
+        """
+        Gets list of watts between the given dates 
+
+        Arguments:
+        startDate -- the start date as a Unix timestamp
+        endDate -- the end date as a Unix timestamp
+        """
+        dbResults = self.database.energy.getEnergyByDates(int(startDate), int(endDate))
+        energyList = []
+        for e in dbResults:
+            energyList.append({'timestamp': e[0].strftime('%s'), 'watts': e[1]})
+        return {'energies': energyList}
+    
+    def getLatestEnergy(self):
+        """
+        Gets latest energy reading
+        """
+        dbResult = self.database.energy.getLatestEnergy()
+        return {'energies': {'timestamp': dbResult[0].strftime('%s'), 'watts': dbResult[1]}}
+    
 class Room:
     """
     A class to represent a room inside the house
