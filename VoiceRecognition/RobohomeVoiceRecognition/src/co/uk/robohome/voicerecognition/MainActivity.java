@@ -12,6 +12,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.annotation.TargetApi;
@@ -103,6 +104,7 @@ public class MainActivity extends Activity implements OnClickListener
 				        // do something with the response
 				        String json = EntityUtils.toString(resEntityGet);
 				        Log.i("GET RESPONSE", json);
+				        parseJSON(json);
 				    }
 				} catch (ClientProtocolException e) {
 					//Log.d(TAG, "HTTP RESPONSE CLIENT");
@@ -113,6 +115,26 @@ public class MainActivity extends Activity implements OnClickListener
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+            }
+            
+            public void parseJSON(String json) {
+            	JSONObject jObject = null;
+				try {
+					jObject = new JSONObject(json);
+				} catch (JSONException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+            	String s = "nothing";
+				try {
+					JSONArray rooms = ((JSONObject) jObject.get("content")).getJSONArray("rooms");
+							for(int i = 0; i < rooms.length(); i++)
+							s = s + rooms.getJSONObject(i).getString("name");
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+            	 Log.i("JSON", s);
             }
             public void onPartialResults(Bundle partialResults)
             {
