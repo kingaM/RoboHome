@@ -994,11 +994,11 @@ div.eca-field-div {
 .context-menu-inner-wrapper.plugins iframe {
     display: none;
 }
-/*
+
 .context-menu-inner-wrapper.plugins input[type="file"] {
-    width: 95%;
+    width: 85%;
 }
-*/
+
 .context-menu-inner-wrapper.plugins input[type="submit"] {
     min-width: 7em;
 }

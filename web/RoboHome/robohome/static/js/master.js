@@ -3827,6 +3827,12 @@ APP.StageManager = function() {
                 class: 'blue',
                 buttons: {}
             },
+            'button-logs': {
+                menuId: 'menu-logs',
+                buttonText: 'Logs',
+                class: 'green',
+                buttons: {}
+            },
             'button-config': {
                 menuId: 'menu-config',
                 buttonText: 'Config',
@@ -4954,12 +4960,12 @@ APP.StageManager = function() {
             
         });
     };
-    
+        
     /**
      *
      */
-    this.setStage_Logs = function() {
-        var stageId = this.addStage(new APP.Stage('menu-config', 'button-logs', 'Logs', 'stage-logs')),
+    this.setStage_Logs_Energy = function() {
+        var stageId = this.addStage(new APP.Stage('menu-logs', 'button-logs-energy', 'Energy usage', 'stage-logs-energy')),
             stage = stages.get(stageId);
         
         stage.setOnShow(function() {
@@ -4969,6 +4975,9 @@ APP.StageManager = function() {
             // default
         });
         stage.setMenuConstruct(function() {
+            // default
+        });
+        stage.setMenuUpdate(function() {
             // default
         });
         stage.setConstruct(function() {
@@ -4986,7 +4995,43 @@ APP.StageManager = function() {
         stage.setPollFunction(undefined, function() {
             
         });
-    };
+    },
+    
+    /**
+     *
+     */
+    this.setStage_Logs_Error = function() {
+        var stageId = this.addStage(new APP.Stage('menu-logs', 'button-logs-error', 'Error', 'stage-logs-error')),
+            stage = stages.get(stageId);
+        
+        stage.setOnShow(function() {
+            // default
+        });
+        stage.setOnHide(function() {
+            // default
+        });
+        stage.setMenuConstruct(function() {
+            // default
+        });
+        stage.setMenuUpdate(function() {
+            // default
+        });
+        stage.setConstruct(function() {
+            stage.ready();
+        });
+        stage.setTearDown(function() {
+            // default
+        });
+        stage.setUpdate(function() {
+            // default
+        });
+        stage.setUpdateError(function() {
+            // default
+        });
+        stage.setPollFunction(undefined, function() {
+            
+        });
+    },
     
     /**
      *
@@ -5143,8 +5188,9 @@ APP.StageManager = function() {
         // whitelist stage
         this.setStage_Whitelist();
         
-        // logs stage
-        this.setStage_Logs();
+        // log stages
+        this.setStage_Logs_Energy();
+        this.setStage_Logs_Error();
         
         // about stage
         this.setStage_About();
