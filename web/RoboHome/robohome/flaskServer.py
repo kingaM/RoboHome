@@ -132,7 +132,10 @@ def getEnergy(version):
         return parrot(request)
         
     if request.method == 'GET':
-        return jsonify(pack(house.getEnergyBetDates(args["startDate"], args["endDate"])))
+        if('latest' in args):
+            return jsonify(pack(house.getLatestEnergy()))
+        else:
+            return jsonify(pack(house.getEnergyByDates(args["startDate"], args["endDate"])))
 
 @app.route('/version/<string:version>/rooms/', methods=['POST'])
 def rooms(version):
