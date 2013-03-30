@@ -111,8 +111,8 @@ def rooms_version():
 
 @app.route('/version/<string:version>/state/', methods=['GET'])
 def structure(version):
-    if g.user is None and not isIpOnLocalNetwork():
-        return redirect(url_for('login'))
+    # if g.user is None and not isIpOnLocalNetwork():
+    #     return redirect(url_for('login'))
         
     args = request.args.to_dict()
     if('test' in args):
