@@ -135,9 +135,7 @@ def getEnergy(version):
         if('latest' in args):
             return jsonify(pack(house.getLatestEnergy()))
         else:
-            print args['startDate']
-            print args['endDate']
-            return jsonify(pack(house.getEnergyByDates(args["startDate"], args["endDate"])))
+            return jsonify(pack(house.getEnergyByTime(args['startTime'], args['endTime'])))
 
 @app.route('/version/<string:version>/rooms/', methods=['POST'])
 def rooms(version):

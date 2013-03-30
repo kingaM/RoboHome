@@ -237,8 +237,8 @@ class EnergyTable(DatabaseHelper):
     def addEntry(self, watts):
         return super(EnergyTable, self).addEntry(self.tablename, "watts", "'" + str(watts) + "'")
 
-    def getEnergyByDates(self, startDate, endDate):
-        return super(EnergyTable, self).retrieveData('SELECT * FROM ' + self.tablename + ' WHERE `time` BETWEEN "' + str(startDate) + '" AND "' + str(endDate) + '"')
+    def getEnergyByTime(self, startTime, endTime):
+        return super(EnergyTable, self).retrieveData('SELECT * FROM ' + self.tablename + ' WHERE `time` BETWEEN "' + str(startTime) + '" AND "' + str(endTime) + '"')
     
     def getLatestEnergy(self):
         return super(EnergyTable, self).retrieveData('SELECT * FROM ' + self.tablename + ' ORDER BY `time` DESC LIMIT 1')

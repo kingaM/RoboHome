@@ -684,20 +684,37 @@ class House(object):
         """
         return getattr(self.rooms[roomId].items[itemId], method)(*args)
 
-    def getEnergyByDates(self, startDate, endDate):
+    def getEnergyByTime(self, startTime, endTime):
         """
         Gets list of watts between the given dates 
 
         Arguments:
-        startDate - date string in format %Y-%m-%d %H:%M:%S
-        endDate - date string in format %Y-%m-%d %H:%M:%S
+        startTime - date string in format %Y_%m_%d_%H_%M_%S
+        endTime - date string in format %Y_%m_%d_%H_%M_%S
         """
-        dbResults = self.database.energy.getEnergyByDates(startDate, endDate)
-        print dbResults
+        
+        def formatArg(arg):
+            ls = arg.split('_')
+            timeStr = ''
+            i = 0
+            while(i < len(ls)):
+                if(i == 0):
+                    timeStr += ''
+                elif(i < 2):
+                    timeStr += ':'
+                elif(i == 3):
+                    timeStr += ' '
+                else:
+                    timeStr += ':'
+                timeStr += ls[i]
+                i += 1
+            return timeStr
+        
+        dbResults = self.database.energy.getEnergyByTime(formatArg(startTime), formatArg(endTime))
         energyList = []
         for e in dbResults:
             energyList.append({'time': e[0].strftime('%Y-%m-%d %H:%M:%S'), 'watts': e[1]})
-        return {'energies': energyList}
+        return {'values': energyList}
     
     def getLatestEnergy(self):
         """
@@ -707,8 +724,7 @@ class House(object):
         energyList = []
         for e in dbResults:
             energyList.append({'time': e[0].strftime('%Y-%m-%d %H:%M:%S'), 'watts': e[1]})
-        print energyList
-        return {'energies': energyList}
+        return {'values': energyList}
     
 class Room:
     """
