@@ -696,19 +696,35 @@ class House(object):
         def formatArg(arg):
             ls = arg.split('_')
             timeStr = ''
-            i = 0
-            while(i < len(ls)):
-                if(i == 0):
-                    timeStr += ''
-                elif(i < 2):
-                    timeStr += ':'
-                elif(i == 3):
-                    timeStr += ' '
-                else:
-                    timeStr += ':'
-                timeStr += ls[i]
-                i += 1
-            return timeStr
+            # incomplete query
+            if(len(ls) < 3):
+                i = 0
+                while(i < 3):
+                    if(i == 0):
+                        timeStr = ''
+                    elif(i < 3):
+                        timeStr += '-'
+                    if(i < len(ls)):
+                        timeStr += ls[i]
+                    else:
+                        timeStr += '01'
+                    i += 1
+                return timeStr
+            else:
+                while(i < len(ls)):
+                    if(i == 0):
+                        timeStr = timeStr + '' + ls[i]
+                    elif(i < 2):
+                        timeStr = timeStr + '-' + ls[i]
+                    elif(i == 3):
+                        timeStr = timeStr + ' ' + ls[i]
+                    elif(i < 6):
+                        timeStr = timeStr + ':' + ls[i]
+                    i += 1
+                return timeStr
+        
+        # print formatArg(startTime)
+        # print formatArg(endTime)
         
         dbResults = self.database.energy.getEnergyByTime(formatArg(startTime), formatArg(endTime))
         energyList = []
