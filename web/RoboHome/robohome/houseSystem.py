@@ -724,8 +724,8 @@ class House(object):
                     i += 1
                 return timeStr
         
-        print formatArg(startTime)
-        print formatArg(endTime)
+        #print formatArg(startTime)
+        #print formatArg(endTime)
         
         dbResults = self.database.energy.getEnergyByTime(formatArg(startTime), formatArg(endTime))
         energyList = []

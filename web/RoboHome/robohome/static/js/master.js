@@ -5059,7 +5059,6 @@ APP.StageManager = function() {
                     $(function() {
                         $('#energy-chart').highcharts({
                             chart: {
-                                type: 'line',
                                 backgroundColor: 'rgba(0,0,0,0)'
                             },
                             title: {
@@ -5147,7 +5146,7 @@ APP.StageManager = function() {
                                 valueSuffix: ' W'
                             },
                             plotOptions: {
-                                area: {
+                                areaspline: {
                                     marker: {
                                         enabled: false
                                     },
@@ -5183,7 +5182,7 @@ APP.StageManager = function() {
                                 // minorGridLineColor: 'rgba(255,255,255,0.1)',
                             },
                             series: [{
-                                type: 'area',
+                                type: 'areaspline',
                                 pointInterval: 24 * 3600 * 1000,
                                 pointStart: stage.data.chartData[0],
                                 name: 'Energy consumption',
