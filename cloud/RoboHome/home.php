@@ -1,4 +1,6 @@
 <?php
+//Terrence Chiu
+
 //Always place this code at the top of the Page
 session_start();
 if (!isset($_SESSION['id'])) {
@@ -8,19 +10,29 @@ if (!isset($_SESSION['id'])) {
 $id = $_SESSION['id'];
 include('opendb.php');
 include('header.php');
+//Add RPI
 if (isset($_POST['submitted'])) {
 	$name = $_POST['name'];
 	$ip = $_POST['ip'];
-	$sql="INSERT INTO rpi (users_id, name, status, ip_address) VALUES ('$id', '$name', 0, '$ip')";
-	if (!mysql_query($sql))
-	{
-		  die('Error: ' . mysql_error());
+	
+	$res = mysql_query("SELECT * FROM rpi WHERE ip_address = '$ip'");
+	if(mysql_num_rows($res) == 0) {
+		$sql="INSERT INTO rpi (name, status, ip_address) VALUES ('$name', 0, '$ip')";
+		if (!mysql_query($sql))
+		{
+			  die('Error: ' . mysql_error());
+		}
+	} else {
+		$rpi = mysql_fetch_assoc($res);
+		$rpi_id = $rpi["rpi_id"];
 	}
+	mysql_query("INSERT INTO rpi_users (rpi_id, users_id) VALUES ('$rpi_id', '$id')");
 	echo ' Thank You! Added new RPi ';
 }
+//Delete RPI
 if (isset($_POST['delete'])) {
 	$row_id = $_POST['row_id'];
-	$sql="DELETE FROM rpi WHERE rpi_id='$row_id'";
+	$sql="DELETE FROM rpi_users WHERE users_id ='$id' AND rpi_id='$row_id'";
 	if (!mysql_query($sql))
 	{
 		  die('Error: ' . mysql_error());
@@ -49,8 +61,11 @@ echo '<br/><a href="logout.php?logout">Logout</a>';
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
     <h3 id="myModalLabel">Add a new RPi</h3>
   </div>
+  
   <form action="home.php" method="post">
+  
   <div class="modal-body">
+  Leave "name" empty if adding existing RPi.
     <p>Name:<br /><input name="name" type="text" placeholder="Ex: Home 1"></p>
     <p>IP Address:<br /><input name="ip" type="text" placeholder="Ex: 192.168.0.1"></p>
   </div>
@@ -75,7 +90,7 @@ echo '<br/><a href="logout.php?logout">Logout</a>';
    </thead>
               <tbody>
               <?php
-              $query = "select * from rpi where users_id = '$id'";
+              $query = "SELECT * FROM rpi_users JOIN rpi ON rpi_users.rpi_id = rpi.rpi_id WHERE rpi_users.users_id = '$id'";
 			  $result = mysql_query ($query);
 			  $count = 1;
 				while($row = mysql_fetch_assoc($result))

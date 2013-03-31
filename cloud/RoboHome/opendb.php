@@ -1,8 +1,8 @@
 <?php 
  // Connects to ContestGate Database 
-$dbhost = "us-cdbr-azure-west-b.cleardb.com";
-$dbusername = "bdd230a1dee8da";
-$dbuserpassword = "57a02569";
+$dbhost = "host";
+$dbusername = "username";
+$dbuserpassword = "password";
 $dbname = "robohom";
 
 $link = mysql_connect ($dbhost, $dbusername, $dbuserpassword);
