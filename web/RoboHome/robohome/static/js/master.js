@@ -5060,7 +5060,7 @@ APP.StageManager = function() {
                         $('#energy-chart').highcharts({
                             chart: {
                                 type: 'line',
-                                backgroundColor: 'rgba(0,0,0,1)'
+                                backgroundColor: 'rgba(0,0,0,0)'
                             },
                             title: {
                                 text: 'Energy consumption',
@@ -5178,9 +5178,9 @@ APP.StageManager = function() {
                                         'font-size': '1.2em'
                                     }
                                 },
-                                minorTickInterval: 'auto',
                                 gridLineColor: 'rgba(255,255,255,0.3)',
-                                minorGridLineColor: 'rgba(255,255,255,0.1)',
+                                // minorTickInterval: 'auto',
+                                // minorGridLineColor: 'rgba(255,255,255,0.1)',
                             },
                             series: [{
                                 type: 'area',
