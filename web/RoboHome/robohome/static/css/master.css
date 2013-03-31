@@ -1003,6 +1003,10 @@ div.eca-field-div {
     min-width: 7em;
 }
 
+#energy-chart input {
+    background-color: #000000;
+}
+
 /* ----- pretty borders -----
  * 
  * Preconfiguration of colors and critical layout params.

@@ -146,6 +146,15 @@ APP.API.EVENTS.RULE.ACTION.ITEM_TYPE = 'itemType';
 APP.API.EVENTS.RULE.ACTION.ACTION_ID = 'actionId';
 APP.API.EVENTS.RULE.ACTION.METHOD = 'method';
 
+// /energy
+APP.API.ENERGY = {};
+APP.API.ENERGY.START_TIME = 'startTime';
+APP.API.ENERGY.END_TIME = 'endTime';
+APP.API.ENERGY.VALUE = {};
+APP.API.ENERGY.VALUE.VALUES = 'values';
+APP.API.ENERGY.VALUE.WATTS = 'watts';
+APP.API.ENERGY.VALUE.TIME = 'time';
+
 // /plugins
 APP.API.PLUGINS = 'plugins';
 
@@ -189,6 +198,7 @@ APP.URL.EVENTS_EVENTID_ACTIONS = function(eventId) {
 APP.URL.EVENTS_EVENTID_ACTIONS_ACTIONID = function(eventId, actionId) {
     return '/version/' + APP.CONSTANTS.VERSION + '/events/' + eventId + '/actions/' + actionId + '/';
 };
+APP.URL.ENERGY = '/version/' + APP.CONSTANTS.VERSION + '/energy/';
 APP.URL.PLUGINS = '/plugins/';
 APP.URL.PLUGINS_PLUGIN_NAME = function(pluginName) {
     return '/plugins/' + pluginName + '/';
@@ -959,6 +969,26 @@ APP.ajax = {
     /**
      *
      */
+    get_energy: function(startTime, endTime, callback, error, test) {
+        var args = {};
+        args[APP.API.ENERGY.START_TIME] = startTime;
+        args[APP.API.ENERGY.END_TIME] = endTime;
+        if(test) { args['test'] = 1 };
+        
+        this.ajaxObj = new APP.AjaxObj({
+            method: 'GET',
+            url: APP.URL.ENERGY,
+            args: args,
+            callback: callback,
+            error: error
+        });
+        
+        return APP.ajax._ajax(this.ajaxObj);
+    },
+    
+    /**
+     *
+     */
     get_plugins: function(callback, error, test) {
         var args = {};
         if(test) { args['test'] = 1 };
@@ -1094,7 +1124,9 @@ APP.ContextMenu = function() {
      * This executes the function given in setConstruct().
      * This method is automatically called by the associated Stage's construct() method
      */
-    this.construct = function() {};
+    this.construct = function() {
+        $(selector).html('');
+    };
         
     /**
      * @for APP.ContextMenu
@@ -1102,7 +1134,10 @@ APP.ContextMenu = function() {
      * Give the function to execute when the ContextMenu's construct() is called
      */
     this.setConstruct = function(func) {
-        this.construct = func;
+        this.construct = function() {
+            $(selector).html('');
+            func();
+        }
     }
     
     /**
@@ -4981,7 +5016,188 @@ APP.StageManager = function() {
             // default
         });
         stage.setConstruct(function() {
-            stage.ready();
+            APP.ajax.get_energy('0000_01_01_00_00_00', '9999_12_31_23_59_59',
+                function(json) {
+                    
+                    function getDateObj(dateStr) {
+                        var ls, date, time, year, month, day, hour, minute, second;
+                        
+                        ls = dateStr.split(' ');
+                        date = ls[0];
+                        time = ls[1];
+                        
+                        ls = date.split('-');
+                        year = ls[0];
+                        month = ls[1] - 1;
+                        day = ls[2];
+                        
+                        ls = time.split(':');
+                        hour = ls[0];
+                        minute = ls[1];
+                        second = ls[2];
+                        
+                        return new Date(year, month, day, hour, minute, second);
+                    }
+                    
+                    var obj = APP.unpackToPayload(json),
+                        chartArea = $('<div id="energy-chart"></div>'),
+                        chartWidth = 0.99 * $('#stage-logs-energy > .stage-content').width(),
+                        chartHeight = 0.7 * $('#stage-logs-energy').height();
+                    
+                    stage.data.chartData = [];
+
+                    for(var i = 0; i < obj[APP.API.ENERGY.VALUE.VALUES].length; i++) {
+                        var entry = obj[APP.API.ENERGY.VALUE.VALUES][i],
+                            dateObj = getDateObj(entry[APP.API.ENERGY.VALUE.TIME]);
+                        
+                        stage.data.chartData.push([dateObj.getTime(), entry[APP.API.ENERGY.VALUE.WATTS]]);
+                        
+                    }
+                    console.log(stage.data);
+                    
+                    stage.getContext().append(chartArea);
+                    $(function() {
+                        $('#energy-chart').highcharts({
+                            chart: {
+                                type: 'line',
+                                backgroundColor: 'rgba(0,0,0,1)'
+                            },
+                            title: {
+                                text: 'Energy consumption',
+                                style: {
+                                    color: 'rgba(0,134,191,1)',
+                                    'font-size': '1.5em'
+                                }
+                            },
+                            navigator: {
+                                enabled: true,
+                                height: 60,
+                                margin: 30,
+                                handles: {
+                                    borderColor: 'rgba(132,169,14,1)'
+                                },
+                                maskFill: 'rgba(0,0,0,0.75)',
+                                outlineColor: 'rgba(132,169,14,1)'
+                            },
+                            rangeSelector: {
+                                enabled: true,
+                                selected: undefined,
+                                buttonTheme: {
+                                    fill: 'none',
+                                    stroke: 'rgba(255,255,255,0.5)',
+                                    style: {
+                                        color: '#FFFFFF'
+                                    },
+                                    states: {
+                                        hover: {
+                                            fill: 'none',
+                                            style: {
+                                                color: 'rgba(0,134,191,1)'
+                                            }
+                                        },
+                                        select: {
+                                            fill: 'rgba(0,134,191,1)',
+                                            style: {
+                                                color: '#FFFFFF',
+                                            }
+                                        }
+                                    }
+                                },
+                                labelStyle: {
+                                    color: '#CCCCCC',
+                                },
+                                inputStyle: {
+                                    color: '#FFFFFF'
+                                },
+                                buttons: [
+                                    {   type: 'week',
+                                        count: 1,
+                                        text: '1wk'
+                                    },
+                                    {
+                                        type: 'month',
+                                        count: 1,
+                                        text: '1m'
+                                    },
+                                    {
+                                        type: 'month',
+                                        count: 3,
+                                        text: '3m'
+                                    },
+                                    {
+                                        type: 'month',
+                                        count: 6,
+                                        text: '6m'
+                                    },
+                                    {
+                                        type: 'year',
+                                        count: 1,
+                                        text: '1y'
+                                    },
+                                    {
+                                        type: 'all',
+                                        text: 'All'
+                                    }
+                                ]
+                            },
+                            legend: {
+                                enabled: false
+                            },
+                            tooltip: {
+                                valueSuffix: ' W'
+                            },
+                            plotOptions: {
+                                area: {
+                                    marker: {
+                                        enabled: false
+                                    },
+                                    lineWidth: 1,
+                                    fillColor: {
+                                        linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1},
+                                        stops: [
+                                            [0, Highcharts.getOptions().colors[0]],
+                                            [1, Highcharts.Color(Highcharts.getOptions().colors[0]).setOpacity(0).get('rgba')]
+                                        ]
+                                    },
+                                    states: {
+                                        hover: {
+                                            lineWidth: 1
+                                        }
+                                    }
+                                }
+                            },
+                            xAxis: {
+                                type: 'datetime'
+                            },
+                            yAxis: {
+                                title: {
+                                    text: 'Watts (W)',
+                                    style: {
+                                        color: 'rgba(0,134,191,1)',
+                                        'font-weight': 'normal',
+                                        'font-size': '1.2em'
+                                    }
+                                },
+                                minorTickInterval: 'auto',
+                                gridLineColor: 'rgba(255,255,255,0.3)',
+                                minorGridLineColor: 'rgba(255,255,255,0.1)',
+                            },
+                            series: [{
+                                type: 'area',
+                                pointInterval: 24 * 3600 * 1000,
+                                pointStart: stage.data.chartData[0],
+                                name: 'Energy consumption',
+                                data: stage.data.chartData
+                            }]
+                        });
+                    });
+                    
+                    stage.ready();
+                },
+                function() {
+                
+                }
+            );
         });
         stage.setTearDown(function() {
             // default

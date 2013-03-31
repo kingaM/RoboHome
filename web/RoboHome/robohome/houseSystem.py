@@ -697,8 +697,8 @@ class House(object):
             ls = arg.split('_')
             timeStr = ''
             # incomplete query
-            if(len(ls) < 3):
-                i = 0
+            i = 0
+            if(len(ls) < 4):
                 while(i < 3):
                     if(i == 0):
                         timeStr = ''
@@ -720,11 +720,12 @@ class House(object):
                         timeStr = timeStr + ' ' + ls[i]
                     elif(i < 6):
                         timeStr = timeStr + ':' + ls[i]
+                    # else do nothing with excessive args
                     i += 1
                 return timeStr
         
-        # print formatArg(startTime)
-        # print formatArg(endTime)
+        print formatArg(startTime)
+        print formatArg(endTime)
         
         dbResults = self.database.energy.getEnergyByTime(formatArg(startTime), formatArg(endTime))
         energyList = []
