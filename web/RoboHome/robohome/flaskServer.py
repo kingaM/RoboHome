@@ -21,7 +21,26 @@ from IPy import IP
 import updateManager
 import threading
 import middleLayers
-import pluginManager
+
+"""
+This file contains the following Flask routes:
+
+- Common Methods
+- Configuration
+- Top Level Pages
+- Room Methods
+- Item Methods
+- ECA Methods
+- Plugin Methods
+- OpenID Methods
+- JS Unit Testing Pages
+
+"""
+
+
+"""
+COMMON METHODS
+"""
 
 SETTINGS = {
     'LANGUAGE': 'en',
@@ -36,14 +55,16 @@ SETTINGS = {
     }
 }
 
-# Common methods ----------------------------------------------------------
 
-# Pack content object into communications wrapper API format and return it as a dictionary
 def pack(content={}, statusCode=200):
+    """
+    Packs content objects into communications wrapper API format and returns it as a dictionary
+    """
     return {
         SETTINGS['API']['STATUS_CODE']: statusCode,
         SETTINGS['API']['CONTENT']: content
     }
+
 
 def parrot(request):
     dict = {
@@ -53,11 +74,14 @@ def parrot(request):
     }
     return jsonify(dict)
 
-# App config ---------------------------------------------------------------
+"""
+CONFIGURATION
+"""
+
 app = Flask(__name__)
 app.config.update(
     SECRET_KEY = 'development key',
-    DEBUG = True
+    DEBUG = False
 )
 
 app.register_blueprint(middleLayers.gadgeteerBlueprint)
@@ -67,19 +91,20 @@ house = House(db)
 house.initFromDatabase()
 oid = OpenID(app)
 
-# Routing ------------------------------------------------------------------
-# Remember to set paths with the trailing slash
+"""
+TOP LEVEL PAGES
+"""
 
 
 @app.route('/', methods=['GET'])
 def home():
     if g.user is None and not isIpOnLocalNetwork():
         return redirect(url_for('login'))
-        
+
     args = request.args.to_dict()
     if('test' in args):
         return parrot(request)
-        
+
     if request.method == 'GET':
         # Fetch the base HTML page and scripts
         return render_template('html/home.html')
@@ -97,12 +122,12 @@ def update():
 @app.route('/version/', methods=['GET'])
 def rooms_version():
     if g.user is None and not isIpOnLocalNetwork():
-       return redirect(url_for('login'))
-       
+        return redirect(url_for('login'))
+
     args = request.args.to_dict()
     if('test' in args):
         return parrot(request)
-        
+
     if request.method == 'GET':
         # Return initial info when connecting to server for the first time
         return jsonify(pack(house.getVersion()))
@@ -112,39 +137,67 @@ def rooms_version():
 def structure(version):
     if g.user is None and not isIpOnLocalNetwork():
         return redirect(url_for('login'))
-        
+
     args = request.args.to_dict()
     if('test' in args):
         return parrot(request)
-        
+
     if request.method == 'GET':
         # Return structure of house. This is used for passing hierarchial info
         return jsonify(pack(house.getStructure()))
 
+
 @app.route('/version/<string:version>/energy/', methods=['GET'])
 def getEnergy(version):
     if g.user is None and not isIpOnLocalNetwork():
-       return redirect(url_for('login'))
-       
+        return redirect(url_for('login'))
+
     args = request.args.to_dict()
     if('test' in args):
         return parrot(request)
-        
+
     if request.method == 'GET':
         if('latest' in args):
             return jsonify(pack(house.getLatestEnergy()))
         else:
             return jsonify(pack(house.getEnergyByTime(args['startTime'], args['endTime'])))
 
+
+@app.route('/version/<string:version>/whitelist/', methods=['GET', 'POST', 'DELETE'])
+def whitelist(version):
+    if g.user is None and not isIpOnLocalNetwork():
+        return redirect(url_for('login'))
+
+    args = request.args.to_dict()
+    if('test' in args):
+        return parrot(request)
+
+    if request.method == 'GET':
+        return jsonify(pack({'emails': [emails[0] for emails in db.whitelist.getEmails()]}))
+
+    if request.method == 'POST':
+        db.whitelist.addEntry(args['email'])
+        return jsonify(pack('success'))
+
+    if request.method == 'DELETE':
+        db.whitelist.deleteEmail(args['email'])
+        return jsonify(pack('success'))
+
+
+"""
+ROOM METHODS
+"""
+
+
 @app.route('/version/<string:version>/rooms/', methods=['POST'])
 def rooms(version):
     if g.user is None and not isIpOnLocalNetwork():
         return redirect(url_for('login'))
-        
+
     args = request.args.to_dict()
     if('test' in args):
         return parrot(request)
-        
+
     if request.method == 'POST':
         # Create new room
         roomId = house.addRoom(args['name'])
@@ -155,11 +208,11 @@ def rooms(version):
 def rooms_roomId(version, roomId):
     if g.user is None and not isIpOnLocalNetwork():
         return redirect(url_for('login'))
-        
+
     args = request.args.to_dict()
     if('test' in args):
         return parrot(request)
-        
+
     if request.method == 'GET':
         # Return state of room
         return jsonify(pack(house.rooms[int(roomId)].getState()))
@@ -174,15 +227,21 @@ def rooms_roomId(version, roomId):
         house.deleteRoom(int(roomId))
         return jsonify(pack('success'))
 
+
+"""
+ITEM METHODS
+"""
+
+
 @app.route('/version/<string:version>/rooms/<int:roomId>/items/', methods=['POST'])
 def rooms_roomId_items(version, roomId):
     if g.user is None and not isIpOnLocalNetwork():
         return redirect(url_for('login'))
-        
+
     args = request.args.to_dict()
     if('test' in args):
         return parrot(request)
-        
+
     if request.method == 'POST':
         # Create new item for specified room
         itemId = house.addItem(roomId, args['name'], args['brand'], args['itemType'], args['ip'])
@@ -193,11 +252,11 @@ def rooms_roomId_items(version, roomId):
 def rooms_roomId_items_itemId(version, roomId, itemId):
     if g.user is None and not isIpOnLocalNetwork():
         return redirect(url_for('login'))
-        
+
     args = request.args.to_dict()
     if('test' in args):
         return parrot(request)
-        
+
     if request.method == 'GET':
         # Return state of item
         return jsonify(pack(house.rooms[int(roomId)].items[itemId].getState()))
@@ -217,26 +276,31 @@ def rooms_roomId_items_itemId(version, roomId, itemId):
 def rooms_roomId_items_itemId_cmd(version, roomId, itemId, cmd):
     if g.user is None and not isIpOnLocalNetwork():
         return redirect(url_for('login'))
-        
+
     args = request.args.to_dict()
     if('test' in args):
         return parrot(request)
-        
+
     if request.method == 'PUT':
         # Command item
         house.addToQueue(int(roomId), int(itemId), cmd)
         return jsonify(pack('success'))
 
 
+"""
+ECA METHODS
+"""
+
+
 @app.route('/version/<string:version>/events/', methods=['GET', 'POST'])
 def events(version):
     if g.user is None and not isIpOnLocalNetwork():
         return redirect(url_for('login'))
-        
+
     args = request.args.to_dict()
     if('test' in args):
         return parrot(request)
-        
+
     if request.method == 'GET':
         return jsonify(pack(house.getRules()))
 
@@ -257,11 +321,11 @@ def events(version):
 def events_eventId(version, eventId):
     if g.user is None and not isIpOnLocalNetwork():
         return redirect(url_for('login'))
-    
+
     args = request.args.to_dict()
     if('test' in args):
         return parrot(request)
-        
+
     if request.method == 'PUT':
         # Update event
         if args["id"] == "null":
@@ -285,11 +349,11 @@ def events_eventId(version, eventId):
 def events_eventId_conditions(version, eventId):
     if g.user is None and not isIpOnLocalNetwork():
         return redirect(url_for('login'))
-    
+
     args = request.args.to_dict()
     if('test' in args):
         return parrot(request)
-    
+
     if request.method == 'POST':
         _id = house.addCondition(int(args["itemId"]), args["equivalence"], int(args["value"]), int(eventId))
         return jsonify(pack({"conditionId": _id}))
@@ -299,11 +363,11 @@ def events_eventId_conditions(version, eventId):
 def events_eventId_conditions_conditionId(version, eventId, conditionId):
     if g.user is None and not isIpOnLocalNetwork():
         return redirect(url_for('login'))
-    
+
     args = request.args.to_dict()
     if('test' in args):
         return parrot(request)
-    
+
     if request.method == 'PUT':
         house.updateCondition(int(args["itemId"]), args["equivalence"], int(args["value"]), int(eventId), int(conditionId))
         return(jsonify(pack('success')))
@@ -317,11 +381,11 @@ def events_eventId_conditions_conditionId(version, eventId, conditionId):
 def events_eventId_actions(version, eventId):
     if g.user is None and not isIpOnLocalNetwork():
         return redirect(url_for('login'))
-    
+
     args = request.args.to_dict()
     if('test' in args):
         return parrot(request)
-    
+
     if request.method == 'POST':
         args = request.args.to_dict()
         if args["id"] == "null":
@@ -336,11 +400,11 @@ def events_eventId_actions(version, eventId):
 def events_eventId_actions_actionId(version, eventId, actionId):
     if g.user is None and not isIpOnLocalNetwork():
         return redirect(url_for('login'))
-    
+
     args = request.args.to_dict()
     if('test' in args):
         return parrot(request)
-    
+
     if request.method == 'PUT':
         if args["id"] == "null":
             reqId = None
@@ -354,28 +418,10 @@ def events_eventId_actions_actionId(version, eventId, actionId):
         return(jsonify(pack('success')))
 
 
-@app.route('/version/<string:version>/whitelist/', methods=['GET', 'POST', 'DELETE'])
-def whitelist(version):
-    if g.user is None and not isIpOnLocalNetwork():
-        return redirect(url_for('login'))
-    
-    args = request.args.to_dict()
-    if('test' in args):
-        return parrot(request)
-    
-    if request.method == 'GET':
-        return jsonify(pack({'emails' : [emails[0] for emails in db.whitelist.getEmails()]}))
-    
-    if request.method == 'POST':
-        db.whitelist.addEntry(args['email'])
-        return jsonify(pack('success'))
-    
-    if request.method == 'DELETE':
-        db.whitelist.deleteEmail(args['email'])
-        return jsonify(pack('success'))
+"""
+PLUGIN METHODS
+"""
 
-
-# Plugin Methods --------------------------------------------------------
 
 @app.route('/plugins/<string:pluginName>/<path:path>/', methods=['GET'])
 def pluginPage(pluginName, path):
@@ -427,15 +473,20 @@ def getCSS():
         response.headers['Content-Type'] = 'text/css'
         return response
 
-# OPENID ----------------------------------------------------------------
-# Based upon: https://github.com/mitsuhiko/flask-openid
-# License: https://github.com/mitsuhiko/flask-openid/blob/master/LICENSE
+
+"""
+OPENID METHODS
+Source: https://github.com/mitsuhiko/flask-openid
+Licence: https://github.com/mitsuhiko/flask-openid/blob/master/LICENSE
+"""
+
 
 @app.before_request
-def before_request():  
+def before_request():
     g.user = None
     if 'openid' in session:
         g.user = db.users.getUserByOpenid(session['openid'])
+
 
 def getIp():
     if not request.headers.getlist("X-Forwarded-For"):
@@ -443,11 +494,13 @@ def getIp():
     else:
         return request.headers.getlist("X-Forwarded-For")[0]
 
+
 def isIpOnLocalNetwork():
     network10 = IP("10.0.0.0/24")
     network192 = IP("192.168.0.0/24")
     network127 = IP("127.0.0.0/24")
     return getIp() in network10 or getIp() in network192 or getIp() in network127
+
 
 @app.route('/login', methods=['GET', 'POST'])
 @oid.loginhandler
@@ -463,8 +516,9 @@ def login():
             return oid.try_login(openid, ask_for=['email', 'fullname'])
     app.logger.info('not-logged-in: '+oid.get_next_url())
     return render_template('html/login.html', next=oid.get_next_url(),
-                           error=oid.fetch_error())                                  
-    
+                           error=oid.fetch_error())
+
+
 @oid.after_login
 def create_or_login(resp):
     # Called when the login was successful
@@ -473,8 +527,8 @@ def create_or_login(resp):
     if user is not None:
         g.user = user
         return redirect(oid.get_next_url())
-    name=resp.fullname
-    email=resp.email
+    name = resp.fullname
+    email = resp.email
     if db.users.numOfRows() == 0:
         db.users.addEntry(name, email, session['openid'])
         db.whitelist.addEntry(email)
@@ -486,28 +540,38 @@ def create_or_login(resp):
         return render_template('html/loginerror.html')
 
 
-# Pages handling server-dependent JS unit tests
+"""
+JS Unit Testing Pages
+"""
+
+
 @app.route('/test/', methods=['GET'])
 def test():
     if request.method == 'GET':
         return render_template('html/tests/test-list.html')
+
 
 @app.route('/test/unit', methods=['GET'])
 def test_unit():
     if request.method == 'GET':
         return render_template('html/tests/test-unit.html')
 
+
 @app.route('/test/integration', methods=['GET'])
 def test_integration():
     if request.method == 'GET':
         return render_template('html/tests/test-integration.html')
+
 
 @app.route('/test/api', methods=['GET'])
 def test_api():
     if request.method == 'GET':
         return render_template('html/tests/test-api.html')
 
-# Run ---------------------------------------------------------------------
+
+"""
+RUN
+"""
 
 if __name__ == '__main__':
     app.run(host=SETTINGS['SERVER']['HOST'], port=SETTINGS['SERVER']['PORT'])
