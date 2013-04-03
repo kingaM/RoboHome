@@ -10,12 +10,21 @@ class PluginManager():
         self.rooms = rooms
         self.events = events
         self.queue = queue
+        self.loadPlugins()
+
+    def loadPlugins(self):
+
+        # Incase of reloading plugins - Teardown and empty
+        for plugin in self.plugins:
+            self.plugins[plugin].teardown()
+        self.plugins = {}
+
         subclasses = self.find_subclasses("./plugins/", Plugin)
         for s in subclasses:
             try:
                 s = s()
                 name = s.getName()
-                s.setup(rooms, events, queue)
+                s.setup(self.rooms, self.events, self.queue)
                 if(name in self.plugins):
                     raise Exception("Plugin name '" + name + "'' already in use")
                 self.plugins[name] = s
@@ -101,10 +110,9 @@ class PluginManager():
                 fd.write(zfile.read(name))
                 fd.close()
 
+            self.loadPlugins()
             return "Plugin Installed"
         return "File must be a .zip file"
-
-
 
 
 class Plugin(object):
