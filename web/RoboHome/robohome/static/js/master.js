@@ -4904,7 +4904,7 @@ APP.StageManager = function() {
                                 value: '1000000'
                             }),
                             fileInput = $('<input></input>').attr({
-                                name: '',
+                                name: 'file',
                                 type: 'file'
                             }),
                             input = $('<input></input').attr({
