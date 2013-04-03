@@ -1,103 +1,12 @@
 import os
 import zipfile
-from flask import Blueprint
-from flask import *
 from werkzeug import secure_filename
-
-# Temporary until I can fix the imports
-def parrot(request):
-    dict = {
-        'method': request.method,
-        'payload': request.data,
-        'args': request.args.to_dict()
-    }
-    return jsonify(dict)
-
-pluginBlueprint = Blueprint('pluginManager', __name__, url_prefix='/plugins')
-
-
-@pluginBlueprint.route('/<string:pluginName>/<path:path>/', methods=['GET'])
-def pluginPage(pluginName, path):
-    args = request.args.to_dict()
-    if('test' in args):
-        return parrot(request)
-    if request.method == 'GET':
-        if pluginName not in plugins:
-            abort(404)
-        else:
-            return (plugins[pluginName].getPage(path))
-
-
-@pluginBlueprint.route('/<string:pluginName>/', methods=['GET'])
-def pluginHome(pluginName):
-    args = request.args.to_dict()
-    if('test' in args):
-        return parrot(request)
-    if request.method == 'GET':
-        if pluginName not in plugins:
-            abort(404)
-        else:
-            return (plugins[pluginName].getPage(None))
-
-
-@pluginBlueprint.route('/', methods=['GET', 'POST'])
-def getPlugins():
-    args = request.args.to_dict()
-    if('test' in args):
-        return parrot(request)
-
-    if request.method == 'GET':
-        pluginNames = []
-        for p in plugins:
-            pluginNames.append(p)
-        return jsonify({"statusCode": 200, "content": {"plugins": pluginNames}})
-
-    if request.method == 'POST':
-        file = request.files['file']
-
-        if file and file.filename.rsplit('.', 1)[1] == 'zip':
-            zipName = file.filename.rsplit('.', 1)[0]
-            filename = secure_filename(file.filename)
-            path = os.path.join("./plugins", filename)
-            file.save(path)
-
-            zfile = zipfile.ZipFile(path)
-
-            if not os.path.exists("./plugins/" + zipName):
-                os.mkdir("./plugins/" + zipName)
-
-            for name in zfile.namelist():
-                (dirname, filename) = os.path.split(name)
-                dirname = "./plugins/" + zipName + "/" + dirname
-                if not os.path.exists(dirname):
-                    os.mkdir(dirname)
-                fd = open("./plugins/" + zipName + "/" + name, "w")
-                fd.write(zfile.read(name))
-                fd.close()
-
-            return "Plugin Installed"
-        return "File not a .zip file"
-
-
-@pluginBlueprint.route('/plugin.css/', methods=['GET'])
-def getCSS():
-    args = request.args.to_dict()
-    if('test' in args):
-        return parrot(request)
-    if request.method == 'GET':
-        with open('./plugins/plugin.css', 'r') as content_file:
-            css = content_file.read()
-        response = make_response(css)
-        response.headers['Content-Type'] = 'text/css'
-        return response
-
-
-plugins = {}
 
 
 class PluginManager():
 
     def __init__(self, rooms, events, queue):
+        self.plugins = {}
         self.rooms = rooms
         self.events = events
         self.queue = queue
@@ -107,9 +16,9 @@ class PluginManager():
                 s = s()
                 name = s.getName()
                 s.setup(rooms, events, queue)
-                if(name in plugins):
+                if(name in self.plugins):
                     raise Exception("Plugin name '" + name + "'' already in use")
-                plugins[name] = s
+                self.plugins[name] = s
             except Exception, e:
                 print "Error loading plugin: " + str(e)
 
@@ -161,6 +70,41 @@ class PluginManager():
                     look_for_subclass(modulename)
 
         return plugins
+
+    def getPlugins(self):
+        pluginNames = []
+        for p in self.plugins:
+            pluginNames.append(p)
+        return {"plugins": pluginNames}
+
+    def uploadPlugin(self, file):
+
+        pluginsDir = "./plugins/"
+
+        if file and file.filename.rsplit('.', 1)[1] == 'zip':
+            zipName = file.filename.rsplit('.', 1)[0]
+            filename = secure_filename(file.filename)
+            path = os.path.join("./plugins", filename)
+            file.save(path)
+
+            zfile = zipfile.ZipFile(path)
+
+            if not os.path.exists(pluginsDir + zipName):
+                os.mkdir(pluginsDir + zipName)
+
+            for name in zfile.namelist():
+                (dirname, filename) = os.path.split(name)
+                dirname = pluginsDir + zipName + "/" + dirname
+                if not os.path.exists(dirname):
+                    os.mkdir(dirname)
+                fd = open(pluginsDir + zipName + "/" + name, "w")
+                fd.write(zfile.read(name))
+                fd.close()
+
+            return "Plugin Installed"
+        return "File must be a .zip file"
+
+
 
 
 class Plugin(object):

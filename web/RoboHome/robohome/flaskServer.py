@@ -61,7 +61,6 @@ app.config.update(
 )
 
 app.register_blueprint(middleLayers.gadgeteerBlueprint)
-app.register_blueprint(pluginManager.pluginBlueprint)
 
 db = Database()
 house = House(db)
@@ -374,7 +373,59 @@ def whitelist(version):
     if request.method == 'DELETE':
         db.whitelist.deleteEmail(args['email'])
         return jsonify(pack('success'))
-        
+
+
+# Plugin Methods --------------------------------------------------------
+
+@app.route('/plugins/<string:pluginName>/<path:path>/', methods=['GET'])
+def pluginPage(pluginName, path):
+    args = request.args.to_dict()
+    if('test' in args):
+        return parrot(request)
+    if request.method == 'GET':
+        if pluginName not in plugins:
+            abort(404)
+        else:
+            return (plugins[pluginName].getPage(path))
+
+
+@app.route('/plugins/<string:pluginName>/', methods=['GET'])
+def pluginHome(pluginName):
+    args = request.args.to_dict()
+    if('test' in args):
+        return parrot(request)
+    if request.method == 'GET':
+        if pluginName not in house.pluginManager.plugins:
+            abort(404)
+        else:
+            return (house.pluginManager.plugins[pluginName].getPage(None))
+
+
+@app.route('/plugins/', methods=['GET', 'POST'])
+def getPlugins():
+    args = request.args.to_dict()
+    if('test' in args):
+        return parrot(request)
+
+    if request.method == 'GET':
+        return jsonify(pack(house.pluginManager.getPlugins()))
+
+    if request.method == 'POST':
+        file = request.files['file']
+        return house.pluginManager.uploadPlugin(file)
+
+
+@app.route('/plugins/plugin.css/', methods=['GET'])
+def getCSS():
+    args = request.args.to_dict()
+    if('test' in args):
+        return parrot(request)
+    if request.method == 'GET':
+        with open('./plugins/plugin.css', 'r') as content_file:
+            css = content_file.read()
+        response = make_response(css)
+        response.headers['Content-Type'] = 'text/css'
+        return response
 
 # OPENID ----------------------------------------------------------------
 # Based upon: https://github.com/mitsuhiko/flask-openid
