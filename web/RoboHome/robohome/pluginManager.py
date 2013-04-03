@@ -1,6 +1,8 @@
 import os
+import zipfile
 from flask import Blueprint
 from flask import *
+from werkzeug import secure_filename
 
 # Temporary until I can fix the imports
 def parrot(request):
@@ -52,11 +54,29 @@ def getPlugins():
 
     if request.method == 'POST':
         file = request.files['file']
-        #if file and file.filename.rsplit('.', 1)[1] == 'zip':
-        #    filename = secure_filename(file.filename)
-        #    file.save(os.path.join("./plugins", filename))
-        #    return "success"
-        return "success"
+
+        if file and file.filename.rsplit('.', 1)[1] == 'zip':
+            zipName = file.filename.rsplit('.', 1)[0]
+            filename = secure_filename(file.filename)
+            path = os.path.join("./plugins", filename)
+            file.save(path)
+
+            zfile = zipfile.ZipFile(path)
+
+            if not os.path.exists("./plugins/" + zipName):
+                os.mkdir("./plugins/" + zipName)
+
+            for name in zfile.namelist():
+                (dirname, filename) = os.path.split(name)
+                dirname = "./plugins/" + zipName + "/" + dirname
+                if not os.path.exists(dirname):
+                    os.mkdir(dirname)
+                fd = open("./plugins/" + zipName + "/" + name, "w")
+                fd.write(zfile.read(name))
+                fd.close()
+
+            return "Plugin Installed"
+        return "File not a .zip file"
 
 
 @pluginBlueprint.route('/plugin.css/', methods=['GET'])
