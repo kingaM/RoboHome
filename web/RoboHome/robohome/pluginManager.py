@@ -38,16 +38,25 @@ def pluginHome(pluginName):
             return (plugins[pluginName].getPage(None))
 
 
-@pluginBlueprint.route('/', methods=['GET'])
+@pluginBlueprint.route('/', methods=['GET', 'POST'])
 def getPlugins():
     args = request.args.to_dict()
     if('test' in args):
         return parrot(request)
+
     if request.method == 'GET':
         pluginNames = []
         for p in plugins:
             pluginNames.append(p)
         return jsonify({"statusCode": 200, "content": {"plugins": pluginNames}})
+
+    if request.method == 'POST':
+        file = request.files['file']
+        #if file and file.filename.rsplit('.', 1)[1] == 'zip':
+        #    filename = secure_filename(file.filename)
+        #    file.save(os.path.join("./plugins", filename))
+        #    return "success"
+        return "success"
 
 
 @pluginBlueprint.route('/plugin.css/', methods=['GET'])
