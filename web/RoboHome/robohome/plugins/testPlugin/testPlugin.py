@@ -16,3 +16,6 @@ class myTest(Plugin):
 
     def teardown(self):
         pass
+
+    def notify(self, ip, trigger):
+        pass

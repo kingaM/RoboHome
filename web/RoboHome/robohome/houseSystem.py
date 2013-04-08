@@ -22,6 +22,7 @@ class House(object):
         self.methodThread.daemon = True
         self.methodThread.start()
         self.pluginManager = PluginManager(self.rooms, self.events, self.queue)
+        self.listenerManager.addListener(self.pluginManager.notify)
 
     def initFromDatabase(self):
         """Initialises the house from the database"""

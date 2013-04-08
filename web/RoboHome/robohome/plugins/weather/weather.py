@@ -17,3 +17,6 @@ class Weather(Plugin):
 
     def teardown(self):
         pass
+
+    def notify(self, ip, trigger):
+        pass

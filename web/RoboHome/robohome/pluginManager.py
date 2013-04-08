@@ -15,6 +15,9 @@ class PluginManager():
         self.loadPlugins()
 
     def loadPlugins(self):
+        """
+        Loads plugins into the manager for later use
+        """
 
         # Incase of reloading plugins - Teardown and empty
         for plugin in self.plugins:
@@ -83,12 +86,24 @@ class PluginManager():
         return plugins
 
     def getPlugins(self):
+        """
+        Returns a list of loaded plugins in the correct format for the API
+        """
         pluginNames = []
         for p in self.plugins:
             pluginNames.append(p)
         return {"plugins": pluginNames}
 
     def uploadPlugin(self, file):
+        """
+        Saves and unzips a file uploaded through Flask
+
+        SOURCE: http://flask.pocoo.org/docs/patterns/fileuploads/
+        SOURCE: http://stackoverflow.com/questions/7806563/how-to-unzip-a-zip-file-with-python-2-4
+
+        Arguments:
+        file -- the file being uploaded
+        """
 
         if file and file.filename.rsplit('.', 1)[1] == 'zip':
             zipName = file.filename.rsplit('.', 1)[0]
@@ -115,10 +130,30 @@ class PluginManager():
         return "File must be a .zip file"
 
     def deletePlugin(self, pluginName):
+        """
+        Deletes a plugin
+
+        Arguments:
+        pluginName -- the name (Plugin.getName()) of the plugin to be deleted
+        """
         self.plugins[pluginName].teardown()
         shutil.rmtree(self.pluginsDir + pluginName)
         self.loadPlugins()
         return "Plugin Deleted"
+
+    def notify(self, ip, trigger):
+        """
+        Informs all plugins of an event
+
+        Arguments:
+        ip -- the IP address of the item that sent the trigger
+        trigger -- the name of the trigger
+        """
+        for p in self.plugins:
+            try:
+                self.plugins[p].notify(ip, trigger)
+            except Exception, e:
+                print e
 
 
 class Plugin(object):
@@ -143,6 +178,16 @@ class Plugin(object):
 
         Arguments:
         path -- the path of the page to display
+        """
+        raise NotImplementedError("getPage method missing")
+
+    def notify(self, ip, trigger):
+        """
+        Reacts to an event
+
+        Arguments:
+        ip -- the IP address of the item that sent the trigger
+        trigger -- the name of the trigger
         """
         raise NotImplementedError("getPage method missing")
 
