@@ -1,11 +1,13 @@
 import os
 import zipfile
+import shutil
 from werkzeug import secure_filename
 
 
 class PluginManager():
 
     def __init__(self, rooms, events, queue):
+        self.pluginsDir = "./plugins/"
         self.plugins = {}
         self.rooms = rooms
         self.events = events
@@ -88,8 +90,6 @@ class PluginManager():
 
     def uploadPlugin(self, file):
 
-        pluginsDir = "./plugins/"
-
         if file and file.filename.rsplit('.', 1)[1] == 'zip':
             zipName = file.filename.rsplit('.', 1)[0]
             filename = secure_filename(file.filename)
@@ -98,21 +98,27 @@ class PluginManager():
 
             zfile = zipfile.ZipFile(path)
 
-            if not os.path.exists(pluginsDir + zipName):
-                os.mkdir(pluginsDir + zipName)
+            if not os.path.exists(self.pluginsDir + zipName):
+                os.mkdir(self.pluginsDir + zipName)
 
             for name in zfile.namelist():
                 (dirname, filename) = os.path.split(name)
-                dirname = pluginsDir + zipName + "/" + dirname
+                dirname = self.pluginsDir + zipName + "/" + dirname
                 if not os.path.exists(dirname):
                     os.mkdir(dirname)
-                fd = open(pluginsDir + zipName + "/" + name, "w")
+                fd = open(self.pluginsDir + zipName + "/" + name, "w")
                 fd.write(zfile.read(name))
                 fd.close()
 
             self.loadPlugins()
             return "Plugin Installed"
         return "File must be a .zip file"
+
+    def deletePlugin(self, pluginName):
+        self.plugins[pluginName].teardown()
+        shutil.rmtree(self.pluginsDir + pluginName)
+        self.loadPlugins()
+        return "Plugin Deleted"
 
 
 class Plugin(object):

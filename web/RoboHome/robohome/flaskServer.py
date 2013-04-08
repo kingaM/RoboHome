@@ -435,7 +435,7 @@ def pluginPage(pluginName, path):
             return (plugins[pluginName].getPage(path))
 
 
-@app.route('/plugins/<string:pluginName>/', methods=['GET'])
+@app.route('/plugins/<string:pluginName>/', methods=['GET', 'DELETE'])
 def pluginHome(pluginName):
     args = request.args.to_dict()
     if('test' in args):
@@ -445,6 +445,11 @@ def pluginHome(pluginName):
             abort(404)
         else:
             return (house.pluginManager.plugins[pluginName].getPage(None))
+    if request.method == 'DELETE':
+        if pluginName not in house.pluginManager.plugins:
+            abort(404)
+        else:
+            return (house.pluginManager.deletePlugin(pluginName))
 
 
 @app.route('/plugins/', methods=['GET', 'POST'])
