@@ -189,7 +189,7 @@ class Plugin(object):
         ip -- the IP address of the item that sent the trigger
         trigger -- the name of the trigger
         """
-        raise NotImplementedError("getPage method missing")
+        raise NotImplementedError("notify method missing")
 
     def getName(self):
         """Returns the unique name of the plugin to claim a url prefix"""
