@@ -30,7 +30,7 @@ class DatabaseHelper(object):
         query = "UPDATE "  + self.database + ".`" + tablename  + "` SET " + entry + " WHERE " + condition
         self.executeQuery(query)
 
-    def retriveData(self, query):
+    def retrieveData(self, query):
         cursor = DatabaseHelper.con.cursor()
         cursor.execute(query)
         rows = cursor.fetchall()

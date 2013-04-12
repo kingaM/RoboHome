@@ -19,7 +19,7 @@ class RoomsTable(DatabaseHelper):
 
     def retrieveAllData(self):
         roomList = []
-        roomTuple = super(RoomsTable, self).retriveData("SELECT * FROM " + self.tablename)
+        roomTuple = super(RoomsTable, self).retrieveData("SELECT * FROM " + self.tablename)
         for room in roomTuple:
             roomList.append(house.Room(room[0], room[1]))
         return roomList
@@ -35,11 +35,11 @@ class TypesTable(DatabaseHelper):
 
     def getIdForName(self, name):
         query = "SELECT * FROM " + self.database + ".`" + self.tablename + "` WHERE name='" + name + "'"
-        return super(TypesTable, self).retriveData(query)[0][0]
+        return super(TypesTable, self).retrieveData(query)[0][0]
 
     def getNameForId(self, id):
         query = "SELECT * FROM " + self.database + ".`" + self.tablename + "` WHERE id=" + str(id)
-        return super(TypesTable, self).retriveData(query)[0][1]
+        return super(TypesTable, self).retrieveData(query)[0][1]
 
 class ItemsTable(DatabaseHelper):
 
@@ -56,7 +56,7 @@ class ItemsTable(DatabaseHelper):
 
     def retrieveForRoomId(self, room):
         itemsList = []
-        itemsTuple =  super(ItemsTable, self).retriveData("SELECT * FROM " + self.tablename + " WHERE roomId=" + str(room.id))
+        itemsTuple =  super(ItemsTable, self).retrieveData("SELECT * FROM " + self.tablename + " WHERE roomId=" + str(room.id))
         for item in itemsTuple:
             type = self.types.getNameForId(item[5])
             itemsList.append(data.types[type](item[0], item[1], item[2],  type, item[3], None))
@@ -78,13 +78,13 @@ class MethodsTable(DatabaseHelper):
         super(MethodsTable, self).__init__()
 
     def getNiceStateName(self, itemId):
-        return self.retriveData("SELECT methods.name FROM methods, `types`, items WHERE `types`.id=methods.typeId AND `types`.id=items.typeId AND items.id=" + str(itemId) + " AND methods.signature='getState'")[0][0]
+        return self.retrieveData("SELECT methods.name FROM methods, `types`, items WHERE `types`.id=methods.typeId AND `types`.id=items.typeId AND items.id=" + str(itemId) + " AND methods.signature='getState'")[0][0]
 
     def getSignature(self, name, _type):
-        return self.retriveData("SELECT signature FROM methods, `types` WHERE `types`.id=methods.typeId AND methods.name=\'" + str(name) + "' AND `types`.name='" + str(_type) + "'")[0][0]
+        return self.retrieveData("SELECT signature FROM methods, `types` WHERE `types`.id=methods.typeId AND methods.name=\'" + str(name) + "' AND `types`.name='" + str(_type) + "'")[0][0]
 
     def getId(self, name, type):
-        return self.retriveData("SELECT methods.id FROM methods, `types` WHERE `types`.id=methods.typeId AND methods.name=\'" + str(name) + "' AND `types`.name='" + str(type) + "'")[0][0]
+        return self.retrieveData("SELECT methods.id FROM methods, `types` WHERE `types`.id=methods.typeId AND methods.name=\'" + str(name) + "' AND `types`.name='" + str(type) + "'")[0][0]
 
 
 class EventsTable(DatabaseHelper):
@@ -95,7 +95,7 @@ class EventsTable(DatabaseHelper):
         super(EventsTable, self).__init__()
 
     def addEntry(self, event):
-        typeId = self.retriveData("SELECT id FROM types WHERE name=\'" + event.type + "';")[0][0]
+        typeId = self.retrieveData("SELECT id FROM types WHERE name=\'" + event.type + "';")[0][0]
         if event.item is None:
             itemId = "null"
         else:
@@ -110,7 +110,7 @@ class EventsTable(DatabaseHelper):
         self.executeQuery("DELETE FROM events WHERE id=" + str(event.id) + ";")
 
     def updateEntry(self, event):
-        typeId = self.retriveData("SELECT id FROM types WHERE name=\'" + event.type + "';")[0][0]
+        typeId = self.retrieveData("SELECT id FROM types WHERE name=\'" + event.type + "';")[0][0]
         if event.item is None:
             itemId = "null"
         else:
@@ -123,7 +123,7 @@ class EventsTable(DatabaseHelper):
 
     def getEvents(self):
         eventsList = []
-        eventsTuple =  super(EventsTable, self).retriveData("SELECT events.id, events.name, types.name, itemId, roomId, `trigger`, enabled FROM events, types WHERE events.typeId = types.id")
+        eventsTuple =  super(EventsTable, self).retrieveData("SELECT events.id, events.name, types.name, itemId, roomId, `trigger`, enabled FROM events, types WHERE events.typeId = types.id")
         for event in eventsTuple:
             eventsList.append(Event(event[0], event[1], event[2], event[3], event[4], event[5], event[6]))
         return eventsList
@@ -149,7 +149,7 @@ class ConditionsTable(DatabaseHelper):
 
     def getConditionsForEvent(self, event):
         conditionsList = []
-        conditionsTuple = super(ConditionsTable, self).retriveData("SELECT conditions.id, itemId, signature, methods.name, equivalence, value FROM conditions, methods WHERE conditions.methodId = methods.Id AND eventId=" + str(event.id))
+        conditionsTuple = super(ConditionsTable, self).retrieveData("SELECT conditions.id, itemId, signature, methods.name, equivalence, value FROM conditions, methods WHERE conditions.methodId = methods.Id AND eventId=" + str(event.id))
         for condition in conditionsTuple:
             conditionsList.append(Condition(condition[0], condition[1], condition[2], condition[3], condition[4], condition[5]))
         return conditionsList
@@ -191,7 +191,7 @@ class ActionsTable(DatabaseHelper):
 
     def getActionsForEvent(self, event):
         actionsList = []
-        actionsTuple = super(ActionsTable, self).retriveData("SELECT actions.id, itemId, roomId, signature, methods.name, types.name FROM actions, methods, types WHERE actions.methodId = methods.id AND methods.typeId = types.Id AND eventId=" + str(event.id))
+        actionsTuple = super(ActionsTable, self).retrieveData("SELECT actions.id, itemId, roomId, signature, methods.name, types.name FROM actions, methods, types WHERE actions.methodId = methods.id AND methods.typeId = types.Id AND eventId=" + str(event.id))
         for action in actionsTuple:
             actionsList.append(Action(action[0], action[1], action[2], action[3], action[4], action[5]))
         return actionsList
@@ -206,14 +206,14 @@ class UsersTable(DatabaseHelper):
        return super(UsersTable, self).addEntry(self.tablename, "name, email, openid", "'" + name + "'," + "'" + email + "'," + "'" + openid + "'")
 
     def getUserByOpenid(self, openid):
-        user =  super(UsersTable, self).retriveData("SELECT name, email, openid FROM users WHERE openid=\'" + openid + "'")
+        user =  super(UsersTable, self).retrieveData("SELECT name, email, openid FROM users WHERE openid=\'" + openid + "'")
         if user:
             return {'name' : user[0][0], 'email' : user[0][1], 'opnenid' : user[0][2]}
         else:
             return None
 
     def numOfRows(self):
-        return super(UsersTable, self).retriveData("SELECT COUNT(*) FROM " + self.tablename)[0][0]
+        return super(UsersTable, self).retrieveData("SELECT COUNT(*) FROM " + self.tablename)[0][0]
 
 class WhitelistTable(DatabaseHelper):
 
@@ -225,10 +225,10 @@ class WhitelistTable(DatabaseHelper):
         return super(WhitelistTable, self).addEntry(self.tablename, "email", "'" + email + "'")
 
     def getEmails(self):
-        return super(WhitelistTable, self).retriveData("SELECT email FROM " + self.tablename )
+        return super(WhitelistTable, self).retrieveData("SELECT email FROM " + self.tablename )
 
     def isInWhitelist(self, email):
-        emails = super(WhitelistTable, self).retriveData("SELECT email FROM " + self.tablename + " WHERE email='" + email + "'" )
+        emails = super(WhitelistTable, self).retrieveData("SELECT email FROM " + self.tablename + " WHERE email='" + email + "'" )
         if len(emails) == 0:
             return False
         else:
@@ -248,7 +248,7 @@ class EnergyTable(DatabaseHelper):
         return super(EnergyTable, self).addEntry(self.tablename, "watts", "'" + str(watts) + "'")
 
     def getEnergyBetDates(self, startDate, endDate):
-        return super(EnergyTable, self).retriveData("SELECT * FROM " + self.tablename + " WHERE time BETWEEN FROM_UNIXTIME(" + str(startDate) + ") AND FROM_UNIXTIME(" + str(endDate) + ")") 
+        return super(EnergyTable, self).retrieveData("SELECT * FROM " + self.tablename + " WHERE time BETWEEN FROM_UNIXTIME(" + str(startDate) + ") AND FROM_UNIXTIME(" + str(endDate) + ")") 
 
 class Database(DatabaseHelper):
 
@@ -278,4 +278,4 @@ class Database(DatabaseHelper):
 
     def getMethodsWithTypes(self):
         query = "SELECT " + "`" + self.types.tablename + "`" + ".`name`, `" + self.methods.tablename + "`" + ".`name` FROM " + "robohome" + ".`" + self.methods.tablename + "`," + "robohome" + ".`" + self.types.tablename + "` WHERE `" + self.types.tablename + "`.id = `" + self.methods.tablename + "`.typeId"
-        return super(Database, self).retriveData(query)
+        return super(Database, self).retrieveData(query)
