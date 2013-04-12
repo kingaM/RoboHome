@@ -1,4 +1,3 @@
-from item import *
 import eca
 from priorityQueue import MyPriorityQueue
 from threading import Thread
@@ -29,34 +28,27 @@ class House(object):
 
         rooms = self.database.room.retrieveAllData()
         for room in rooms:
-            self.rooms[room[0]] = Room(room[0], room[1])
-            items = self.database.items.retrieveForRoomId(room[0])
+            self.rooms[room.id] = room
+            items = self.database.items.retrieveForRoomId(room)
             if len(items) > 0:
                 for item in items:
-                    type = self.database.types.getNameForId(item[5])
-                    self.rooms[room[0]].items[item[0]] = (data.types[type](item[0], item[1], item[2],  type, item[3], self.listenerManager))
+                    self.rooms[room.id].items[item._id] = item
+                    item.listener = self.listenerManager
 
-        events = self.database.events.getEvents()
-
-        for e in events:
-            if e[4] is not None:
-                tempRoom = self.rooms[e[4]]
-            else:
-                tempRoom = None
-            self.events.append(eca.Event(e[0], e[1], e[2], self.getItemById(e[3]), tempRoom, e[5], e[6]))
-
-        for e in self.events:
-            conditions = self.database.conditions.getConditionsForEvent(e)
-            for c in conditions:
-                e.conditions.append(eca.Condition(c[0], self.getItemById(c[1]), c[2], c[3], c[4], c[5]))
-
-            actions = self.database.actions.getActionsForEvent(e)
-            for a in actions:
-                if a[2] is not None:
-                    tempRoom = self.rooms[a[2]]
-                else:
-                    tempRoom = None
-                e.actions.append(eca.Action(a[0], self.getItemById(a[1]), tempRoom, a[3], a[4], a[5]))
+        #a bit of a hack...
+        self.events = self.database.events.getEvents()
+        for event in self.events:
+            if event.room is not None:
+                event.room = self.rooms[event.room]
+            event.item = self.getItemById(event.item)
+            event.conditions = self.database.conditions.getConditionsForEvent(event)
+            for condition in event.conditions:
+                condition.item = self.getItemById(condition.item)
+            event.actions = self.database.actions.getActionsForEvent(event)
+            for action in event.actions:
+                if action.room is not None:
+                    action.room = self.rooms[action.room]
+                action.item = self.getItemById(action.item)
 
     def addRoom(self, name):
         """
@@ -65,9 +57,11 @@ class House(object):
         Arguments:
         name -- the name of the room
         """
-
-        id = self.database.room.addEntry(name)
-        self.rooms[id] = Room(id, name)
+        room = Room(None, name)
+        id = self.database.room.addEntry(room)
+        if id ==-1:
+            raise Exception("Database error while adding a room")
+        self.rooms[id] = room
 
         return id
 
@@ -80,8 +74,8 @@ class House(object):
         name -- new name for the given room
         """
         if roomId in self.rooms:
-            self.database.room.updateEntry(roomId, name)
-            self.rooms[roomId] = Room(roomId, name)
+            self.rooms[roomId].name = name
+            self.database.room.updateEntry(self.rooms[roomId])
         else:
             raise KeyError("Invalid roomId")
 
@@ -93,7 +87,7 @@ class House(object):
         roomId -- the id of the room to delete
         """
         if roomId in self.rooms:
-            self.database.room.deleteEntryByID(roomId)
+            self.database.room.removeEntry(self.rooms[roomId])
             del self.rooms[roomId]
         else:
             raise KeyError("Invalid roomId")
@@ -111,9 +105,8 @@ class House(object):
         ip -- the ip of the item
         """
         if roomId in self.rooms:
-            typeId = self.database.types.getIdForName(type)
-            itemId = self.database.items.addEntry(name, brand, ip, roomId, typeId)
-            item = data.types[type](itemId, name, brand, type, ip, self.listenerManager)
+            item = data.types[type](None, name, brand, type, ip, self.listenerManager)
+            itemId = self.database.items.addEntry(item, roomId)
             self.rooms[roomId].addItem(itemId, item)
         else:
             raise KeyError("Invalid roomId")
@@ -132,16 +125,14 @@ class House(object):
         ip -- tnew/current if unchangedhe ip of the item
         """
         if roomId in self.rooms and itemId in self.rooms[roomId].items:
-            typeId = self.database.types.getIdForName(type)
             self.rooms[roomId].items[itemId].name = name
             self.rooms[roomId].items[itemId].brand = brand
             self.rooms[roomId].items[itemId].ip = ip
             self.rooms[roomId].items[itemId]._type = type
             self.rooms[roomId].items[itemId].roomId = roomId
-            self.database.items.updateEntry(itemId, name, brand, ip, roomId, typeId)
+            self.database.items.updateEntry(self.rooms[roomId].items[itemId], roomId)
         else:
             raise KeyError("Invalid roomId or itemId")
-
         return itemId
 
     def deleteItem(self, roomId, itemId):
@@ -153,7 +144,7 @@ class House(object):
         itemid -- the id of the item to be deleted
         """
         if roomId in self.rooms and itemId in self.rooms[roomId].items:
-            self.database.items.deleteEntry(itemId)
+            self.database.items.removeEntry(self.rooms[roomId].items[itemId])
             del self.rooms[roomId].items[itemId]
         else:
             raise KeyError("Invalid roomId or itemId")

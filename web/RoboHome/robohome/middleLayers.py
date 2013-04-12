@@ -8,7 +8,8 @@ from wemo import WemoHelper
 import urllib2
 from flask import Blueprint
 from flask import *
-from databaseTables import Database
+import databaseTables as db
+
 
 items = {}
 
@@ -121,6 +122,9 @@ class WemoLayer(MiddleLayer):
         if platform.system() == 'Linux' or platform.system() == 'Darwin':
             self.wemoHelper = WemoHelper(ip)
 
+    def send(self, command, *args):
+        return getattr(self, command)(*args)
+
     def checkState(self):
         if platform.system() == 'Linux' or platform.system() == 'Darwin':
             return self.wemoHelper.getState()
@@ -173,7 +177,7 @@ class LightwaveRFLayer(MiddleLayer):
             self.device = ip.split("D")[1]
         else:
             self.contState = 0
-            self.db = Database()
+            self.db = db.Database()
             self.sock.bind(("0.0.0.0", 9761))
             t1 = threading.Thread(target=self.pollEnergy)
             t1.daemon = True
@@ -238,6 +242,7 @@ class LightwaveRFLayer(MiddleLayer):
 
     def setBrightness(self, brightness):
         self.mockState = brightness
+
 
 
 brands = {'mock': MockLayer, 'arduino': ArduinoLayer, 'gadgeteer': GadgeteerLayer, 'wemo': WemoLayer, 'lightwaveRF': LightwaveRFLayer, 'RF': ArduinoLayer, 'rf': ArduinoLayer}
