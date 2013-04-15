@@ -63,11 +63,10 @@ echo '<br/><a href="logout.php?logout">Logout</a>';
   </div>
   
   <form action="home.php" method="post">
-  
   <div class="modal-body">
-  Leave "name" empty if adding existing RPi.
+  <p>IP Address:<br /><input name="ip" type="text" placeholder="Ex: 192.168.0.1"></p>
+  <p>Leave "name" empty if adding existing RPi.</p>
     <p>Name:<br /><input name="name" type="text" placeholder="Ex: Home 1"></p>
-    <p>IP Address:<br /><input name="ip" type="text" placeholder="Ex: 192.168.0.1"></p>
   </div>
   <div class="modal-footer">
     <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
