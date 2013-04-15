@@ -28,10 +28,11 @@
                 <RowDefinition></RowDefinition>
                 <RowDefinition></RowDefinition>
                 <RowDefinition></RowDefinition>
-                <RowDefinition></RowDefinition>
             </Grid.RowDefinitions>
-            <Button x:Name="myButton" Grid.Row="0" Height="75" Content="Click to refresh RoboHome " VerticalAlignment="Top" Click="myButton_Click" />
-            <ListBox Name="lstEmployee"  Height="606" FontSize="24" VerticalAlignment="Top" Margin="0,128,0,0" Grid.RowSpan="4"/>
+            <TextBlock x:Name="ApplicationTitle" Text="RoboHome" Style="{StaticResource PhoneTextNormalStyle}"/>
+            <TextBox Height="69" HorizontalAlignment="Left" Margin="0,22,0,0" Name="txtUserName" VerticalAlignment="Top" Width="446" Text="0.0.0.0:9090/version/0.1/state"/>
+            <Button x:Name="myButton" Height="75" Content="Click to refresh" VerticalAlignment="Top" Click="myButton_Click" Margin="-10,75,10,0" />
+            <ListBox Name="lstEmployee"  Height="572" FontSize="24" VerticalAlignment="Top" Margin="-10,155,10,0" Grid.RowSpan="3"/>
         </Grid>
     </Grid>
 

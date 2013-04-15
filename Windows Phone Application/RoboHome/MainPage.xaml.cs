@@ -34,7 +34,7 @@ namespace JSONParsingExample
             try
             {
                 WebClient webClient = new WebClient();
-                Uri uri = new Uri("http://robohome.co.uk/state.txt");
+                Uri uri = new Uri(txtUserName.Text);
                 webClient.OpenReadCompleted += new OpenReadCompletedEventHandler(webClient_OpenReadCompleted);
                 webClient.OpenReadAsync(uri);
             }
