@@ -208,6 +208,7 @@ public class MainActivity extends Activity {
 
 		webView = (WebView) findViewById(R.id.webView);
 		webView.setBackgroundColor(Color.TRANSPARENT);
+		webView.getSettings().setJavaScriptEnabled(true);
 		webView.getSettings().setLightTouchEnabled(true);
 		webView.getSettings().setBuiltInZoomControls(true);
 		webView.loadUrl(url);
