@@ -4,13 +4,15 @@
     <item
         android:id="@+id/reload"
         android:icon="@android:drawable/ic_menu_rotate"
-        android:title="Reload">
+        android:title="Reload"
+        android:showAsAction="ifRoom|withText">
     </item>
     
     <item
         android:id="@+id/itemPrefs"
         android:icon="@android:drawable/ic_menu_preferences"
-        android:title="Settings">
+        android:title="Settings"
+        android:showAsAction="ifRoom|withText">
     </item>
 
 </menu> 

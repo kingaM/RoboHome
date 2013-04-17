@@ -28,7 +28,6 @@ public class MainActivity extends Activity {
 		url = prefs.getString("web", getString(R.string.url));
 
 		webView = (WebView) findViewById(R.id.webView);
-		webView.getSettings().setJavaScriptEnabled(true);
 		webView.setBackgroundColor(Color.TRANSPARENT);
 		webView.getSettings().setLightTouchEnabled(true);
 		webView.getSettings().setBuiltInZoomControls(true);
@@ -46,11 +45,12 @@ public class MainActivity extends Activity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.reload:
-			url = prefs.getString("web", getString(R.string.url));
+			url = prefs.getString("weburl", getString(R.string.url));
 			webView.loadUrl(url);
 			break;
 		case R.id.itemPrefs:
 			startActivityForResult(new Intent(this,	SettingsActivity.class), 0);
+			webView.loadUrl(url);
 			break;
 		}
 		return true;

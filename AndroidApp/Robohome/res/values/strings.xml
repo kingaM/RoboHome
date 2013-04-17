@@ -3,6 +3,6 @@
     <string name="app_name">Robohome</string>
     <string name="menu_settings">Settings</string>
     <string name="title_activity_main">MainActivity</string>
-    <string name="url">localhost:9090</string>
+    <string name="url">http://localhost:9090</string>
 
 </resources>
