@@ -175,16 +175,6 @@
         equal(cm.construct(), undefined, 'Method returns undefined');
     });
     
-    test('method setConstruct', function() {
-        equal(typeof(cm.setConstruct), 'function', 'Method type === "function"');
-        equal(typeof(cm.setConstruct()), 'undefined', 'Method return type === "undefined"');
-        equal(cm.setConstruct(), undefined, 'Method returns undefined');
-        
-        var func = function() {};
-        cm.setConstruct(func);
-        deepEqual(cm.construct, func, 'Set contruct function === retrieved construct function');
-    });
-    
     test('method tearDown', function() {
         equal(typeof(cm.tearDown), 'function', 'Method type === "function"');
         equal(typeof(cm.tearDown()), 'undefined', 'Method return type === "undefined"');
