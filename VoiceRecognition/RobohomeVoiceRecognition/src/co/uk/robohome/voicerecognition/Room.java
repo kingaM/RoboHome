@@ -1,12 +1,13 @@
 package co.uk.robohome.voicerecognition;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Room {
 	
 	private String name;
 	private int id;
-	private ArrayList<Item> items = new ArrayList<Item>();
+	private HashMap<String, Item> items = new HashMap<String, Item>();
 	
 	public Room(int id, String name){
 		this.id = id;
@@ -29,12 +30,16 @@ public class Room {
 		this.id = id;
 	}
 
-	public ArrayList<Item> getItems() {
-		return items;
-	}
-
 	public void addItem(Item item) {
-		this.items.add(item);
+		this.items.put(item.getName().toLowerCase(), item);
+	}
+	
+	public boolean inItems(String name) {
+		return items.containsKey(name);
+	}
+	
+	public int getItemId(String name) {
+		return items.get(name).getId();
 	}
 	
 	@Override
