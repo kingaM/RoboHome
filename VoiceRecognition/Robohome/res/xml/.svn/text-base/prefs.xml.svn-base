@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <EditTextPreference
+        android:defaultValue="100"
+        android:key="interval"
+        android:title="Set Interval (in milliseconds)"
+        android:summary="This sets the interval at which the data is sent to the server" />
+    
+    <EditTextPreference
+        android:defaultValue="0"
+        android:key="distanceFilter"
+        android:title="Set Distance Filter (in meters)"
+        android:summary="This sets the distance when the data will be sent to the server" />
+    
+    <EditTextPreference
+        android:defaultValue="@string/url"
+        android:key="web"
+        android:title="Set Website"
+        android:summary="This sets the website which will be loaded" />
+
+</PreferenceScreen>

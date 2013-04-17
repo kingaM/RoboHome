@@ -1,0 +1,8 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <EditTextPreference
+        android:dialogTitle="Change URL"
+        android:key="weburl"
+        android:title="Change URL" />
+
+</PreferenceScreen>
