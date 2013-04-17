@@ -103,8 +103,8 @@ class Action():
         for x in otherItemsActedOn:
             if x[0] == self.item:
                 return True
-            if x[1] == self.room and x[2] == self._type:
+            if x[1] == self.room and x[2] == self.type:
                 return True
-            if x[0] == None and x[1] == None and x[2] == self._type:
+            if x[0] == None and x[1] == None and x[2] == self.type:
                 return True
         return False
