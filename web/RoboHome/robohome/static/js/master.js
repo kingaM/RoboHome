@@ -3838,12 +3838,14 @@ APP.StageManager = function() {
         stages = new APP.Map(),
         menuManager = new APP.MenuManager(this),
         primaryMenuMap = {
+            /*
             'button-home': {
                 menuId: null,
                 buttonText: 'Home',
                 class: 'blue',
                 buttons: {}
             },
+            */
             'button-control': {
                 menuId: 'menu-control',
                 buttonText: 'Control',
@@ -3965,6 +3967,7 @@ APP.StageManager = function() {
     /**
      *
      */
+    /*
     this.setStage_Home = function() {
         var stageId = this.addStage(new APP.Stage(null, 'button-home', '', 'stage-home')),
             stage = stages.get(stageId);
@@ -3997,6 +4000,7 @@ APP.StageManager = function() {
             
         });
     };
+    */
     
     /**
      *
@@ -4698,6 +4702,7 @@ APP.StageManager = function() {
     /**
      *
      */
+    /*
     this.setStage_Settings = function() {
         var stageId = this.addStage(new APP.Stage('menu-config', 'button-settings', 'Settings', 'stage-settings')),
             stage = stages.get(stageId);
@@ -4730,6 +4735,7 @@ APP.StageManager = function() {
             
         });
     };
+    */
     
     /**
      *
@@ -5215,6 +5221,7 @@ APP.StageManager = function() {
     /**
      *
      */
+    /*
     this.setStage_Logs_Error = function() {
         var stageId = this.addStage(new APP.Stage('menu-logs', 'button-logs-error', 'Error', 'stage-logs-error')),
             stage = stages.get(stageId);
@@ -5247,10 +5254,12 @@ APP.StageManager = function() {
             
         });
     },
+    */
     
     /**
      *
      */
+    /*
     this.setStage_About = function() {
         var stageId = this.addStage(new APP.Stage('menu-config', 'button-about', 'About', 'stage-about')),
             stage = stages.get(stageId);
@@ -5280,6 +5289,7 @@ APP.StageManager = function() {
             
         });
     };
+    */
         
     /**
      * @for APP.StageManager
@@ -5361,7 +5371,7 @@ APP.StageManager = function() {
         // ---------------
         
         // home stage
-        this.setStage_Home();
+        // this.setStage_Home();
         
         // plugins stage
         this.setStage_Plugins();
@@ -5398,17 +5408,17 @@ APP.StageManager = function() {
         this.setStage_ECA();
         
         // settings stage
-        this.setStage_Settings();
+        // this.setStage_Settings();
         
         // whitelist stage
         this.setStage_Whitelist();
         
         // log stages
         this.setStage_Logs_Energy();
-        this.setStage_Logs_Error();
+        // this.setStage_Logs_Error();
         
         // about stage
-        this.setStage_About();
+        // this.setStage_About();
         
     };
     

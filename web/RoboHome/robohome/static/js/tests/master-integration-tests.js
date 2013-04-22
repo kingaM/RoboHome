@@ -475,6 +475,65 @@
         });
     })();
     
+    /* get_energy */
+    (function() {
+        remove('get_energy');
+        asyncTest('method get_energy', function() {
+            var args = {},
+                settings,
+                ajaxObj,
+                startTime = '0000_01_01_00_00_00',
+                endTime = '9999_12_31_23_59_59';
+            args[APP.API.ENERGY.START_TIME] = startTime;
+            args[APP.API.ENERGY.END_TIME] = endTime;
+            settings = getSettings({
+                func: APP.ajax.get_energy,
+                method: 'GET',
+                url: APP.URL.ENERGY,
+                args: args
+            });
+            ajaxObj = settings.func(args[APP.API.ENERGY.START_TIME], args[APP.API.ENERGY.END_TIME], settings.callback, settings.error, settings.test);
+            testClient(ajaxObj, settings);
+        });
+    })();
+    
+    /* get_plugins */
+    (function() {
+        remove('get_plugins');
+        asyncTest('method_get_plugins', function() {
+            var args = {},
+                settings,
+                ajaxObj;
+            settings = getSettings({
+                func: APP.ajax.get_plugins,
+                method: 'GET',
+                url: APP.URL.PLUGINS,
+                args: args
+            });
+            ajaxObj = settings.func(settings.callback, settings.error, settings.test);
+            testClient(ajaxObj, settings);
+        });
+    })();
+    
+    /* delete_plugins */
+    (function() {
+        remove('delete_plugins');
+        asyncTest('method_delete_plugins', function() {
+            var args = {},
+                settings,
+                ajaxObj,
+                pluginName = 'pluginName';
+            settings = getSettings({
+                func: APP.ajax.delete_plugins,
+                method: 'DELETE',
+                url: APP.URL.PLUGINS_PLUGIN_NAME(pluginName),
+                args: args
+            });
+            ajaxObj = settings.func(pluginName, settings.callback, settings.error, settings.test);
+            testClient(ajaxObj, settings);
+        });
+    })();
+    
     /* get_whitelist */
     (function() {
         remove('get_whitelist');
