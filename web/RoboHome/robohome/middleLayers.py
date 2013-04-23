@@ -206,7 +206,7 @@ class LightwaveRFLayer(MiddleLayer):
         return getattr(self, command)(*args)
 
     def sendToWiFiLink(self, roomId, deviceId, commandId, messageTop, messageBottom):
-        self.sock.sendto("!R%sD%sF%s|||" % (roomId, deviceId, commandId), (self.ip, 9760))
+        self.sock.sendto("533!R%sD%sF%s|||" % (roomId, deviceId, commandId), (self.ip, 9760))
 
     def pollEnergy(self):
         while True:
