@@ -5577,7 +5577,6 @@ APP.resizer = {
     resizeText: function() {
         var masterFontSize;
         masterFontSize = (window.innerWidth / 100) + 'px';
-        console.log('windowSize ' + window.innerWidth + ' fontSize ' + masterFontSize);
         $('body').css('font-size', masterFontSize);
     },
     /**
