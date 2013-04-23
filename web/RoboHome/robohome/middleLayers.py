@@ -4,7 +4,7 @@ import threading
 import requests
 import json
 import platform
-from wemo import WemoHelper
+import wemo
 import urllib2
 from flask import Blueprint
 from flask import *
@@ -118,25 +118,27 @@ class ArduinoLayer(MiddleLayer):
 class WemoLayer(MiddleLayer):
 
     def __init__(self, ip, item):
+        self.ready = False
         super(WemoLayer, self).__init__(ip, item)
         if platform.system() == 'Linux' or platform.system() == 'Darwin':
-            self.wemoHelper = WemoHelper(ip)
+            self.wemoHelper = wemo.WemoHelper(ip)
+            self.ready = True
 
     def send(self, command, *args):
         return getattr(self, command)(*args)
 
     def checkState(self):
-        if platform.system() == 'Linux' or platform.system() == 'Darwin':
+        if (platform.system() == 'Linux' or platform.system() == 'Darwin') and self.ready:
             return self.wemoHelper.getState()
         return self.mockState
 
     def on(self):
-        if platform.system == 'Linux' or platform.system == 'Darwin':
+        if platform.system() == 'Linux' or platform.system() == 'Darwin':
             self.wemoHelper.on()
         self.mockState = 1
 
     def off(self):
-        if platform.system == 'Linux' or platform.system == 'Darwin':
+        if platform.system() == 'Linux' or platform.system() == 'Darwin':
             return self.wemoHelper.off()
         self.mockState = 0
 

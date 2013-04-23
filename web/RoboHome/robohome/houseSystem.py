@@ -677,6 +677,7 @@ class House(object):
         return getattr(self.rooms[roomId].items[itemId], method)(*args)
 
     def getEnergyByTime(self, startTime, endTime):
+    
         """
         Gets list of watts between the given dates 
 
@@ -716,8 +717,8 @@ class House(object):
                     i += 1
                 return timeStr
         
-        #print formatArg(startTime)
-        #print formatArg(endTime)
+        # print formatArg(startTime)
+        # print formatArg(endTime)
         
         dbResults = self.database.energy.getEnergyByTime(formatArg(startTime), formatArg(endTime))
         energyList = []

@@ -81,7 +81,7 @@ CONFIGURATION
 app = Flask(__name__)
 app.config.update(
     SECRET_KEY = 'development key',
-    DEBUG = False
+    DEBUG = True
 )
 
 app.register_blueprint(middleLayers.gadgeteerBlueprint)
