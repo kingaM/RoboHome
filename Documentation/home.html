@@ -49,26 +49,31 @@
         <ul class="nav nav-list bs-docs-sidenav">
           <li><a href="#url"><i class="icon-chevron-right"></i> URL </a></li>
           <li><a href="#wrapper-string"><i class="icon-chevron-right"></i> Wrapper String</a></li>
-          <li><a href="#structure"><i class="icon-chevron-right"></i> /structure </a></li>
-          <li><a href="#states"><i class="icon-chevron-right"></i> /state </a></li>
-          <li><a href="#rooms"><i class="icon-chevron-right"></i> rooms </a></li>
-          <li><a href="#room-RoomID"><i class="icon-chevron-right"></i> /rooms/(int: roomId) </a></li>
-          <li><a href="#room-Items"><i class="icon-chevron-right"></i> rooms/(int: roomId)/items </a></li>
-          <li><a href="#room-ItemID"><i class="icon-chevron-right"></i> rooms/(int: roomId)/items/(int: itemId) </a></li>
+          <li><a href="#version"><i class="icon-chevron-right"></i> /version </a></li>
+          <li><a href="#state"><i class="icon-chevron-right"></i> /state </a></li>
+          <li><a href="#rooms"><i class="icon-chevron-right"></i> /rooms </a></li>
+          <li><a href="#rooms/(int: roomId)"><i class="icon-chevron-right"></i> /rooms/(int: roomId) </a></li>
+          <li><a href="#rooms/(int: roomId)/items/"><i class="icon-chevron-right"></i> /rooms/(int: roomId)/items/ </a></li>
+          <li><a href="#rooms/(int: roomId)/items/(int: itemId)"><i class="icon-chevron-right"></i> /rooms/(int: roomId)/items/(int: itemId) </a></li>
           <li><a href="#events"><i class="icon-chevron-right"></i> /events </a></li>
-          <li><a href="#events-EventID"><i class="icon-chevron-right"></i> /events/(int: eventId) </a></li>
-          <li><a href="#methods"><i class="icon-chevron-right"></i> /methods </a></li>
+          <li><a href="#events/(int: eventId)"><i class="icon-chevron-right"></i> /events/(int: eventId) </a></li>
+          <li><a href="#events/(int: eventId)/conditions/"><i class="icon-chevron-right"></i> /events/(int: eventId)/conditions/ </a></li>
+          <li><a href="#events/(int: eventId)/conditions/(int: conditionId)"><i class="icon-chevron-right"></i> /events/(int: eventId)/conditions/(int: conditionId) </a></li>
+          <li><a href="#events/(int: eventId)/actions/"><i class="icon-chevron-right"></i> /events/(int: eventId)/actions/ </a></li>
+          <li><a href="#events/(int: eventId)/actions/(int: actionId)"><i class="icon-chevron-right"></i> /events/(int: eventId)/actions/(int: actionId) </a></li>
+          <li><a href="#plugins"><i class="icon-chevron-right"></i> /plugins </a></li>
+          <li><a href="#plugins/(string: pluginName)"><i class="icon-chevron-right"></i> /plugins/(string: pluginName) </a></li>
+          <li><a href="#whitelist"><i class="icon-chevron-right"></i> /whitelist </a></li>
         </ul>
       </div>
       <div class="span9">
-
 
 
         <!-- url
         ================================================== -->
         <section id="url">
           <div class="page-header">
-            <h1>1. URL </h1>
+            <h2>URL </h2>
           </div>
           <p class="lead">http://www.robohome.com/ip/version/(string:versionNo)/rooms/(int:roomId)/(string: type)s/(int:itemId / all)/(string:action)?(params)</p>
 
@@ -84,94 +89,83 @@
         ================================================== -->
         <section id="wrapper-string">
           <div class="page-header">
-            <h1>2. Wrapper String</h1>
+            <h2>Wrapper String</h2>
           </div>
-          <p class="lead">{statusCode: <statusCode>, content: {} }</p>
+          <p class="lead">{statusCode: &ltstatusCode&gt, content: {} }</p>
         </section>
 
 
-
-        <!-- Structure
+        <!-- /version 
         ================================================== -->
-        <section id="structure">
+        <section id="version">
           <div class="page-header">
-            <h1>3. Structure</h1>
+            <h2>/version </h2>
           </div>
+              <h4>GET</h4>
+              <p>Gets list of methods and equivalences associated with each device type </p>
+              
+              <h4>Request</h4>
+              <p>(None) </p>
 
-          <h3>GET</h3>
-          <p> Get house structure </p>
-          <p>TODO</p>
-        
-        </section>
-
-
-
-        <!-- State
-        ================================================== -->
-        <section id="states">
-          <div class="page-header">
-            <h1>4. /State</h1>
-          </div>
-
-          <h3>GET</h3>
-          <p class="lead">Get a list of states for all items in the house </p>
-          <p>Now, here's a look at a <strong>typical HTML file</strong>:</p>
-<pre class="prettyprint linenums">
+              <h4>Response(CACHED)</h4>
+          <pre class="prettyprint linenums">
 content: {
-  states: [
-    {
-      id: <id (int)>,
-      state: <state (int)>
+  supportedTypes: {
+    door: {
+      name: 'Doors',
+      isPassive: '&ltboolean true/false&gt',
+      supportedBrands: [
+        'brandName-0',
+        'brandName-1'
+        ..
+      ],
+      methods: ['open', 'close'],
+      states: [
+        { state: 0, name: 'open', method: 'open' },
+        { state: 1, name: 'closed', method: 'close' }
+      ]
     },
-    {
+    window: {
+      ..  
+    },
+    lights: {
       ..
-    }
-  ],
-  errors: []
+    },
+    ..
+  }
 }
 </pre>
-          
         </section>
 
 
-
-        <!-- Rooms
+        <!-- /state 
         ================================================== -->
-        <section id="rooms">
+        <section id="state">
           <div class="page-header">
-            <h1>5. Rooms</h1>
+            <h2>/state </h2>
           </div>
-        
-          <h3>POST</h3>
-          <p>Create new room with JSON content</p>
-          <p>TODO</p>
 
-        </section>
+              <h4>GET</h4>
+              <p>Get house structure  </p>
 
+              <h4>Request</h4>
+              <p>(None) </p>
 
-
-
-        <!-- room - RoomID
-        ================================================== -->
-        <section id="room-RoomID">
-          <div class="page-header">
-            <h1>6. /rooms/(int:roomID)</h1>
-          </div>
-         <h3>GET</h3>
-         <p>Gets a JSON representation about the current house's structure from the server </p>
-        <pre class="prettyprint linenums">
+              <h4>Response</h4>
+          <pre class="prettyprint linenums">
 content : {
   rooms: [
     {
-      id: <roomId1 (int)>,
-      name: <roomName (string)>,
+      id: &ltroomId1 (int)&gt,
+      name: &ltroomName (string)&gt,
       items: [
         {
-          id: <itemId (int)>,
-          name: <itemName (string)>,
-          type: <itemType (string)>,
-          brand: <itemBrand (string)>,
-          ip: <itemIP (string)>,
+          id: &ltitemId (int)&gt,
+          name: &ltitemName (string)&gt,
+          itemType: &ltitemType (string)&gt,
+          brand: &ltitemBrand (string)&gt,
+          ip: &ltitemIP (string)&gt,
+          state: &ltstate (int)&gt
         },
       ]
     },
@@ -180,92 +174,151 @@ content : {
     },
   ]
 }
+
 </pre>
-  
-      <h3>PUT</h3>
-      <p>Updates a specified room</p>
-      <p>TODO</p>
-
-      <h3>DELETE</h3>
-      <p>Deletes a specified room</p>
-      <p>TODO</p>
         </section>
 
 
-          <!-- room - Items
+        <!-- /rooms 
         ================================================== -->
-        <section id="room-Items">
+        <section id="rooms">
           <div class="page-header">
-            <h1>7. /rooms/(int:roomID)/items</h1>
+            <h2>/rooms </h2>
           </div>
-          <h3>POST</h3>
-          <p>TODO</p>
+
+              <h4>POST</h4>
+              <p>Create new room with JSON content</p>
+
+              <h4>Request</h4>
+              <p>name = &ltroomName (string)&gt</p>
+
+              <h4>Response</h4>
+          <pre class="prettyprint linenums">
+content: {
+  id: &ltnewRoomId (string)&gt
+}
+</pre>
         </section>
 
-
-
-        <!-- room - ItemID
-        ================================================== -->
-        <section id="room-ItemID">
-          <div class="page-header">
-            <h1>8. /rooms/(int:roomID)/items/(int:itemId)</h1>
-          </div>
-          <h3>GET</h3>
-          <p>TODO</p>
-
-          <h3>PUT</h3>
-          <p>TODO</p>
-
-          <h3>DELETE</h3>
-          <p>TODO</p>
           
+         <!-- /rooms/(int: roomId)  
+        ================================================== -->
+        <section id="rooms/(int: roomId)">
+          <div class="page-header">
+            <h2>/rooms/(int: roomId)  </h2>
+          </div>
 
+              <h4>GET</h4>
+              <p>Gets a JSON representation about the current house's structure from the server</p>
 
+              <h4>Request</h4>
+              <p>(None)</p>
+
+              <h4>Response</h4>
+              <p>TODO, unused</p>
+
+              <h4>PUT</h4>
+              <p>Updates a specified room </p>
+
+              <h4>Request</h4>
+              <p>name = &ltnewRoomName: string&gt</p>
+
+              <h4>Response</h4>
+              <p>content: 'success'</p>
+
+              <h4>DELETE</h4>
+              <p>Delete specified room </p>
+
+              <h4>Request</h4>
+              <p>(None)</p>
+
+              <h4>Response</h4>
+              <p>content: 'success'</p>
+          
         </section>
 
-          <!-- Events
+
+        <!-- rooms/(int: roomId)/items/ 
+        ================================================== -->
+        <section id="rooms/(int: roomId)/items/">
+          <div class="page-header">
+            <h2>rooms/(int: roomId)/items/</h2>
+          </div>
+
+              <h4>POST</h4>
+              <p> </p>
+
+              <h4>Request (args)</h4>
+              <p>brand =  &ltbrand (string)&gt,</p>
+              <p>ip = &ltip (string)&gt,</p>
+              <p>name = &ltname (string)&gt,</p>
+              <p>itemType = &ltitemType (string)&gt</p>
+
+              <h4>Response</h4>
+          <pre class="prettyprint linenums">
+content: {
+  itemId: &ltitemId (int)&gt // new id allocated for new item
+}
+</pre>
+        </section>
+        
+
+         <!--  rooms/(int: roomId)/items/(int: itemId) 
+        ================================================== -->
+        <section id="rooms/(int: roomId)/items/(int: itemId)">
+          <div class="page-header">
+            <h2>rooms/(int: roomId)/items/(int: itemId)</h2>
+          </div>
+
+              <h4>GET</h4>
+              <p>TODO, unused</p>
+
+              <h4>PUT</h4>
+              <p>TODO</p>
+
+              <h4>DELETE</h4>
+              <p>TODO</p>
+        </section>
+
+
+        <!-- /events 
         ================================================== -->
         <section id="events">
           <div class="page-header">
-            <h1>9. /events</h1>
-            <h3>GET</h3>
-            <p>TODO</p>
-
-            <h3>PUT</h3>
-            <p>Creates a new event </p>
-            <p>TODO</p>
-
+            <h2>/events </h2>
           </div>
 
-          <!-- events- EventID
-        ================================================== -->
-        <section id="events-EventID">
-          <div class="page-header">
-            <h1>10. /events/(int:eventID)</h1>
-          </div>
-          <h3>GET</h3>
-            <p>Gets a list of current rules </p>
-            <pre class="prettyprint linenums">
+              <h4>GET</h4>
+              <p>Gets a list of current rules </p>
+
+              <h4>Request</h4>
+              <p>(None) </p>
+
+              <h4>Response</h4>
+          <pre class="prettyprint linenums">
 content: {
   rules: [
     { // single rule
-      ruleId: <ruleId (int)>, // rule id
+      ruleId: &ltruleId (int)>, // rule id
+      ruleName: &ltruleName (string)&gt,
+      enabled: &lttrue/false (bool)&gt
       event: {
-        itemId: <itemId (int)>,
-        roomId: <roomId (int)>, // both null => house
-        itemName: <name (string)>,
-        itemType: <itemType / time passes (string)>,
-        itemState: <itemState (int) -- triggering state>,
-        enabled: <true/false (bool)>
+        // event
+        id: &ltitemId / roomId (int) OR null if scope == house&gt,
+        itemType: &ltitemType / time passes (string)&gt,
+        scope: &ltscope (string) -- 'item', 'room', or 'house'&gt,
+        equivalence: &ltgt/lt/eq (string)&gt,
+        value: &ltnumber/bool/time (long) -- triggering state&gt,
       },
       conditions: [ // per sensor basis
         {
-        // device
-        itemId: <itemId (int)>,
-        itemType: <itemType (string)>,
-        method: <function (noargs)>,
-        equivalence: <gt/lt/eq (string)>,
-        value: <number/bool/time (long)>
+          conditionId: &ltconditionId (int)&gt,
+          // device
+          itemId: &ltitemId (int)&gt,
+          itemType: &ltitemType (string)&gt,
+          method: &ltfunction (noargs)&gt,
+          equivalence: &ltgt/lt/eq (string)&gt,
+          value: &ltnumber/bool/time (long)&gt
         },
         {
           ..
@@ -273,11 +326,11 @@ content: {
       ],
       actions: [
         {
-        itemId: <itemId (int)>,
-        itemType: <itemType (string)>,
-          sensorId: <itemId (int)>,
-          roomId: <roomId (int)>, //both null=>house
-        method: <function (noargs, void)>
+          actionId: &ltactionId (int)&gt,
+          id: &ltitemId / roomId (int) OR null if scope == house&gt,
+          itemType: &ltitemType (string)&gt,
+          scope: &ltscope (string) -- 'room', 'item', or 'house'&gt
+          method: &ltfunction (noargs, void)&gt
         },
         {
           ..
@@ -289,68 +342,281 @@ content: {
     }
   ]
 }
+
 </pre>
 
-          <h3>PUT</h3>
-          <p>Updates the event</p>
-          <p>TODO</p>
+              <h4>POST</h4>
+              <p>Create a new event </p>
 
-          <h3>DELETE</h3>
-          <p>Deletes the event</p>
-          <p>TODO</p>
+              <h4>Request</h4>
+              <p>ruleName = &ltruleName (string)&gt</p>
+              <p>enabled =  &lttrue/false (boolean)&gt</p>
+              <p>id =  &ltitemId / roomId OR null if scope == house&gt</p>
+              <p>itemType =  &ltitemType (string)&gt</p>
+              <p>scope =  &ltscope (string) -- 'item', 'room', or 'house'&gt</p>
+              <p>equivalence =  &ltequivalence&gt</p>
+              <p>value =  &ltvalue (int)&gt</p>
+
+              <h4>Response</h4>
+              <pre class="prettyprint linenums">
+content: {
+  ruleId:  &ltruleId (int)&gt
+}
+</pre>
         </section>
 
 
-
-          <!-- Methods
+        <!-- /events/(int: eventId)
         ================================================== -->
-        <section id="methods">
+        <section id="events/(int: eventId)">
           <div class="page-header">
-            <h1>11. Methods</h1>
+            <h2>/events/(int: eventId)</h2>
           </div>
-          <h3>GET</h3>
-            <p>Gets list of methods and equivalences associated with each device type</p>
-            <p>CACHED</p>
-            <pre class="prettyprint linenums">
+
+              <h4>GET</h4>
+              <p> </p>
+
+              <h4>Request</h4>
+              <p>(None) </p>
+
+              <h4>Response</h4>
+              <p>TODO</p>
+
+              <h4>PUT</h4>
+              <p>Updates the event </p>
+
+              <h4>Request</h4>
+              <p>ruleName = &ltruleName (string)&gt</p>
+              <p>enabled = &lttrue/false (boolean)&gt</p>
+              <p>id = &ltitemId / roomId OR null if scope == house&gt</p>
+              <p>itemType = &ltitemType (string)&gt</p>
+              <p>scope = &ltscope (string) -- 'item', 'room', or 'house'&gt</p>
+              <p>equivalence = &ltequivalence&gt</p>
+              <p>value = &ltvalue (int)&gt</p>
+
+              <h4>Response</h4>
+              <p>content: 'success'</p>
+
+              <h4>DELETE</h4>
+              <p>Delete the event </p>
+
+              <h4>Request</h4>
+              <p>(None)</p>
+
+              <h4>Response</h4>
+              <p>content: 'success'</p>
+          
+        </section>
+
+
+        <!--  /events/(int: eventId)/conditions/ 
+        ================================================== -->
+        <section id="events/(int: eventId)/conditions/">
+          <div class="page-header">
+            <h2> /events/(int: eventId)/conditions/</h2>
+          </div>
+
+              <h4>GET</h4>
+              <p>TODO, unused</p>
+
+              <h4>POST</h4>
+              <p>Add new condition to an event </p>
+
+              <h4>Request</h4>
+              <p>itemId =  &ltitemId (int)&gt,</p>
+              <p>equivalence = &ltgt/lt/eq (string)&gt,</p>
+              <p>value = &ltnumber/bool/time (long)&gt</p>
+
+              <h4>Response</h4>
+              <pre class="prettyprint linenums">
 content: {
-  methodList: [
-    {
-      type: <itemType (string)>, // discrete type
-      methods: [
-        {name: “open”, equivalences: [“equals”]},
-        {name: “closed”, equivalences: [“equals”]},
-        ..
-      ]
-    },
-    {
-      type: <temperature (string)>, // continuous type
-      methods: [
-        {
-          name: “is”,
-          equivalences: [
-          “equal to”,
-          “greater than”,
-          “less than”
-          ]
-        },
-        {
-          ..
-        }
-      ]
-    }
+  conditionId: &ltnewConditionId (int)&gt
+}
+</pre>
+        </section>
+
+         <!--  /events/(int: eventId)/conditions/(int: conditionId) 
+        ================================================== -->
+        <section id="events/(int: eventId)/conditions/(int: conditionId)">
+          <div class="page-header">
+            <h2> /events/(int: eventId)/conditions/(int: conditionId) </h2>
+          </div>
+
+              <h4>PUT</h4>
+              <p></p>
+
+              <h4>Request</h4>
+              <p>itemId =  &ltitemId (int)&gt,
+              equivalence = &ltgt/lt/eq (string)&gt,
+              value = &ltnumber/bool/time (long)&gt</p>
+
+              <h4>Response</h4>
+              <p>content: 'success'</p>
+
+              <h4>DELETE</h4>
+              <p>Request:</p>
+              <p>(None)</p>
+
+              <h4>Response</h4>
+              <p>content: 'success'</p>
+        </section>
+
+        <!--   /events/(int: eventId)/actions/ 
+        ================================================== -->
+        <section id="events/(int: eventId)/actions/">
+          <div class="page-header">
+            <h2>/events/(int: eventId)/actions/</h2>
+          </div>
+
+              <h4>GET</h4>
+              <p>TODO, unused</p>
+
+              <h4>POST</h4>
+              <p>Request: (args)  </p>
+              <p>id = &ltitemId / roomId (int) OR null if scope == house&gt,</p>
+              <p>itemType = &ltitemType (string)&gt,</p>
+              <p>scope = &ltscope (string) -- 'room', 'item', or 'house'&gt</p>
+              <p>method = &ltfunction (noargs, void)&gt</p>
+
+              <h4>Response</h4>
+              <pre class="prettyprint linenums">
+content: {
+  actionId = &ltactionId (int)&gt
+}
+</pre>
+        </section>
+
+        <!--   /events/(int: eventId)/actions/(int: actionId) 
+        ================================================== -->
+        <section id="events/(int: eventId)/actions/(int: actionId)">
+          <div class="page-header">
+            <h2>/events/(int: eventId)/actions/(int: actionId)</h2>
+          </div>
+
+              <h4>PUT</h4>
+              <p></p>
+
+              <h4>Request</h4>
+              <p>id = &ltitemId / roomId (int) OR null if scope == house&gt,</p>
+              <p>itemType = &ltitemType (string)&gt,</p>
+              <p>scope = &ltscope (string) -- 'room', 'item', or 'house'&gt</p>
+              <p>method = &ltfunction (noargs, void)&gt</p>
+
+              <h4>Response</h4>
+              <p>content: 'success'</p>
+
+              <h4>DELETE</h4>
+              <p>Request: </p>
+              <p>(None)</p>
+
+              <h4>Response</h4>
+              <p>content: 'success'</p>
+        </section>
+
+        <!--  /plugins 
+        ================================================== -->
+        <section id="plugins">
+          <div class="page-header">
+            <h2>/plugins </h2>
+          </div>
+
+              <h4>GET</h4>
+              <p></p>
+
+              <h4>Request</h4>
+              <p>(None)</p>
+
+              <h4>Response</h4>
+              <pre class="prettyprint linenums">
+content {
+  plugins: [
+    "plugin1",
+    "plugin2",
+    "plugin3",
+    ..
   ]
 }
-</pre>  
+</pre>
+
+              <h4>POST</h4>
+              <p></p>
+
+              <h4>Request</h4>
+              <p></p>
+
+              <h4>Response</h4>
+              <p></p>
+
         </section>
 
+         <!--  /plugins/(string: pluginName) 
+        ================================================== -->
+        <section id="plugins/(string: pluginName)">
+          <div class="page-header">
+            <h2>/plugins/(string: pluginName)</h2>
+          </div>
 
+              <h4>GET</h4>
+              <p></p>
 
-      </div>
+              <h4>Request</h4>
+              <p></p>
+
+              <h4>Response</h4>
+              <p></p>
+
+              <h4>DELETE</h4>
+              <p></p>
+
+              <h4>Request</h4>
+              <p>(None)</p>
+
+              <h4>Response</h4>
+              <p>content: 'success'</p>
+
+        </section>
+
+          <!-- /whitelist 
+        ================================================== -->
+        <section id="whitelist">
+          <div class="page-header">
+            <h2> /whitelist </h2>
+          </div>
+
+              <h4>GET</h4>
+              <p></p>
+
+              <h4>Request</h4>
+              <p>(None)</p>
+
+              <h4>Response</h4>
+              <pre class="prettyprint linenums">
+content {
+  emails: [
+    'email1@foo.com',
+    'email2@bar.com',
+    '...',
+  ]
+}
+</pre>
+
+              <h4>POST</h4>
+              <p></p>
+
+              <h4>Request</h4>
+              <p>email = &ltnewEmail@foo.com (string)&gt</p>
+
+              <h4>Response</h4>
+              <p>content: 'success'</p>
+
+              <h4>DELETE</h4>
+              <p></p>
+
+        </section>
+
+        </div>
     </div>
-
   </div>
-
-
 
     <!-- Footer
     ================================================== -->
