@@ -3866,7 +3866,7 @@ APP.StageManager = function() {
             },
             'button-logs': {
                 menuId: 'menu-logs',
-                buttonText: 'Logs',
+                buttonText: 'Charts',
                 class: 'green',
                 buttons: {}
             },
@@ -5577,6 +5577,7 @@ APP.resizer = {
     resizeText: function() {
         var masterFontSize;
         masterFontSize = (window.innerWidth / 100) + 'px';
+        console.log(window.innerWidth);
         $('body').css('font-size', masterFontSize);
     },
     /**
