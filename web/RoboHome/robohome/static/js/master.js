@@ -2255,7 +2255,7 @@ APP.ECANewRuleDisplay = function(ruleManager) {
             
             // content box
             self.contentBox = $('<div></div>');
-            self.eventFieldset = $('<fieldset></fieldset').addClass(APP.DOM_HOOK.ECA.EVENT_FIELDSET);
+            self.eventFieldset = $('<fieldset></fieldset>').addClass(APP.DOM_HOOK.ECA.EVENT_FIELDSET);
             self.eventBox = $('<div></div>');
             self.formBox = $('<div></div>').addClass(APP.DOM_HOOK.ECA.EVENT);
             

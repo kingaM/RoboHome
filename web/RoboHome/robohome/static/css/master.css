@@ -1290,6 +1290,16 @@ a.yellow.selected,
         font-size: 2.6em;
         width: 70%;
     }
+    #stage-rules-eca {
+        font-size: 140%;
+    }
+    #context-menu legend {
+        font-size: 120%;
+    }
+    #context-menu h1,
+    #context-menu h2 {
+        font-size: 160%;
+    }
 }
 
 @media only screen and (max-width: 1100px) {
