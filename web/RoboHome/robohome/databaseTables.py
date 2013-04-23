@@ -246,7 +246,7 @@ class EnergyTable(DatabaseHelper):
     def addEntry(self, watts):
         return super(EnergyTable, self).addEntry(self.tablename, "watts", "'" + str(watts) + "'")
 
-    def getEnergyBetDates(self, startDate, endDate):
+    def getEnergyByTime(self, startDate, endDate):
         return super(EnergyTable, self).retrieveData("SELECT * FROM " + self.tablename + " WHERE time BETWEEN FROM_UNIXTIME(" + str(startDate) + ") AND FROM_UNIXTIME(" + str(endDate) + ")") 
 
 class Database(DatabaseHelper):
