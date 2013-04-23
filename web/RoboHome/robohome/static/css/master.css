@@ -1270,6 +1270,7 @@ a.yellow.selected,
         display: block;
         font-size: 1.4em;
         margin: 0.2em;
+        width: 89%;
     }
     #context-menu .button {
         display: block;

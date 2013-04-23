@@ -4477,12 +4477,20 @@ APP.StageManager = function() {
                         optgroup = $('<optgroup></optgroup>').attr({label: supportedTypes[itemType][APP.API.VERSION.SUPPORTED_TYPE.STATE.NAME]});
                         for(var j = 0; j < roomItems.length; j++) {
                             if(roomItems[j][APP.API.STATE.ROOM.ITEM.ITEM_TYPE] === itemType) {
+                                optgroup.append($('<option>' + roomItems[j][APP.API.STATE.ROOM.ITEM.NAME] + '</option>').attr({
+                                    value: roomItems[j][APP.API.STATE.ROOM.ITEM.ID],
+                                    'data-id': roomItems[j][APP.API.STATE.ROOM.ITEM.ID],
+                                    'data-type': roomItems[j][APP.API.STATE.ROOM.ITEM.ITEM_TYPE],
+                                    'data-name': roomItems[j][APP.API.STATE.ROOM.ITEM.NAME]
+                                    })
+                                /*
                                 optgroup.append($('<option>' + roomItems[j][APP.API.STATE.ROOM.ITEM.NAME] + ' (' + roomItems[j][APP.API.STATE.ROOM.ITEM.IP] + ')' + '</option>').attr({
                                     value: roomItems[j][APP.API.STATE.ROOM.ITEM.ID],
                                     'data-id': roomItems[j][APP.API.STATE.ROOM.ITEM.ID],
                                     'data-type': roomItems[j][APP.API.STATE.ROOM.ITEM.ITEM_TYPE],
                                     'data-name': roomItems[j][APP.API.STATE.ROOM.ITEM.NAME]
                                     })
+                                */
                                 );
                             }
                         }
@@ -5569,6 +5577,7 @@ APP.resizer = {
     resizeText: function() {
         var masterFontSize;
         masterFontSize = (window.innerWidth / 100) + 'px';
+        console.log('windowSize ' + window.innerWidth + ' fontSize ' + masterFontSize);
         $('body').css('font-size', masterFontSize);
     },
     /**
