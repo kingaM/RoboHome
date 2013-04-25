@@ -38,7 +38,7 @@ void getState(WiFiClient client) {
  * Args:
  * pin -- the pin number
  */
-boolean debounce(int pin)
+boolean readReedSwitch(int pin)
 {
   boolean current = digitalRead(pin);
   delay(5);
@@ -51,8 +51,9 @@ boolean debounce(int pin)
 void openDoor() {
   /*while(currentOpen!=1) {
    motor.run();
-   currentOpen = debounce(reedOpenPin);
-   } */
+   currentOpen = readReedSwitch(reedOpenPin);
+   } 
+   motor.stop()*/
 }
 
 /* A stub method for closing the door, not implemented yet
@@ -60,8 +61,9 @@ void openDoor() {
 void closeDoor() {
   /*while(currentClose!=1) {
    motor.run();
-   currentClose = debounce(reedOpenPin);
-   } */
+   currentClose = readReedSwitch(reedOpenPin);
+   } 
+   motor.stop()*/
 }
 
 /* Handles the RESTful command from the server
@@ -77,11 +79,11 @@ void handleCommand(WiFiClient client, char* cmd) {
   } 
   else if (strcmp(cmd, "open") == 0) {
     openDoor();
-	  getState(client);
+    getState(client);
   }
   else if (strcmp(cmd, "close") == 0) {
     closeDoor();
-	  getState(client);
+    getState(client);
   }
   else {
     myServer.send404(client);
@@ -170,8 +172,8 @@ void setup() {
 
 void loop() {
   listenToRequest();
-  currentOpen = debounce(reedOpenPin);
-  currentClose = debounce(reedClosePin);
+  currentOpen = readReedSwitch(reedOpenPin);
+  currentClose = readReedSwitch(reedClosePin);
   if (currentOpen == 1 && currentClose == 0) {
     Serial.println("{state : 1}");
   } 
