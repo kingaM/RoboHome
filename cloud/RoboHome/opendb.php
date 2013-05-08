@@ -3,7 +3,7 @@
 $dbhost = "host";
 $dbusername = "username";
 $dbuserpassword = "password";
-$dbname = "robohom";
+$dbname = "robohome";
 
 $link = mysql_connect ($dbhost, $dbusername, $dbuserpassword);
 

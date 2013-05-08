@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>RoboHome</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <!-- Le styles -->
+    <link href="assets/css/textDisplay.css" rel="stylesheet">
+    <link href="assets/css/alignment.css" rel="stylesheet">
+    <link href="assets/css/docs.css" rel="stylesheet">
+    <link href="assets/js/google-code-prettify/prettify.css" rel="stylesheet">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le fav and touch icons -->
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="assets/ico/house.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="assets/ico/house.png">
+      <link rel="apple-touch-icon-precomposed" sizes="72x72" href="assets/ico/house.png">
+                    <link rel="apple-touch-icon-precomposed" href="assets/ico/house.png">
+                                   <link rel="shortcut icon" href="assets/ico/house.png">
+
+  </head>
+
+  <body data-spy="scroll" data-target=".bs-docs-sidebar">
+
+
+<!-- Subhead
+================================================== -->
+<header class="jumbotron subhead" id="overview">
+  <div class="container">
+    <h1>RoboHome Documentation</h1>
+    <p class="lead">Overview of the project and its contents</p>
+  </div>
+</header>
+
+
+  <div class="container">
+
+    <!-- Docs nav
+    ================================================== -->
+    <div class="row">
+      <div class="span3 bs-docs-sidebar">
+        <ul class="nav nav-list bs-docs-sidenav">
+          <li><a href="#url"><i class="icon-chevron-right"></i> URL </a></li>
+          <li><a href="#wrapper-string"><i class="icon-chevron-right"></i> Wrapper String</a></li>
+          <li><a href="#structure"><i class="icon-chevron-right"></i> /structure </a></li>
+          <li><a href="#states"><i class="icon-chevron-right"></i> /state </a></li>
+          <li><a href="#rooms"><i class="icon-chevron-right"></i> rooms </a></li>
+          <li><a href="#room-RoomID"><i class="icon-chevron-right"></i> /rooms/(int: roomId) </a></li>
+          <li><a href="#room-Items"><i class="icon-chevron-right"></i> rooms/(int: roomId)/items </a></li>
+          <li><a href="#room-ItemID"><i class="icon-chevron-right"></i> rooms/(int: roomId)/items/(int: itemId) </a></li>
+          <li><a href="#events"><i class="icon-chevron-right"></i> /events </a></li>
+          <li><a href="#events-EventID"><i class="icon-chevron-right"></i> /events/(int: eventId) </a></li>
+          <li><a href="#methods"><i class="icon-chevron-right"></i> /methods </a></li>
+        </ul>
+      </div>
+      <div class="span9">
+
+
+
+        <!-- url
+        ================================================== -->
+        <section id="url">
+          <div class="page-header">
+            <h1>1. URL </h1>
+          </div>
+          <p class="lead">http://www.robohome.com/ip/version/(string:versionNo)/rooms/(int:roomId)/(string: type)s/(int:itemId / all)/(string:action)?(params)</p>
+
+          <div class="row-fluid">
+              <h3>Example</h3>
+              <p>http://www.robohome.com/0.0.0.0/version/0.1/rooms/1/doors/1/setOpen?percentage=50</p>
+          </div>
+        </section>
+
+
+
+        <!-- Wrapper string
+        ================================================== -->
+        <section id="wrapper-string">
+          <div class="page-header">
+            <h1>2. Wrapper String</h1>
+          </div>
+          <p class="lead">{statusCode: <statusCode>, content: {} }</p>
+        </section>
+
+
+
+        <!-- Structure
+        ================================================== -->
+        <section id="structure">
+          <div class="page-header">
+            <h1>3. Structure</h1>
+          </div>
+
+          <h3>GET</h3>
+          <p> Get house structure </p>
+          <p>TODO</p>
+        
+        </section>
+
+
+
+        <!-- State
+        ================================================== -->
+        <section id="states">
+          <div class="page-header">
+            <h1>4. /State</h1>
+          </div>
+
+          <h3>GET</h3>
+          <p class="lead">Get a list of states for all items in the house </p>
+          <p>Now, here's a look at a <strong>typical HTML file</strong>:</p>
+<pre class="prettyprint linenums">
+content: {
+  states: [
+    {
+      id: <id (int)>,
+      state: <state (int)>
+    },
+    {
+      ..
+    }
+  ],
+  errors: []
+}
+</pre>
+          
+        </section>
+
+
+
+        <!-- Rooms
+        ================================================== -->
+        <section id="rooms">
+          <div class="page-header">
+            <h1>5. Rooms</h1>
+          </div>
+        
+          <h3>POST</h3>
+          <p>Create new room with JSON content</p>
+          <p>TODO</p>
+
+        </section>
+
+
+
+
+        <!-- room - RoomID
+        ================================================== -->
+        <section id="room-RoomID">
+          <div class="page-header">
+            <h1>6. /rooms/(int:roomID)</h1>
+          </div>
+         <h3>GET</h3>
+         <p>Gets a JSON representation about the current house's structure from the server </p>
+        <pre class="prettyprint linenums">
+content : {
+  rooms: [
+    {
+      id: <roomId1 (int)>,
+      name: <roomName (string)>,
+      items: [
+        {
+          id: <itemId (int)>,
+          name: <itemName (string)>,
+          type: <itemType (string)>,
+          brand: <itemBrand (string)>,
+          ip: <itemIP (string)>,
+        },
+      ]
+    },
+    {
+      ..
+    },
+  ]
+}
+</pre>
+  
+      <h3>PUT</h3>
+      <p>Updates a specified room</p>
+      <p>TODO</p>
+
+      <h3>DELETE</h3>
+      <p>Deletes a specified room</p>
+      <p>TODO</p>
+        </section>
+
+
+          <!-- room - Items
+        ================================================== -->
+        <section id="room-Items">
+          <div class="page-header">
+            <h1>7. /rooms/(int:roomID)/items</h1>
+          </div>
+          <h3>POST</h3>
+          <p>TODO</p>
+        </section>
+
+
+
+        <!-- room - ItemID
+        ================================================== -->
+        <section id="room-ItemID">
+          <div class="page-header">
+            <h1>8. /rooms/(int:roomID)/items/(int:itemId)</h1>
+          </div>
+          <h3>GET</h3>
+          <p>TODO</p>
+
+          <h3>PUT</h3>
+          <p>TODO</p>
+
+          <h3>DELETE</h3>
+          <p>TODO</p>
+          
+
+
+        </section>
+
+          <!-- Events
+        ================================================== -->
+        <section id="events">
+          <div class="page-header">
+            <h1>9. /events</h1>
+            <h3>GET</h3>
+            <p>TODO</p>
+
+            <h3>PUT</h3>
+            <p>Creates a new event </p>
+            <p>TODO</p>
+
+          </div>
+
+          <!-- events- EventID
+        ================================================== -->
+        <section id="events-EventID">
+          <div class="page-header">
+            <h1>10. /events/(int:eventID)</h1>
+          </div>
+          <h3>GET</h3>
+            <p>Gets a list of current rules </p>
+            <pre class="prettyprint linenums">
+content: {
+  rules: [
+    { // single rule
+      ruleId: <ruleId (int)>, // rule id
+      event: {
+        itemId: <itemId (int)>,
+        roomId: <roomId (int)>, // both null => house
+        itemName: <name (string)>,
+        itemType: <itemType / time passes (string)>,
+        itemState: <itemState (int) -- triggering state>,
+        enabled: <true/false (bool)>
+      },
+      conditions: [ // per sensor basis
+        {
+        // device
+        itemId: <itemId (int)>,
+        itemType: <itemType (string)>,
+        method: <function (noargs)>,
+        equivalence: <gt/lt/eq (string)>,
+        value: <number/bool/time (long)>
+        },
+        {
+          ..
+        }
+      ],
+      actions: [
+        {
+        itemId: <itemId (int)>,
+        itemType: <itemType (string)>,
+          sensorId: <itemId (int)>,
+          roomId: <roomId (int)>, //both null=>house
+        method: <function (noargs, void)>
+        },
+        {
+          ..
+        }
+      ]
+    },
+    { // 2nd rule
+      ..
+    }
+  ]
+}
+</pre>
+
+          <h3>PUT</h3>
+          <p>Updates the event</p>
+          <p>TODO</p>
+
+          <h3>DELETE</h3>
+          <p>Deletes the event</p>
+          <p>TODO</p>
+        </section>
+
+
+
+          <!-- Methods
+        ================================================== -->
+        <section id="methods">
+          <div class="page-header">
+            <h1>11. Methods</h1>
+          </div>
+          <h3>GET</h3>
+            <p>Gets list of methods and equivalences associated with each device type</p>
+            <p>CACHED</p>
+            <pre class="prettyprint linenums">
+content: {
+  methodList: [
+    {
+      type: <itemType (string)>, // discrete type
+      methods: [
+        {name: “open”, equivalences: [“equals”]},
+        {name: “closed”, equivalences: [“equals”]},
+        ..
+      ]
+    },
+    {
+      type: <temperature (string)>, // continuous type
+      methods: [
+        {
+          name: “is”,
+          equivalences: [
+          “equal to”,
+          “greater than”,
+          “less than”
+          ]
+        },
+        {
+          ..
+        }
+      ]
+    }
+  ]
+}
+</pre>  
+        </section>
+
+
+
+      </div>
+    </div>
+
+  </div>
+
+
+
+    <!-- Footer
+    ================================================== -->
+    <footer class="footer">
+      <div class="container">
+        <p>Designed and built with all the love in the world by <a href="http://twitter.com/mdo" target="_blank">@mdo</a> and <a href="http://twitter.com/fat" target="_blank">@fat</a>.</p>
+        <p>Code licensed under <a href="http://www.apache.org/licenses/LICENSE-2.0" target="_blank">Apache License v2.0</a>, documentation under <a href="http://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>.</p>
+        <p><a href="http://glyphicons.com">Glyphicons Free</a> licensed under <a href="http://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>.</p>
+        <ul class="footer-links">
+          <li><a href="http://blog.getbootstrap.com">Blog</a></li>
+          <li class="muted">&middot;</li>
+          <li><a href="https://github.com/twitter/bootstrap/issues?state=open">Issues</a></li>
+          <li class="muted">&middot;</li>
+          <li><a href="https://github.com/twitter/bootstrap/wiki">Roadmap and changelog</a></li>
+        </ul>
+      </div>
+    </footer>
+
+
+
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script type="text/javascript" src="http://platform.twitter.com/widgets.js"></script>
+    <script src="assets/js/jquery.js"></script>
+    <script src="assets/js/bootstrap-transition.js"></script>
+    <script src="assets/js/bootstrap-alert.js"></script>
+    <script src="assets/js/bootstrap-modal.js"></script>
+    <script src="assets/js/bootstrap-dropdown.js"></script>
+    <script src="assets/js/bootstrap-scrollspy.js"></script>
+    <script src="assets/js/bootstrap-tab.js"></script>
+    <script src="assets/js/bootstrap-tooltip.js"></script>
+    <script src="assets/js/bootstrap-popover.js"></script>
+    <script src="assets/js/bootstrap-button.js"></script>
+    <script src="assets/js/bootstrap-collapse.js"></script>
+    <script src="assets/js/bootstrap-carousel.js"></script>
+    <script src="assets/js/bootstrap-typeahead.js"></script>
+    <script src="assets/js/bootstrap-affix.js"></script>
+
+    <script src="assets/js/holder/holder.js"></script>
+    <script src="assets/js/google-code-prettify/prettify.js"></script>
+
+    <script src="assets/js/application.js"></script>
+
+
+
+  </body>
+</html>

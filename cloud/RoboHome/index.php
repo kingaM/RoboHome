@@ -20,7 +20,7 @@ if (array_key_exists("login", $_GET)) {
 
 <div id="myCarousel" class="carousel slide">
   <div class="carousel-inner">
-    <div class="item active"> <img src="img/examples/slide-01.jpg" alt="">
+    <div class="item active"> <img src="img/slide-01.jpg" alt="">
       <div class="container">
         <div class="carousel-caption">
           <h1>Try RoboHome?</h1>
@@ -48,7 +48,7 @@ echo '
 <!-- Example row of columns -->
 <div class="row-fluid">
   <div class="span4">
-    <h2>Login with OpenID</h2>
+    <h2><FONT COLOR="#FFA000">Login with OpenID</FONT></h2>
     <p>Login with your Google account to manage your home. </p>
     <p><a href="login-google.php"><img src="img/logo.png" width="175" height="60" /></a></p>
   </div>

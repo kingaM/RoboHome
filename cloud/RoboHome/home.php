@@ -17,17 +17,19 @@ if (isset($_POST['submitted'])) {
 	
 	$res = mysql_query("SELECT * FROM rpi WHERE ip_address = '$ip'");
 	if(mysql_num_rows($res) == 0) {
-		$sql="INSERT INTO rpi (name, status, ip_address) VALUES ('$name', 0, '$ip')";
+		$sql="INSERT INTO rpi (name, status, ip_address) VALUES ('$name', 1, '$ip')";
 		if (!mysql_query($sql))
 		{
 			  die('Error: ' . mysql_error());
 		}
-	} else {
-		$rpi = mysql_fetch_assoc($res);
-		$rpi_id = $rpi["rpi_id"];
 	}
+	$res2 = mysql_query("SELECT * FROM rpi WHERE ip_address = '$ip'");
+	$rpi = mysql_fetch_assoc($res2);
+	$rpi_id = $rpi["rpi_id"];
 	mysql_query("INSERT INTO rpi_users (rpi_id, users_id) VALUES ('$rpi_id', '$id')");
-	echo ' Thank You! Added new RPi ';
+	echo '<div class="alert fade in">
+          <button type="button" class="close" data-dismiss="alert">&times;  </button>
+  		  <p>Thank You! Added new RPi .  </p></div>' ;
 }
 //Delete RPI
 if (isset($_POST['delete'])) {
@@ -47,7 +49,7 @@ if (isset($_POST['delete'])) {
 <?php
 echo '<h1>Welcome '. $_SESSION['username'] .' !</h1>';
 echo '<br/><font color="#A52A2A">Email</font> : ' . $_SESSION['email'];
-echo '<br/><font color="#A52A2A">You are login with :</font> ' . $_SESSION['oauth_provider'];
+echo '<br/><font color="#A52A2A">You are logged in with :</font> ' . $_SESSION['oauth_provider'];
 echo '<br/><a href="logout.php?logout">Logout</a>';
 ?>
 </p>
@@ -96,13 +98,13 @@ echo '<br/><a href="logout.php?logout">Logout</a>';
 				{
 					echo '<tr>';
 					echo '<td>'.$count.'</td>';
-					echo '<td><a href="http://'.$row["ip_address"].'">'.$row["name"].'</td></a>';
+					echo '<td><a href="http://'.$row["ip_address"].':9090">'.$row["name"].'</td></a>';
 					if($row["status"] == '0'){echo '<td>Not available</td>';}else{echo '<td>Available</td>';}
 					echo '<td>'.$row["ip_address"].'</td>';
 					echo '<form action="home.php" method="post">';
 					//<button class="btn btn-mini btn-primary" type="button">Edit</button>
 					echo '<input type="hidden" name="row_id" value="'.$row["rpi_id"].'" />';
-					echo '<td><button type="submit" class="btn btn-mini btn-danger">Delete</button></td>';
+					echo '<td><button type="submit" class="btn btn-mini btn btn-info">Rename</button> <button type="submit" class="btn btn-mini btn-danger">Delete</button></td>';
 					echo '<input type="hidden" name="delete" value="TRUE" />';
 					echo '</form>';
 					echo '</tr>';
