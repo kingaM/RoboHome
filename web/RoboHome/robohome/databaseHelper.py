@@ -3,7 +3,7 @@ import MySQLdb as mdb
 class DatabaseHelper(object):
     
     try:
-        con = mdb.connect(host = '127.0.0.1', user = 'root', passwd = '', db = 'robohome')
+        con = mdb.connect(host = 'localhost', user = 'root', passwd = '', db = 'robohome')
     except Exception, e:
         print e
 
