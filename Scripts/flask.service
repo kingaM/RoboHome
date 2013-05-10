@@ -1,0 +1,13 @@
+[Unit]
+Description=Flask service
+After=network.target
+
+[Service]
+Type=forking
+ExecStart=/usr/bin/python2 /root/web/cherrypyserver.py
+ExecStop=/bin/kill $MAINPID
+ExecReload=/bin/kill $MAINPID ; /usr/bin/python2 /root/RoboHome/web/RoboHome/robohome/flaskServer.py
+PIDFile=/root/RoboHome/web/RoboHome/robohome/flaskServer.pid
+
+[Install]
+WantedBy=multi-user.target
