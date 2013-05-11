@@ -17,5 +17,5 @@ Installation
 
 More Information
 ----------------
-[**API**] (https://github.com/michboon/comp2014/wiki)
-[**Jenkins Build Status**] (http://robohome.cloudapp.net/)
+- [**API**] (https://github.com/michboon/comp2014/wiki)
+- [**Jenkins Build Status**] (http://robohome.cloudapp.net/)
