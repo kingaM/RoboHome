@@ -46,7 +46,7 @@ SETTINGS = {
     'LANGUAGE': 'en',
     'VERSION_NUMBER': '0.1',
     'SERVER': {
-        'HOST': '0.0.0.0',
+        'HOST': '127.0.0.1',
         'PORT': 9090
     },
     'API': {

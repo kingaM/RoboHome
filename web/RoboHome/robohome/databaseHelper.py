@@ -3,11 +3,11 @@ import MySQLdb as mdb
 class DatabaseHelper(object):
     
     try:
-        con = mdb.connect(host = 'localhost', user = 'root', passwd = '', db = 'robohome')
+        con = mdb.connect(host = '127.0.0.1', user = 'root', passwd = '', db = 'robohome')
     except Exception, e:
         print e
 
-    def __init__(self, host='localhost', username='root', password='', database='robohome'):
+    def __init__(self, host='127.0.0.1', username='root', password='', database='robohome'):
         self.database = database
 
     def executeQuery(self, query):
@@ -38,4 +38,4 @@ class DatabaseHelper(object):
         return rows
 
 if __name__=='__main__':
-    database = DatabaseHelper('localhost', 'root', 'root', 'robohome')
+    database = DatabaseHelper('127.0.0.1', 'root', 'root', 'robohome')
